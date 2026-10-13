@@ -11,6 +11,7 @@
 
 ## Application architecture
 - Keep institutional sections in reusable components under src/components/frankkia and compose them at the index route; the home intentionally uses in-page navigation as requested.
+- Keep the shared header, footer, skip link and single focusable main landmark in the root route around Outlet; leaf routes provide content only so keyboard navigation remains consistent across all pages.
 - Keep commercial plan values and demonstration data in src/lib/frankkia-data.ts so presentation and tests share the same source of truth.
 - Login and legal routes are presentational only; do not introduce authentication, storage or submission without a new explicit request.
 - Define Frankkia visual styles and semantic color tokens in src/styles.css; reuse the existing Button and Accordion controls.

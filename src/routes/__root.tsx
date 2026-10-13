@@ -12,26 +12,20 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { Header, Footer } from '@/components/frankkia/site-shell';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
-        </p>
-        <div className="mt-6">
-          <Link
-            to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Go home
-          </Link>
-        </div>
+    <section className="not-found-page">
+      <div className="container not-found-content">
+        <div className="not-found-code">404</div>
+        <h1>Página não encontrada</h1>
+        <p>A página que você procura não existe ou foi movida. Volte ao início para continuar explorando a Frankkia.</p>
+        <Button variant="frankkia" asChild><Link to="/"><ArrowLeft/>Voltar para a página inicial</Link></Button>
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -121,8 +115,11 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <a href="#conteudo-principal" className="skip-link">Pular para o conteúdo</a>
+      <Header/>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <main id="conteudo-principal" tabIndex={-1}><Outlet /></main>
+      <Footer/>
     </QueryClientProvider>
   );
 }

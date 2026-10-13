@@ -13,3 +13,5 @@
 - [x] Verify all six products, reading order, motion and mobile/tablet/desktop presentation.
 - [x] Replace only commercial tools with an explicit asymmetric Bento emphasizing ApresentaImóvel and ImobStudio.
 - [x] Verify Bento distribution, preserved content and motion, and single-column mobile without overflow.
+- [x] Correct audited contrast, touch targets, skip navigation, heading semantics and branded Portuguese 404 without changing the approved design.
+- [x] Verify existing tests, accessibility, keyboard navigation, responsive layouts and preserved motion.

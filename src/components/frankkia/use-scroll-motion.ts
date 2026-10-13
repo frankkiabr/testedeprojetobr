@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 
 /** Progressive enhancement: unobserved content always remains visible. */
 export function useScrollMotion() {
-  const ref = useRef<HTMLElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const root = ref.current;
