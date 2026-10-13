@@ -289,5 +289,5 @@ a, button {
 }
 @media (prefers-reduced-motion: reduce) {
  .brand-button:active:not(:disabled):not([aria-disabled="true"]),
- .brand-button:hover svg, .text-link:hover svg, .mobile-nav[hidden] { transform: none; }
+ .brand-button:hover svg, .text-link:hover svg, .mobile-nav[hidden] { transform: none !important; }
 }
