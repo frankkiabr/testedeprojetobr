@@ -6,6 +6,7 @@
  --font-sans: 'Manrope', sans-serif;
  --color-background: var(--background); --color-foreground: var(--foreground);
  --color-primary: var(--primary); --color-primary-foreground: var(--primary-foreground);
+ --color-primary-text: var(--primary-text);
  --color-secondary: var(--secondary); --color-secondary-foreground: var(--foreground);
  --color-muted: var(--muted); --color-muted-foreground: var(--muted-foreground);
  --color-accent: var(--accent); --color-accent-foreground: var(--foreground);
@@ -17,6 +18,7 @@
 }
 :root {
  --tool-image-scrim: linear-gradient(180deg, transparent 15%, var(--navy) 100%);
+ --primary-text: oklch(0.50 0.21 265); --primary-text-inverse: oklch(0.72 0.16 265);
  --tool-studio-scrim: linear-gradient(90deg, var(--navy) 0%, color-mix(in oklch, var(--navy) 82%, transparent) 45%, color-mix(in oklch, var(--navy) 15%, transparent) 100%);
  --academy-image-scrim: linear-gradient(180deg, transparent 0%, color-mix(in oklch, var(--navy) 85%, transparent) 65%, var(--navy) 100%);
  --background: oklch(0.975754 0.00574 264.533); --foreground: oklch(0.211271 0.080903 265.877); --primary: oklch(0.574087 0.232845 264.968); --primary-foreground: oklch(1 0 0);
@@ -360,6 +362,43 @@ a, button {
  .tools-editorial .studio-preview strong { font-size: 26px; }
  .tools-editorial [data-tool-type="presentation"] .tool-copy h3, .tools-editorial [data-tool-type="studio"] .tool-copy h3 { font-size: 23px; }
 }
+
+/* Accessible text roles do not change primary controls or illustrative graphics. */
+.eyebrow, .avatar, .sidebar-row.active, .metric-change, .target-numbers strong,
+.text-link, .step-number, .plan-topline, .preview-sum { color: var(--primary-text); }
+.section-dark .eyebrow { color: var(--primary-text-inverse); }
+.faq-accordion button[data-state="open"] { color: var(--primary-text); }
+@media (hover: hover) and (pointer: fine) {
+ .faq-accordion button:hover { color: var(--primary-text); }
+}
+.dashboard-heading .dashboard-title { display: block; font-size: 15px; font-weight: 750; }
+.course-overlay .course-title { display: block; font-size: 20px; margin-top: 7px; }
+.preview-paper .preview-title { display: block; margin: 0 0 8px; font-size: 9px; }
+.tools-editorial .preview-paper .preview-title { font-size: 11px; line-height: 1.5; }
+.tools-editorial [data-tool-type="presentation"] .preview-paper .preview-title { position: absolute; z-index: 1; left: 32px; right: 24px; bottom: 24px; color: var(--inverse); font-size: 30px; font-weight: 650; line-height: 1.25; }
+.footer-column .footer-title { font-size: 11px; font-weight: 650; margin-bottom: 20px; }
+.header-actions > a:not(.brand-button) { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 44px; padding-inline: 8px; }
+.footer-column a { min-height: 44px; display: flex; align-items: center; padding-block: 12px; margin-bottom: 0; }
+.footer-legal a { display: inline-flex; align-items: center; min-height: 44px; padding-block: 12px; }
+.footer-legal { flex-wrap: wrap; }
+.skip-link { position: fixed; top: 12px; left: 12px; z-index: 100; padding: 14px 20px; background: var(--card); color: var(--primary-text); border: 1px solid var(--border); border-radius: 5px; transform: translateY(calc(-100% - 20px)); }
+.skip-link:focus { transform: none; }
+#conteudo-principal:focus { outline: none; }
+.not-found-page { min-height: 65dvh; display: grid; place-items: center; padding-block: 80px; text-align: center; }
+.not-found-content { max-width: 620px; }
+.not-found-code { font-size: 72px; font-weight: 750; color: var(--primary-text); }
+.not-found-page h1 { font-size: 34px; margin-top: 18px; }
+.not-found-page p { font-size: 14px; color: var(--muted-foreground); line-height: 1.9; margin-block: 20px 28px; }
+@media (max-width: 950px) { .course-overlay .course-title { font-size: 16px; } }
+@media (max-width: 600px) {
+ .header-actions > a:not(.brand-button) { display: none; }
+ .dashboard-heading .dashboard-title { font-size: 13px; }
+ .course-overlay .course-title { font-size: 20px; }
+ .preview-paper .preview-title { font-size: 10px; }
+ .tools-editorial [data-tool-type="presentation"] .preview-paper .preview-title { left: 24px; font-size: 24px; }
+ .not-found-page h1 { font-size: 28px; }
+}
+@media (max-width: 430px) { .course-overlay .course-title { font-size: 16px; line-height: 1.3; } }
 
 /* Once-only scroll motion. Base styles remain fully visible without scripting. */
 @keyframes scroll-rise { from { opacity: 0; transform: translateY(var(--reveal-distance, 20px)); } to { opacity: 1; transform: none; } }
