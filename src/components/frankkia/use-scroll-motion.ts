@@ -13,7 +13,7 @@ export function useScrollMotion() {
     const targets = new Set<HTMLElement>();
     const mark = (selector: string, motion: string) => {
       root.querySelectorAll<HTMLElement>(selector).forEach(element => {
-        element.dataset.scrollMotion = motion;
+        element.dataset['scrollMotion'] = motion;
         targets.add(element);
       });
     };
@@ -25,7 +25,7 @@ export function useScrollMotion() {
     root.querySelectorAll('.ecosystem-grid, .tools-grid, .plans-grid, .benefits-grid, .steps').forEach(group => {
       Array.from(group.children).forEach((child, index) => {
         if (!(child instanceof HTMLElement)) return;
-        child.dataset.scrollMotion = group.classList.contains('steps') ? 'step' : 'card';
+        child.dataset['scrollMotion'] = group.classList.contains('steps') ? 'step' : 'card';
         child.style.setProperty('--reveal-order', String(index));
         targets.add(child);
       });
@@ -55,7 +55,7 @@ export function useScrollMotion() {
       preference.removeEventListener('change', stop);
       targets.forEach(element => {
         element.classList.remove('scroll-seen');
-        delete element.dataset.scrollMotion;
+        delete element.dataset['scrollMotion'];
         element.style.removeProperty('--reveal-order');
       });
     };
