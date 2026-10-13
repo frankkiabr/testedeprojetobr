@@ -204,3 +204,14 @@ h1,h2,h3,p { margin: 0; letter-spacing: 0; } a, button { transition: background 
  .hero h1 { font-size: clamp(2.25rem, 2.5rem, 2.75rem); }
  .section-heading, .contact-section .section-heading, .academy-section .section-heading { font-size: 30px; }
 }
+@media (min-width: 601px) and (max-width: 850px) {
+ .hero-product .dashboard-panels { grid-template-columns: minmax(0, 1fr); }
+ .hero-product .metrics { grid-template-columns: minmax(0, 1fr); }
+ .hero-product .metric { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 8px; align-items: center; }
+ .hero-product .metric-value { margin: 0; white-space: nowrap; }
+ .hero-product .metric-change { grid-column: 1 / -1; }
+ .hero-product .chart { display: block; height: auto; aspect-ratio: 2.5 / 1; }
+ .hero-product .ranking-row > div { white-space: normal; min-width: 0; }
+ .hero-product .ranking-row strong { flex-shrink: 0; }
+ .academy-section .split-section { grid-template-columns: minmax(0, 1fr); }
+}
