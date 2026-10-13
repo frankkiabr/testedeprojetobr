@@ -5,3 +5,5 @@
 - [x] Verify pricing rules, navigation, accessibility and desktop/mobile rendering.
 - [x] Audit and correct mobile hero, header, dashboard, cards and demonstration form without changing desktop design.
 - [x] Verify corrected layouts at requested mobile widths plus tablet and desktop, including keyboard and anchor navigation.
+- [x] Refine buttons, links, active navigation, mobile menu and form feedback without changing layout or static cards.
+- [x] Verify interactions, keyboard access, reduced motion and preserved mobile/tablet/desktop widths.
