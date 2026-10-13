@@ -9,3 +9,5 @@
 - [x] Verify interactions, keyboard access, reduced motion and preserved mobile/tablet/desktop widths.
 - [x] Add once-only scroll entrances and illustrative chart, progress and step animations without changing presentation or values.
 - [x] Verify motion, fast scrolling, reduced motion, fallback visibility and preserved responsive layouts.
+- [ ] Refine commercial tools into an editorial composition and improve Academy image contrast only where needed.
+- [ ] Verify all six products, reading order, motion and mobile/tablet/desktop presentation.

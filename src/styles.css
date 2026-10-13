@@ -16,6 +16,9 @@
  --color-destructive: var(--destructive); --radius-md: 6px; --radius-lg: 8px;
 }
 :root {
+ --tool-image-scrim: linear-gradient(180deg, transparent 15%, var(--navy) 100%);
+ --tool-studio-scrim: linear-gradient(90deg, var(--navy) 0%, color-mix(in oklch, var(--navy) 82%, transparent) 45%, color-mix(in oklch, var(--navy) 15%, transparent) 100%);
+ --academy-image-scrim: linear-gradient(180deg, transparent 0%, color-mix(in oklch, var(--navy) 85%, transparent) 65%, var(--navy) 100%);
  --background: oklch(0.975754 0.00574 264.533); --foreground: oklch(0.211271 0.080903 265.877); --primary: oklch(0.574087 0.232845 264.968); --primary-foreground: oklch(1 0 0);
  --secondary: oklch(0.925764 0.035365 269.916); --muted: oklch(0.956 0.012 264); --muted-foreground: oklch(0.51 0.029 263); --accent: oklch(0.94 0.025 264);
  --card: oklch(1 0 0); --border: oklch(0.9 0.015 264); --inverse: oklch(1 0 0); --inverse-muted: oklch(0.76 0.025 265); --inverse-border: oklch(0.65 0.07 265 / 0.3); --destructive: oklch(0.55 0.2 25);
