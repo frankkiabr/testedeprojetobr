@@ -76,8 +76,6 @@ h1,h2,h3,p { margin: 0; letter-spacing: 0; } a, button { transition: background 
 .plan-card h3 { font-weight: 650; }
 .ranking-row > div { white-space: nowrap; }
 .ranking-row strong { white-space: nowrap; }
-.hero-copy { animation: enter .65s ease-out both; }
-@keyframes enter { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 @media (max-width: 600px) {
  .header-actions > a.brand-button { display: inline-flex; }
  .ranking-row { gap: 4px; font-size: 6px; }
@@ -290,4 +288,44 @@ a, button {
 @media (prefers-reduced-motion: reduce) {
  .brand-button:active:not(:disabled):not([aria-disabled="true"]),
  .brand-button:hover svg, .text-link:hover svg, .mobile-nav[hidden] { transform: none !important; }
+}
+
+/* Once-only scroll motion. Base styles remain fully visible without scripting. */
+@keyframes scroll-rise { from { opacity: 0; transform: translateY(var(--reveal-distance, 20px)); } to { opacity: 1; transform: none; } }
+@keyframes scroll-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes scroll-image { from { opacity: .3; transform: translateY(8px) scale(1.015); } to { opacity: 1; transform: none; } }
+@keyframes scroll-step { from { opacity: 0; transform: translateX(-12px); } to { opacity: 1; transform: none; } }
+@keyframes scroll-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes scroll-bars { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes scroll-line { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+.course-progress .progress-fill { width: 60%; }
+@media (prefers-reduced-motion: no-preference) {
+ .scroll-seen[data-scroll-motion="title"] { animation: scroll-rise 560ms ease-out both; }
+ .scroll-seen[data-scroll-motion="fade"] { animation: scroll-fade 520ms ease-out 100ms both; }
+ .scroll-seen[data-scroll-motion="visual"] { --reveal-distance: 12px; animation: scroll-rise 650ms ease-out both; }
+ .scroll-seen[data-scroll-motion="image"] img { animation: scroll-image 700ms ease-out both; }
+ .scroll-seen[data-scroll-motion="card"] { --reveal-distance: 10px; animation: scroll-rise 520ms ease-out calc(var(--reveal-order, 0) * 80ms) both; }
+ .scroll-seen[data-scroll-motion="step"] { animation: scroll-step 500ms ease-out calc(var(--reveal-order, 0) * 80ms) both; }
+ .scroll-seen[data-scroll-motion="step"]::before { transform-origin: left center; animation: scroll-grow 650ms ease-out calc(var(--reveal-order, 0) * 80ms + 150ms) both; }
+ .scroll-seen[data-scroll-motion="grow"] .progress-fill { transform-origin: left center; animation: scroll-grow 1000ms ease-out 100ms both; }
+ .eco-bars.scroll-seen i { transform-origin: center bottom; animation: scroll-bars 850ms ease-out both; }
+ .eco-bars.scroll-seen i:nth-child(2) { animation-delay: 80ms; }
+ .eco-bars.scroll-seen i:nth-child(3) { animation-delay: 160ms; }
+ .eco-bars.scroll-seen i:nth-child(4) { animation-delay: 240ms; }
+ .eco-bars.scroll-seen i:nth-child(5) { animation-delay: 320ms; }
+ .eco-bars.scroll-seen i:nth-child(6) { animation-delay: 400ms; }
+ .chart.scroll-seen .chart-line { stroke-dasharray: 1; animation: scroll-line 1400ms ease-in-out both; }
+ .chart.scroll-seen .chart-fill { animation: scroll-fade 900ms ease-out 200ms both; }
+ .chart.scroll-seen circle { animation: scroll-fade 250ms ease-out 1150ms both; }
+ .scroll-seen[data-scroll-motion="indicator"] { animation: scroll-fade 700ms ease-out 120ms both; }
+ @media (max-width: 600px) {
+  .scroll-seen[data-scroll-motion="title"], .scroll-seen[data-scroll-motion="visual"], .scroll-seen[data-scroll-motion="card"] { --reveal-distance: 10px; animation-duration: 420ms; }
+  .scroll-seen[data-scroll-motion="fade"] { animation-duration: 380ms; }
+  .scroll-seen[data-scroll-motion="image"] img { animation-duration: 500ms; }
+  .scroll-seen[data-scroll-motion="step"] { --reveal-distance: 10px; animation-name: scroll-rise; animation-duration: 420ms; }
+  .scroll-seen[data-scroll-motion="step"]::before { transform-origin: center top; animation-name: scroll-bars; }
+  .chart.scroll-seen .chart-line { animation-duration: 1000ms; }
+  .chart.scroll-seen circle { animation-delay: 750ms; }
+  .scroll-seen[data-scroll-motion="grow"] .progress-fill { animation-duration: 750ms; }
+ }
 }

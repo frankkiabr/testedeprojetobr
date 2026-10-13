@@ -15,3 +15,4 @@
 - Login and legal routes are presentational only; do not introduce authentication, storage or submission without a new explicit request.
 - Define Frankkia visual styles and semantic color tokens in src/styles.css; reuse the existing Button and Accordion controls.
 - Keep navigation feedback in the shared Header with frame-throttled section tracking; animate the absolute mobile menu through CSS while hidden menus remain inert, so layout and keyboard access stay stable.
+- Keep home scroll motion in a browser-only effect with a shared IntersectionObserver and finite CSS animations; animate only observed elements and leave default content visible so missing scripts or reduced motion never conceal content.
