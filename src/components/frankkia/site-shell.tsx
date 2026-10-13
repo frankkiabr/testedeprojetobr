@@ -25,11 +25,21 @@ export function Header() {
    const current=sections.filter(section=>section.getBoundingClientRect().top<=threshold).at(-1);
    setActive(current?.id ?? '');
   };
-  const observer=new IntersectionObserver(update,{rootMargin:'-90px 0px -65% 0px',threshold:0});
-  sections.forEach(section=>observer.observe(section));
+  let frame: number | undefined;
+  const schedule=()=>{
+   if(frame!==undefined)return;
+   frame=window.requestAnimationFrame(()=>{frame=undefined;update();});
+  };
+  window.addEventListener('scroll',schedule,{passive:true});
+  window.addEventListener('resize',schedule);
   window.addEventListener('hashchange',update);
   update();
-  return()=>{observer.disconnect();window.removeEventListener('hashchange',update);};
+  return()=>{
+   if(frame!==undefined)window.cancelAnimationFrame(frame);
+   window.removeEventListener('scroll',schedule);
+   window.removeEventListener('resize',schedule);
+   window.removeEventListener('hashchange',update);
+  };
  },[pathname]);
  return <header className="site-header"><div className="container header-inner"><Link to="/" aria-label="Frankkia, início"><Wordmark/></Link><nav className="header-nav" aria-label="Navegação principal">{navigation.map(item=><a key={item.id} href={`/#${item.id}`} aria-current={active===item.id?'location':undefined}>{item.label}</a>)}</nav><div className="header-actions"><Link to="/login" aria-current={pathname==='/login'?'page':undefined}>Entrar</Link><DemoButton/><Button ref={menuRef} variant="quiet" size="icon" className="menu-button" aria-label={open?'Fechar menu':'Abrir menu'} aria-expanded={open} aria-controls="mobile-navigation" onClick={()=>setOpen(!open)}>{open?<X/>:<Menu/>}</Button></div></div><nav hidden={!open} inert={!open} aria-hidden={!open} className="container mobile-nav" id="mobile-navigation" aria-label="Navegação móvel">{navigation.map(item=><a key={item.id} href={`/#${item.id}`} aria-current={active===item.id?'location':undefined} onClick={()=>{setOpen(false);menuRef.current?.focus();}}>{item.label}</a>)}<Link to="/login" aria-current={pathname==='/login'?'page':undefined} onClick={()=>setOpen(false)}>Entrar</Link><a href="/#demonstracao" onClick={()=>{setOpen(false);menuRef.current?.focus();}}>Agendar demonstração ↗</a></nav></header>;
 }
