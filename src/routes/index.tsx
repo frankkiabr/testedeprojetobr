@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
+import { useScrollMotion } from '@/components/frankkia/use-scroll-motion';
 import { Header, Footer } from '@/components/frankkia/site-shell';
 import { Hero, Ecosystem, Performance, Academy, Tools, HowItWorks, Benefits, Pricing, Contact, FAQ } from '@/components/frankkia/home-sections';
 export const Route = createFileRoute('/')({
@@ -11,4 +12,4 @@ export const Route = createFileRoute('/')({
  ] }),
  component: Index,
 });
-function Index() { return <><Header/><main><Hero/><Ecosystem/><Performance/><Academy/><Tools/><HowItWorks/><Benefits/><Pricing/><Contact/><FAQ/></main><Footer/></>; }
+function Index() { const motionRef = useScrollMotion(); return <><Header/><main ref={motionRef}><Hero/><Ecosystem/><Performance/><Academy/><Tools/><HowItWorks/><Benefits/><Pricing/><Contact/><FAQ/></main><Footer/></>; }
