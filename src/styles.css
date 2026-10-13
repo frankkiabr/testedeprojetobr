@@ -281,6 +281,7 @@ a, button {
 @media (max-width: 950px) {
  .mobile-nav, .mobile-nav[hidden] {
   display: block;
+  overflow-anchor: none;
   transition: opacity 250ms ease, transform 250ms ease, visibility 250ms;
  }
  .mobile-nav:not([hidden]) { opacity: 1; transform: translateY(0); visibility: visible; }
