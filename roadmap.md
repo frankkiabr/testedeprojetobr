@@ -11,3 +11,5 @@
 - [x] Verify motion, fast scrolling, reduced motion, fallback visibility and preserved responsive layouts.
 - [x] Refine commercial tools into an editorial composition and improve Academy image contrast only where needed.
 - [x] Verify all six products, reading order, motion and mobile/tablet/desktop presentation.
+- [ ] Replace only commercial tools with an explicit asymmetric Bento emphasizing ApresentaImóvel and ImobStudio.
+- [ ] Verify Bento distribution, preserved content and motion, and single-column mobile without overflow.
