@@ -15,3 +15,10 @@
 - [x] Verify Bento distribution, preserved content and motion, and single-column mobile without overflow.
 - [x] Correct audited contrast, touch targets, skip navigation, heading semantics and branded Portuguese 404 without changing the approved design.
 - [x] Verify existing tests, accessibility, keyboard navigation, responsive layouts and preserved motion.
+
+## Phase 2.2 — Private platform foundation
+- [ ] Enable approved authentication/database infrastructure without replacing an existing service.
+- [ ] Create tenant schema, catalog plans, role isolation, atomic capacity and last-administrator protections, invitations and audit records.
+- [ ] Implement email/password login, recovery, session handling, logout and minimal private organization selection/access states.
+- [ ] Prepare individual invitation delivery; report any sender-domain or bootstrap-superadministrator dependency.
+- [ ] Run security and regression tests and verify authenticated multi-organization flows without changing institutional content.
