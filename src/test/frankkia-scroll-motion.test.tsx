@@ -22,9 +22,13 @@ describe('Scroll motion lifecycle', () => {
     });
     const { getByRole } = render(<Fixture />);
     const target = getByRole('heading');
-    notify?.([{ isIntersecting: false, target } as IntersectionObserverEntry], {} as IntersectionObserver);
+    const entry: IntersectionObserverEntry = {
+      isIntersecting: false, target, boundingClientRect: target.getBoundingClientRect(),
+      intersectionRatio: 0, intersectionRect: target.getBoundingClientRect(), rootBounds: null, time: 0,
+    };
+    notify?.([entry], {} as IntersectionObserver);
     expect(unobserve).not.toHaveBeenCalled();
-    notify?.([{ isIntersecting: true, target } as IntersectionObserverEntry], {} as IntersectionObserver);
+    notify?.([{ ...entry, isIntersecting: true, intersectionRatio: 1 }], {} as IntersectionObserver);
     expect(unobserve).toHaveBeenCalledExactlyOnceWith(target);
   });
 
