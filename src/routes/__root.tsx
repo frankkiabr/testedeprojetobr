@@ -15,6 +15,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Header, Footer } from '@/components/frankkia/site-shell';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
+import { SessionProvider } from '@/components/frankkia/auth-session';
 
 function NotFoundComponent() {
   return (
@@ -115,11 +116,13 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <SessionProvider>
       <a href="#conteudo-principal" className="skip-link">Pular para o conteúdo</a>
       <Header/>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <main id="conteudo-principal" tabIndex={-1}><Outlet /></main>
       <Footer/>
+      </SessionProvider>
     </QueryClientProvider>
   );
 }

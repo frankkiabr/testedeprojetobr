@@ -10,13 +10,27 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as TermosRouteImport } from './routes/termos'
+import { Route as AuthenticatedPlataformaRouteImport } from './routes/_authenticated/plataforma'
+import { Route as AuthenticatedSemAcessoRouteImport } from './routes/_authenticated/sem-acesso'
+import { Route as AuthenticatedOrganizacaoOrganizationIdRouteImport } from './routes/_authenticated/organizacao.$organizationId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -34,36 +48,93 @@ const TermosRoute = TermosRouteImport.update({
   path: '/termos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedPlataformaRoute = AuthenticatedPlataformaRouteImport.update({
+  id: '/plataforma',
+  path: '/plataforma',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSemAcessoRoute = AuthenticatedSemAcessoRouteImport.update({
+  id: '/sem-acesso',
+  path: '/sem-acesso',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedOrganizacaoOrganizationIdRoute =
+  AuthenticatedOrganizacaoOrganizationIdRouteImport.update({
+    id: '/organizacao/$organizationId',
+    path: '/organizacao/$organizationId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/login': typeof LoginRoute
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
+  '/plataforma': typeof AuthenticatedPlataformaRoute
+  '/sem-acesso': typeof AuthenticatedSemAcessoRoute
+  '/organizacao/$organizationId': typeof AuthenticatedOrganizacaoOrganizationIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/login': typeof LoginRoute
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
+  '/plataforma': typeof AuthenticatedPlataformaRoute
+  '/sem-acesso': typeof AuthenticatedSemAcessoRoute
+  '/organizacao/$organizationId': typeof AuthenticatedOrganizacaoOrganizationIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
   '/login': typeof LoginRoute
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
+  '/_authenticated/plataforma': typeof AuthenticatedPlataformaRoute
+  '/_authenticated/sem-acesso': typeof AuthenticatedSemAcessoRoute
+  '/_authenticated/organizacao/$organizationId': typeof AuthenticatedOrganizacaoOrganizationIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/privacidade' | '/termos'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/login'
+    | '/privacidade'
+    | '/termos'
+    | '/plataforma'
+    | '/sem-acesso'
+    | '/organizacao/$organizationId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/privacidade' | '/termos'
-  id: '__root__' | '/' | '/login' | '/privacidade' | '/termos'
+  to:
+    | '/'
+    | '/auth'
+    | '/login'
+    | '/privacidade'
+    | '/termos'
+    | '/plataforma'
+    | '/sem-acesso'
+    | '/organizacao/$organizationId'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/login'
+    | '/privacidade'
+    | '/termos'
+    | '/_authenticated/plataforma'
+    | '/_authenticated/sem-acesso'
+    | '/_authenticated/organizacao/$organizationId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
   LoginRoute: typeof LoginRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   TermosRoute: typeof TermosRoute
@@ -76,6 +147,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -99,11 +184,50 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/plataforma': {
+      id: '/_authenticated/plataforma'
+      path: '/plataforma'
+      fullPath: '/plataforma'
+      preLoaderRoute: typeof AuthenticatedPlataformaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/sem-acesso': {
+      id: '/_authenticated/sem-acesso'
+      path: '/sem-acesso'
+      fullPath: '/sem-acesso'
+      preLoaderRoute: typeof AuthenticatedSemAcessoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/organizacao/$organizationId': {
+      id: '/_authenticated/organizacao/$organizationId'
+      path: '/organizacao/$organizationId'
+      fullPath: '/organizacao/$organizationId'
+      preLoaderRoute: typeof AuthenticatedOrganizacaoOrganizationIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedPlataformaRoute: typeof AuthenticatedPlataformaRoute
+  AuthenticatedSemAcessoRoute: typeof AuthenticatedSemAcessoRoute
+  AuthenticatedOrganizacaoOrganizationIdRoute: typeof AuthenticatedOrganizacaoOrganizationIdRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedPlataformaRoute: AuthenticatedPlataformaRoute,
+  AuthenticatedSemAcessoRoute: AuthenticatedSemAcessoRoute,
+  AuthenticatedOrganizacaoOrganizationIdRoute:
+    AuthenticatedOrganizacaoOrganizationIdRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
   LoginRoute: LoginRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   TermosRoute: TermosRoute,
