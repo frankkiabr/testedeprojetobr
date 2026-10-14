@@ -14,7 +14,10 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
+import { Route as RecuperarSenhaRouteImport } from './routes/recuperar-senha'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TermosRouteImport } from './routes/termos'
+import { Route as AuthenticatedAceitarConviteRouteImport } from './routes/_authenticated/aceitar-convite'
 import { Route as AuthenticatedPlataformaRouteImport } from './routes/_authenticated/plataforma'
 import { Route as AuthenticatedSemAcessoRouteImport } from './routes/_authenticated/sem-acesso'
 import { Route as AuthenticatedOrganizacaoOrganizationIdRouteImport } from './routes/_authenticated/organizacao.$organizationId'
@@ -43,11 +46,27 @@ const PrivacidadeRoute = PrivacidadeRouteImport.update({
   path: '/privacidade',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RecuperarSenhaRoute = RecuperarSenhaRouteImport.update({
+  id: '/recuperar-senha',
+  path: '/recuperar-senha',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermosRoute = TermosRouteImport.update({
   id: '/termos',
   path: '/termos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAceitarConviteRoute =
+  AuthenticatedAceitarConviteRouteImport.update({
+    id: '/aceitar-convite',
+    path: '/aceitar-convite',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedPlataformaRoute = AuthenticatedPlataformaRouteImport.update({
   id: '/plataforma',
   path: '/plataforma',
@@ -70,7 +89,10 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/login': typeof LoginRoute
   '/privacidade': typeof PrivacidadeRoute
+  '/recuperar-senha': typeof RecuperarSenhaRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/termos': typeof TermosRoute
+  '/aceitar-convite': typeof AuthenticatedAceitarConviteRoute
   '/plataforma': typeof AuthenticatedPlataformaRoute
   '/sem-acesso': typeof AuthenticatedSemAcessoRoute
   '/organizacao/$organizationId': typeof AuthenticatedOrganizacaoOrganizationIdRoute
@@ -80,7 +102,10 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/login': typeof LoginRoute
   '/privacidade': typeof PrivacidadeRoute
+  '/recuperar-senha': typeof RecuperarSenhaRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/termos': typeof TermosRoute
+  '/aceitar-convite': typeof AuthenticatedAceitarConviteRoute
   '/plataforma': typeof AuthenticatedPlataformaRoute
   '/sem-acesso': typeof AuthenticatedSemAcessoRoute
   '/organizacao/$organizationId': typeof AuthenticatedOrganizacaoOrganizationIdRoute
@@ -92,7 +117,10 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/login': typeof LoginRoute
   '/privacidade': typeof PrivacidadeRoute
+  '/recuperar-senha': typeof RecuperarSenhaRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/termos': typeof TermosRoute
+  '/_authenticated/aceitar-convite': typeof AuthenticatedAceitarConviteRoute
   '/_authenticated/plataforma': typeof AuthenticatedPlataformaRoute
   '/_authenticated/sem-acesso': typeof AuthenticatedSemAcessoRoute
   '/_authenticated/organizacao/$organizationId': typeof AuthenticatedOrganizacaoOrganizationIdRoute
@@ -104,7 +132,10 @@ export interface FileRouteTypes {
     | '/auth'
     | '/login'
     | '/privacidade'
+    | '/recuperar-senha'
+    | '/reset-password'
     | '/termos'
+    | '/aceitar-convite'
     | '/plataforma'
     | '/sem-acesso'
     | '/organizacao/$organizationId'
@@ -114,7 +145,10 @@ export interface FileRouteTypes {
     | '/auth'
     | '/login'
     | '/privacidade'
+    | '/recuperar-senha'
+    | '/reset-password'
     | '/termos'
+    | '/aceitar-convite'
     | '/plataforma'
     | '/sem-acesso'
     | '/organizacao/$organizationId'
@@ -125,7 +159,10 @@ export interface FileRouteTypes {
     | '/auth'
     | '/login'
     | '/privacidade'
+    | '/recuperar-senha'
+    | '/reset-password'
     | '/termos'
+    | '/_authenticated/aceitar-convite'
     | '/_authenticated/plataforma'
     | '/_authenticated/sem-acesso'
     | '/_authenticated/organizacao/$organizationId'
@@ -137,6 +174,8 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   LoginRoute: typeof LoginRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
+  RecuperarSenhaRoute: typeof RecuperarSenhaRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   TermosRoute: typeof TermosRoute
 }
 
@@ -177,12 +216,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivacidadeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/recuperar-senha': {
+      id: '/recuperar-senha'
+      path: '/recuperar-senha'
+      fullPath: '/recuperar-senha'
+      preLoaderRoute: typeof RecuperarSenhaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/termos': {
       id: '/termos'
       path: '/termos'
       fullPath: '/termos'
       preLoaderRoute: typeof TermosRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/aceitar-convite': {
+      id: '/_authenticated/aceitar-convite'
+      path: '/aceitar-convite'
+      fullPath: '/aceitar-convite'
+      preLoaderRoute: typeof AuthenticatedAceitarConviteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/plataforma': {
       id: '/_authenticated/plataforma'
@@ -209,12 +269,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAceitarConviteRoute: typeof AuthenticatedAceitarConviteRoute
   AuthenticatedPlataformaRoute: typeof AuthenticatedPlataformaRoute
   AuthenticatedSemAcessoRoute: typeof AuthenticatedSemAcessoRoute
   AuthenticatedOrganizacaoOrganizationIdRoute: typeof AuthenticatedOrganizacaoOrganizationIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAceitarConviteRoute: AuthenticatedAceitarConviteRoute,
   AuthenticatedPlataformaRoute: AuthenticatedPlataformaRoute,
   AuthenticatedSemAcessoRoute: AuthenticatedSemAcessoRoute,
   AuthenticatedOrganizacaoOrganizationIdRoute:
@@ -230,6 +292,8 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   LoginRoute: LoginRoute,
   PrivacidadeRoute: PrivacidadeRoute,
+  RecuperarSenhaRoute: RecuperarSenhaRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   TermosRoute: TermosRoute,
 }
 export const routeTree = rootRouteImport
