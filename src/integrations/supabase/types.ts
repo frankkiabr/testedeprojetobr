@@ -323,6 +323,7 @@ export type Database = {
       }
       org_admin: { Args: { org: string }; Returns: boolean }
       org_member: { Args: { org: string }; Returns: boolean }
+      platform_identity: { Args: never; Returns: Json }
       reserve_invitation: {
         Args: {
           expires: string
