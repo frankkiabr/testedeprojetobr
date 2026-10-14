@@ -1,0 +1,8 @@
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { useEffect, useState } from 'react';
+import { useServerFn } from '@tanstack/react-start';
+import { acceptInvitation } from '@/lib/platform.functions';
+import { privateHead } from '@/lib/platform';
+import { Button } from '@/components/ui/button';
+export const Route = createFileRoute('/_authenticated/aceitar-convite')({head:()=>privateHead('Aceitar convite','Confirme seu acesso à imobiliária que convidou você.'),component:AcceptInvite});
+function AcceptInvite(){const [token,setToken]=useState('');const [error,setError]=useState('');const [busy,setBusy]=useState(false);const accept=useServerFn(acceptInvitation);const navigate=useNavigate();useEffect(()=>{setToken(new URLSearchParams(window.location.hash.slice(1)).get('token')??'');window.history.replaceState(null,'',window.location.pathname);},[]);async function submit(){setBusy(true);try{const result=await accept({data:{token}});await navigate({to:'/organizacao/$organizationId',params:{organizationId:result.organizationId},replace:true});}catch{setError('Convite inválido, expirado, já utilizado ou destinado a outro e-mail.');setBusy(false);}}return <div className="login-page"><div className="login-panel"><h1>Aceitar convite</h1><p>O convite só pode ser aceito pela conta com o e-mail convidado.</p>{token?<Button variant="frankkia" onClick={submit} disabled={busy}>{busy?'Confirmando…':'Confirmar acesso'}</Button>:<p role="alert">Abra o link original do convite após entrar na sua conta.</p>}{error&&<p role="alert">{error}</p>}</div></div>;}
