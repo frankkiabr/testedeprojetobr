@@ -15,6 +15,13 @@
       "when": 1791943819951,
       "tag": "0001_frankkia_mutation_guards",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792054814690,
+      "tag": "0002_frankkia_membership_not_found_guard",
+      "breakpoints": true
     }
   ]
 }
