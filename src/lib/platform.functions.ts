@@ -33,7 +33,7 @@ export const updateMembership = createServerFn({ method: 'POST' }).middleware([r
  return { updated: true };
 });
 // No sender is configured: no reservation, provisioning or fake delivery occurs.
-export const sendInvitation = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth]).inputValidator(z.object({ organizationId: z.string().uuid(), email: z.email(), roles: z.array(z.enum(['admin','broker'])).min(1) })).handler(async ({ data, context }) => {
+export const sendInvitation = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth]).inputValidator(z.object({ organizationId: z.string().uuid(), email: z.string().email(), roles: z.array(z.enum(['admin','broker'])).min(1) })).handler(async ({ data, context }) => {
  const { data: allowed, error } = await context.supabase.rpc('org_admin', { org: data.organizationId });
  const { data: central } = await context.supabase.rpc('is_superadmin');
  if (error || (!allowed && !central)) throw new Error('Acesso não autorizado.');

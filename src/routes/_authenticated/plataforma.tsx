@@ -6,7 +6,7 @@ import { SignOutButton } from '@/components/frankkia/private-access';
 
 export const Route = createFileRoute('/_authenticated/plataforma')({
  head: () => privateHead('Seu acesso', 'Sua identidade e imobiliárias na Frankkia.'),
- loader: async ({ context }) => { const identity = await context.queryClient.ensureQueryData(identityQuery); if (identity.organizations.length === 1) throw redirect({ to: '/organizacao/$organizationId', params: { organizationId: identity.organizations[0].id }, replace: true }); if (!identity.organizations.length && !identity.superadmin) throw redirect({ to: '/sem-acesso', replace: true }); },
+ loader: async ({ context }) => { const identity = await context.queryClient.ensureQueryData(identityQuery); const first = identity.organizations[0]; if (identity.organizations.length === 1 && first) throw redirect({ to: '/organizacao/$organizationId', params: { organizationId: first.id }, replace: true }); if (!identity.organizations.length && !identity.superadmin) throw redirect({ to: '/sem-acesso', replace: true }); },
  component: Platform,
 });
 function Platform() {
