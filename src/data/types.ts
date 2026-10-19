@@ -318,3 +318,36 @@ export type FechamentoInformado = {
   criadoEm: string;
   status: "pendente" | "registrado" | "descartado";
 };
+
+// ---------- Interessados (pedidos de apresentação) e links de demonstração ----------
+
+export type StatusInteressado = "novo" | "em_contato" | "demo_liberada" | "cliente" | "descartado";
+
+/** Dono de imobiliária que pediu uma apresentação pelo site. Só a equipe Frankkia vê. */
+export type Interessado = {
+  id: string;
+  nome: string;
+  imobiliaria: string;
+  email: string;
+  /** Só números, com 55 (ex.: 5511987654321). */
+  telefone: string;
+  equipe?: string;
+  mensagem?: string;
+  origem: "site" | "login" | "pagina";
+  status: StatusInteressado;
+  observacao?: string;
+  criadoEm: string;
+};
+
+/** Link de demonstração liberado pela Frankkia (abre /demo/<token> até a data de validade). */
+export type AcessoDemo = {
+  id: string;
+  interessadoId?: string;
+  nome: string;
+  token: string;
+  expiraEm: string;
+  revogado: boolean;
+  usos: number;
+  ultimoUso?: string;
+  criadoEm: string;
+};

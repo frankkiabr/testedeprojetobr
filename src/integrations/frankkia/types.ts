@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      acessos_demo: {
+        Row: {
+          criado_em: string
+          criado_por: string | null
+          expira_em: string
+          id: string
+          interessado_id: string | null
+          nome: string
+          revogado: boolean
+          token: string
+          ultimo_uso: string | null
+          usos: number
+        }
+        Insert: {
+          criado_em?: string
+          criado_por?: string | null
+          expira_em: string
+          id?: string
+          interessado_id?: string | null
+          nome: string
+          revogado?: boolean
+          token: string
+          ultimo_uso?: string | null
+          usos?: number
+        }
+        Update: {
+          criado_em?: string
+          criado_por?: string | null
+          expira_em?: string
+          id?: string
+          interessado_id?: string | null
+          nome?: string
+          revogado?: boolean
+          token?: string
+          ultimo_uso?: string | null
+          usos?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "acessos_demo_interessado_id_fkey"
+            columns: ["interessado_id"]
+            isOneToOne: false
+            referencedRelation: "interessados"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       aulas: {
         Row: {
           arquivo_nome: string
@@ -530,6 +577,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      interessados: {
+        Row: {
+          atualizado_em: string | null
+          criado_em: string
+          email: string
+          equipe: string | null
+          id: string
+          imobiliaria: string
+          mensagem: string | null
+          nome: string
+          observacao: string | null
+          origem: string
+          status: string
+          telefone: string
+        }
+        Insert: {
+          atualizado_em?: string | null
+          criado_em?: string
+          email: string
+          equipe?: string | null
+          id?: string
+          imobiliaria: string
+          mensagem?: string | null
+          nome: string
+          observacao?: string | null
+          origem?: string
+          status?: string
+          telefone: string
+        }
+        Update: {
+          atualizado_em?: string | null
+          criado_em?: string
+          email?: string
+          equipe?: string | null
+          id?: string
+          imobiliaria?: string
+          mensagem?: string | null
+          nome?: string
+          observacao?: string | null
+          origem?: string
+          status?: string
+          telefone?: string
+        }
+        Relationships: []
       }
       leads: {
         Row: {
@@ -1193,6 +1285,7 @@ export type Database = {
         Returns: string
       }
       vagas_em_uso: { Args: { p_imob: string }; Returns: number }
+      validar_demo: { Args: { p_token: string }; Returns: string }
       ver_convite: {
         Args: { p_token: string }
         Returns: {

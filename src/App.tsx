@@ -19,6 +19,9 @@ import AgendaPage from "@/app/pages/AgendaPage";
 import AgendaAdmin from "@/app/admin/AgendaAdmin";
 import Convite from "@/pages/Convite";
 import RedefinirSenha from "@/pages/RedefinirSenha";
+import Apresentacao from "@/pages/Apresentacao";
+import Demo from "@/pages/Demo";
+import Interessados from "@/app/admin/Interessados";
 import { Guard } from "@/app/Guard";
 import Checkout from "@/pages/Checkout";
 import Upgrades from "@/app/admin/Upgrades";
@@ -46,6 +49,8 @@ export default function App() {
               <Route path="/" element={<Landing />} />
               <Route path="/login" element={<Login />} />
               <Route path="/redefinir-senha" element={<RedefinirSenha />} />
+              <Route path="/apresentacao" element={<Apresentacao />} />
+              <Route path="/demo/:token" element={<Demo />} />
               <Route path="/convite/:id" element={<Convite />} />
               <Route path="/checkout/:id" element={<Checkout />} />
 
@@ -106,6 +111,7 @@ export default function App() {
                 <Route index element={<AdminOverview />} />
                 <Route path="agenda" element={<AgendaAdmin />} />
                 <Route path="imobiliarias" element={<Imobiliarias />} />
+                <Route path="interessados" element={<Interessados />} />
                 <Route path="upgrades" element={<Upgrades />} />
                 <Route path="chamados" element={<Chamados />} />
                 <Route path="erros" element={<Erros />} />

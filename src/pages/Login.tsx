@@ -1,14 +1,13 @@
 import { useState } from "react";
-import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Link, Navigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, Eye, EyeOff, Info } from "lucide-react";
+import { ArrowLeft, ArrowRight, CalendarCheck, Eye, EyeOff } from "lucide-react";
 import { site } from "@/content";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { Logo, Scaled } from "@/components/ui";
 import { Dashboard, DASHBOARD_SIZE } from "@/components/mockups/Dashboard";
 import { inicioDe, useSession } from "@/app/session";
 import { mensagemErro, setLembrar, supabase } from "@/integrations/frankkia/client";
-import type { Role } from "@/data/types";
 
 const field =
   "h-12 w-full rounded-2xl border border-line-strong bg-bg px-4 text-[0.9375rem] outline-hidden transition-colors placeholder:text-subtle focus:border-accent focus:ring-4 focus:ring-accent/10";
@@ -16,8 +15,7 @@ const field =
 /** Tela de login: e-mail e senha no Supabase. O papel (Frankkia, administrador, corretor) vem do banco. */
 export default function Login() {
   const [show, setShow] = useState(false);
-  const { setRole, modo, role, carregando } = useSession();
-  const navigate = useNavigate();
+  const { modo, role, carregando } = useSession();
   const loc = useLocation();
   const destino = (loc.state as { de?: string } | null)?.de;
   const [email, setEmail] = useState("");
@@ -29,11 +27,6 @@ export default function Login() {
 
   // Já entrou de verdade: vai direto para a sua área
   if (modo === "real" && !carregando) return <Navigate to={destino ?? inicioDe(role)} replace />;
-
-  const enter = (r: Role) => {
-    setRole(r);
-    navigate(inicioDe(r));
-  };
 
   const entrar = async () => {
     setErro(null);
@@ -130,29 +123,19 @@ export default function Login() {
             </button>
           </form>
 
-          <div className="mt-8 rounded-2xl border border-dashed border-line-strong bg-canvas/60 p-4">
-            <p className="flex items-start gap-2 text-sm text-muted">
-              <Info className="mt-0.5 size-4 shrink-0 text-accent" />
-              Quer só conhecer? Explore a demonstração com dados de exemplo.
-            </p>
-            <div className="mt-3 grid grid-cols-3 gap-2">
-              {(
-                [
-                  ["admin", "Administrador"],
-                  ["corretor", "Corretor"],
-                  ["frankkia", "Frankkia"],
-                ] as [Role, string][]
-              ).map(([r, label]) => (
-                <button
-                  key={r}
-                  onClick={() => enter(r)}
-                  className="rounded-xl border border-line-strong bg-bg px-2 py-2 text-xs font-semibold transition-colors hover:border-ink hover:bg-ink hover:text-bg"
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
+          <Link
+            to="/apresentacao"
+            className="group/cta mt-8 flex items-center gap-4 rounded-2xl border border-dashed border-line-strong bg-canvas/60 p-4 transition-colors hover:border-accent/50 hover:bg-accent-soft/40"
+          >
+            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-accent-soft text-accent">
+              <CalendarCheck className="size-5" />
+            </span>
+            <span className="flex-1 text-sm">
+              <span className="block font-semibold text-ink">Quer conhecer a Frankkia?</span>
+              <span className="text-muted">Agende uma apresentação sem compromisso com a nossa equipe.</span>
+            </span>
+            <ArrowRight className="size-4 shrink-0 text-accent transition-transform group-hover/cta:translate-x-0.5" />
+          </Link>
         </motion.div>
 
         <p className="text-center text-xs text-subtle">

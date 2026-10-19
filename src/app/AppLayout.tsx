@@ -117,7 +117,6 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 const ROLES: { value: Role; label: string }[] = [
-  { value: "frankkia", label: "Frankkia" },
   { value: "admin", label: "Administrador" },
   { value: "corretor", label: "Corretor" },
 ];

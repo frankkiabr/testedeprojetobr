@@ -7,7 +7,7 @@
 import { site } from "@/content";
 import { chamados, imobiliaria } from "./demo";
 import { monthKey, vagasUsadas } from "./queries";
-import type { Chamado, Cliente, ClienteStatus, ErroSistema, PedidoUpgrade, PlanoNome, Usuario } from "./types";
+import type { AcessoDemo, Chamado, Cliente, ClienteStatus, ErroSistema, Interessado, PedidoUpgrade, PlanoNome, StatusInteressado, Usuario } from "./types";
 
 export const PLANOS: Record<PlanoNome, { limite: number; preco: number }> = {
   "Equipe 15": { limite: 15, preco: 999 },
@@ -266,3 +266,27 @@ export function statusDe(c: Pick<Cliente, "status" | "testeAte">) {
   if (c.status === "teste" && c.testeAte && new Date(c.testeAte).getTime() < Date.now()) return { label: "Teste encerrado", tone: "danger" as const };
   return STATUS_CLIENTE[c.status];
 }
+
+// ---------- Interessados e links de demonstração ----------
+
+export const STATUS_INTERESSADO: Record<StatusInteressado, { label: string; tone: "verified" | "accent" | "warn" | "neutral" | "danger" }> = {
+  novo: { label: "Novo", tone: "warn" },
+  em_contato: { label: "Em contato", tone: "accent" },
+  demo_liberada: { label: "Demonstração liberada", tone: "accent" },
+  cliente: { label: "Virou cliente", tone: "verified" },
+  descartado: { label: "Descartado", tone: "neutral" },
+};
+
+/** Exemplos para a demonstração (no login real da Frankkia, vêm do banco). */
+export const interessados: Interessado[] = [
+  { id: "in-1", nome: "Marcos Vieira", imobiliaria: "Vieira Imóveis", email: "marcos@vieiraimoveis.com.br", telefone: "5511991112233", equipe: "Até 15 corretores", mensagem: "Prefiro conversar depois das 14h.", origem: "pagina", status: "novo", criadoEm: daysAgo(0.1) },
+  { id: "in-2", nome: "Luciana Prado", imobiliaria: "Prado & Associados", email: "luciana@pradoassociados.com.br", telefone: "5521998887766", equipe: "Até 30 corretores", origem: "site", status: "em_contato", criadoEm: daysAgo(1.4) },
+  { id: "in-3", nome: "Fábio Ramos", imobiliaria: "Ramos Negócios Imobiliários", email: "fabio@ramosimoveis.com.br", telefone: "5531997776655", equipe: "Até 60 corretores", origem: "site", status: "demo_liberada", criadoEm: daysAgo(4) },
+];
+
+export const acessosDemo: AcessoDemo[] = [
+  { id: "ad-1", interessadoId: "in-3", nome: "Fábio Ramos · Ramos Negócios Imobiliários", token: "demo-exemplo-ramos", expiraEm: new Date(Date.now() + 3 * DAY).toISOString(), revogado: false, usos: 2, ultimoUso: daysAgo(1), criadoEm: daysAgo(4) },
+];
+
+export const linkDemo = (token: string) => `${window.location.origin}/demo/${token}`;
+export const demoAtiva = (a: AcessoDemo) => !a.revogado && new Date(a.expiraEm).getTime() > Date.now();

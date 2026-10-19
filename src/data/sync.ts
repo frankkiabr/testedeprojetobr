@@ -10,6 +10,8 @@ import { frankkiaUser } from "./platform";
 import { ctx, OUTROS_PARTICIPANTES, type LinhaMercado, type LinhaRanking, type OfertaMercado } from "./contexto";
 import { lastMonths } from "./queries";
 import type {
+  AcessoDemo,
+  Interessado,
   Captacao,
   CategoriaImovel,
   Chamado,
@@ -71,6 +73,8 @@ const ORIGINAL = structuredClone({
   pedidosUpgrade: P.pedidosUpgrade,
   chamadosOutras: P.chamadosOutras,
   errosSistema: P.errosSistema,
+  interessados: P.interessados,
+  acessosDemo: P.acessosDemo,
 });
 
 function trocarLista<T>(alvo: T[], novos: T[]) {
@@ -106,6 +110,8 @@ function aplicarDemo() {
   trocarLista(P.pedidosUpgrade, o.pedidosUpgrade);
   trocarLista(P.chamadosOutras, o.chamadosOutras);
   trocarLista(P.errosSistema, o.errosSistema);
+  trocarLista(P.interessados, o.interessados);
+  trocarLista(P.acessosDemo, o.acessosDemo);
   Object.assign(ctx, { modo: "demo", imobId: "", userId: "", papel: null, mercado: null, ranking: null });
 }
 
@@ -241,7 +247,7 @@ export async function carregarReal(conta: ContaDados) {
 
   // Equipe Frankkia: contas, planos, volumes de uso, pedidos, chamados e erros (nunca o conteúdo das imobiliárias).
   if (papel === "frankkia" || !conta.imobId) {
-    const [agenda, painel, pedidos, chamados, erros] = await Promise.all([
+    const [agenda, painel, pedidos, chamados, erros, interessados, acessos] = await Promise.all([
       todos<Row<"compromissos">>((a, b) =>
         supabase.from("compromissos").select("*").is("imobiliaria_id", null).eq("dono_id", conta.usuarioId).order("inicio").range(a, b),
       ),
@@ -249,6 +255,8 @@ export async function carregarReal(conta: ContaDados) {
       supabase.from("pedidos_upgrade").select("*").order("criado_em", { ascending: false }),
       todos<Row<"chamados">>((a, b) => supabase.from("chamados").select("*").order("criado_em", { ascending: false }).range(a, b)),
       supabase.from("erros_sistema").select("*").order("ultima_vez", { ascending: false }),
+      todos<Row<"interessados">>((a, b) => supabase.from("interessados").select("*").order("criado_em", { ascending: false }).range(a, b)),
+      supabase.from("acessos_demo").select("*").order("criado_em", { ascending: false }),
     ]);
     if (painel.error) throw painel.error;
     const autores = [...new Set(chamados.map((c) => c.autor_id))];
@@ -298,6 +306,40 @@ export async function carregarReal(conta: ContaDados) {
           ultimaVez: e.ultima_vez,
           status: e.status as ErroSistema["status"],
           origem: "capturado",
+        }),
+      ),
+    );
+    trocarLista(
+      P.interessados,
+      interessados.map(
+        (i): Interessado => ({
+          id: i.id,
+          nome: i.nome,
+          imobiliaria: i.imobiliaria,
+          email: i.email,
+          telefone: i.telefone,
+          equipe: u(i.equipe),
+          mensagem: u(i.mensagem),
+          origem: i.origem as Interessado["origem"],
+          status: i.status as Interessado["status"],
+          observacao: u(i.observacao),
+          criadoEm: i.criado_em,
+        }),
+      ),
+    );
+    trocarLista(
+      P.acessosDemo,
+      (acessos.data ?? []).map(
+        (a): AcessoDemo => ({
+          id: a.id,
+          interessadoId: u(a.interessado_id),
+          nome: a.nome,
+          token: a.token,
+          expiraEm: a.expira_em,
+          revogado: a.revogado,
+          usos: a.usos,
+          ultimoUso: u(a.ultimo_uso),
+          criadoEm: a.criado_em,
         }),
       ),
     );

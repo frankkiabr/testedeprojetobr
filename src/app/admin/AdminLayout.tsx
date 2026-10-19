@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link, NavLink, useLocation, useNavigate, useOutlet } from "react-router-dom";
-import { AlertOctagon, Building2, CalendarDays, ExternalLink, LayoutGrid, LifeBuoy, LogOut, Menu, Rocket, X } from "lucide-react";
-import { errosSistema, pedidosUpgrade, todosChamados } from "@/data/platform";
+import { AlertOctagon, Building2, CalendarDays, ExternalLink, Inbox, LayoutGrid, LifeBuoy, LogOut, Menu, Rocket, X } from "lucide-react";
+import { errosSistema, interessados, pedidosUpgrade, todosChamados } from "@/data/platform";
 import { useStore } from "@/data/store";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { Logo } from "@/components/ui";
@@ -18,9 +18,11 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const abertos = todosChamados().filter((c) => c.status !== "resolvido").length;
   const novos = errosSistema.filter((e) => e.status === "novo").length;
   const aLiberar = pedidosUpgrade.filter((p) => p.pagamento === "confirmado" && !p.liberado).length;
+  const novosInteressados = interessados.filter((i) => i.status === "novo").length;
   const menu = [
     { to: "/admin", label: "Visão geral", icon: LayoutGrid, end: true },
     { to: "/admin/agenda", label: "Agenda", icon: CalendarDays },
+    { to: "/admin/interessados", label: "Interessados", icon: Inbox, count: novosInteressados },
     { to: "/admin/imobiliarias", label: "Imobiliárias", icon: Building2 },
     { to: "/admin/upgrades", label: "Upgrades", icon: Rocket, count: aLiberar },
     { to: "/admin/chamados", label: "Chamados", icon: LifeBuoy, count: abertos },

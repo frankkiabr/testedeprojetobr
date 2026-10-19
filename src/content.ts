@@ -151,7 +151,7 @@ export const faq = {
     },
     {
       q: "Como solicitar uma demonstração?",
-      a: "A seção de demonstração apresenta os campos previstos para solicitar contato. Nesta etapa, o formulário é apenas visual: não envia nem armazena dados. O canal de solicitação será habilitado quando estiver disponível comercialmente.",
+      a: "Preencha o formulário de demonstração com seu nome, imobiliária, e-mail e WhatsApp. A equipe Frankkia fala com você pelo WhatsApp em até 24 horas para agendar uma apresentação sem compromisso.",
     },
   ],
 };
@@ -160,8 +160,8 @@ export const demo = {
   eyebrow: "Demonstração",
   title: "Solicite uma demonstração.",
   text: "Conheça a Frankkia por dentro e veja como ela pode se conectar à operação da sua imobiliária.",
-  notice: "Formulário demonstrativo: nesta versão, nenhum dado é enviado ou armazenado.",
-  submitted: "Obrigado! Este formulário é demonstrativo, então nenhum dado foi enviado.",
+  notice: "Respondemos pelo WhatsApp em até 24 horas. Sem compromisso.",
+  submitted: "Recebemos seu pedido! Vamos falar com você pelo WhatsApp em até 24 horas.",
   fields: { name: "Seu nome", company: "Imobiliária", email: "E-mail", phone: "Telefone" },
   teamSize: ["Até 15 corretores", "Até 30 corretores", "Até 60 corretores", "Mais de 60 corretores"],
   submit: "Solicitar demonstração",

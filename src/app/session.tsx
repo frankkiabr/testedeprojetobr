@@ -45,14 +45,34 @@ type Ctx = {
   conta: Conta | null;
   sair: () => Promise<void>;
   recarregar: () => Promise<void>;
+  /** Abre a demonstração depois que o link /demo/<código> foi conferido no banco. */
+  entrarNaDemo: (ate: string) => void;
 };
 const SessionContext = createContext<Ctx | null>(null);
 const KEY = "frankkia-demo-role";
+/** Até quando vale a demonstração liberada pela Frankkia (link /demo/<código>). */
+const KEY_ATE = "frankkia-demo-ate";
+
+/** A demonstração só abre com um link liberado pela Frankkia e dentro do prazo. */
+export function demoLiberadaAte(): number | null {
+  try {
+    const ate = Number(localStorage.getItem(KEY_ATE));
+    return ate > Date.now() ? ate : null;
+  } catch {
+    return null;
+  }
+}
 
 function readDemoRole(): Role | null {
   try {
+    if (!demoLiberadaAte()) {
+      localStorage.removeItem(KEY);
+      return null;
+    }
     const r = localStorage.getItem(KEY);
-    if (r === "admin" || r === "corretor" || r === "frankkia") return r;
+    // O painel do criador (Frankkia) não faz parte da demonstração
+    if (r === "corretor") return r;
+    return "admin";
   } catch {
     /* armazenamento indisponível */
   }
@@ -61,7 +81,10 @@ function readDemoRole(): Role | null {
 function writeDemoRole(r: Role | null) {
   try {
     if (r) localStorage.setItem(KEY, r);
-    else localStorage.removeItem(KEY);
+    else {
+      localStorage.removeItem(KEY);
+      localStorage.removeItem(KEY_ATE);
+    }
   } catch {
     /* armazenamento indisponível */
   }
@@ -176,8 +199,20 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const setRole = (r: Role) => {
     if (authUser) return; // no login real o papel não muda pelo seletor
+    if (!demoLiberadaAte() || r === "frankkia") return; // demonstração só com link liberado, sem o painel do criador
     setDemoRole(r);
     writeDemoRole(r);
+  };
+
+  /** Link de demonstração conferido no banco: abre a demonstração até a data indicada. */
+  const entrarNaDemo = (ate: string) => {
+    try {
+      localStorage.setItem(KEY_ATE, String(new Date(ate).getTime()));
+    } catch {
+      /* armazenamento indisponível */
+    }
+    setDemoRole("admin");
+    writeDemoRole("admin");
   };
 
   const sair = async () => {
@@ -263,6 +298,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         conta,
         sair,
         recarregar: () => carregar(authUser),
+        entrarNaDemo,
       }}
     >
       {children}

@@ -60,6 +60,33 @@ export const supabase = createClient<Database>(url, key, {
   auth: { storage, persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
 });
 
+export type NovoInteressado = {
+  nome: string;
+  imobiliaria: string;
+  email: string;
+  telefone: string;
+  equipe?: string;
+  mensagem?: string;
+  origem: "site" | "login" | "pagina";
+};
+
+/** Pedido de apresentação (qualquer visitante pode enviar; só a equipe Frankkia lê). Devolve o erro, ou null. */
+export async function enviarInteressado(d: NovoInteressado): Promise<string | null> {
+  const { error } = await supabase.from("interessados").insert({
+    nome: d.nome.trim(),
+    imobiliaria: d.imobiliaria.trim(),
+    email: d.email.trim().toLowerCase(),
+    telefone: d.telefone.replace(/\D/g, ""),
+    equipe: d.equipe || null,
+    mensagem: d.mensagem?.trim() || null,
+    origem: d.origem,
+  });
+  if (!error) return null;
+  if (/MUITOS_ENVIOS/.test(error.message)) return "Recebemos vários pedidos seguidos. Aguarde um pouco e tente de novo.";
+  if (/check constraint/i.test(error.message)) return "Confira os dados: nome, imobiliária, e-mail e WhatsApp com DDD.";
+  return mensagemErro(error);
+}
+
 /** Envia o convite por e-mail (Resend). Se o e-mail ainda não estiver configurado, devolve enviado: false. */
 export async function enviarConvitePorEmail(token: string): Promise<boolean> {
   const { data, error } = await supabase.functions.invoke("enviar-convite", { body: { token, origem: window.location.origin } });

@@ -29,8 +29,10 @@ import {
 import { captacaoTitulo, captacaoById, vagasLivres } from "./queries";
 import { enviarConvitePorEmail } from "@/integrations/frankkia/client";
 import { aoMudar, compromissoParaBanco, configurarGravacao, contexto as ctxDados, ehReal, enfileirar, falhou, gravar, leadParaBanco, novoId, supabase } from "./sync";
-import { clientes, errosSistema, nomeDaTela, novaReferencia, pedidoAberto, pedidoById, pedidosUpgrade, PLANOS, todosChamados } from "./platform";
+import { acessosDemo, clientes, errosSistema, interessados, linkDemo, nomeDaTela, novaReferencia, pedidoAberto, pedidoById, pedidosUpgrade, PLANOS, todosChamados } from "./platform";
 import type {
+  AcessoDemo,
+  Interessado,
   ArquivoMarca,
   Aula,
   Captacao,
@@ -817,6 +819,66 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       gravar(() => supabase.from("erros_sistema").update({ status }).eq("id", id));
       bump();
       if (status === "corrigido") toast("Erro marcado como corrigido para todas as imobiliárias.");
+    },
+
+    // ---------- Interessados e demonstração (painel Frankkia) ----------
+
+    setInteressado(id: string, patch: Partial<Pick<Interessado, "status" | "observacao">>, aviso?: string) {
+      const i = interessados.find((x) => x.id === id);
+      if (!i) return;
+      Object.assign(i, patch);
+      gravar(() =>
+        supabase
+          .from("interessados")
+          .update({ status: i.status, observacao: i.observacao?.trim() || null, atualizado_em: new Date().toISOString() })
+          .eq("id", id),
+      );
+      bump();
+      if (aviso) toast(aviso);
+    },
+
+    /** Cria um link de demonstração com prazo (dias). Devolve o link para enviar ao interessado. */
+    liberarDemo(nome: string, dias: number, interessadoId?: string) {
+      const bytes = crypto.getRandomValues(new Uint8Array(18));
+      const token = [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
+      const a: AcessoDemo = {
+        id: uid("ad"),
+        interessadoId,
+        nome: nome.trim(),
+        token,
+        expiraEm: new Date(Date.now() + dias * 864e5).toISOString(),
+        revogado: false,
+        usos: 0,
+        criadoEm: new Date().toISOString(),
+      };
+      acessosDemo.unshift(a);
+      gravar(() =>
+        supabase.from("acessos_demo").insert({
+          id: a.id,
+          interessado_id: interessadoId ?? null,
+          nome: a.nome,
+          token,
+          expira_em: a.expiraEm,
+          criado_por: ctxDados.userId || null,
+        }),
+      );
+      const i = interessadoId ? interessados.find((x) => x.id === interessadoId) : undefined;
+      if (i && (i.status === "novo" || i.status === "em_contato")) {
+        i.status = "demo_liberada";
+        gravar(() => supabase.from("interessados").update({ status: "demo_liberada", atualizado_em: new Date().toISOString() }).eq("id", i.id));
+      }
+      bump();
+      toast(`Demonstração liberada por ${dias} dias.`);
+      return linkDemo(token);
+    },
+
+    revogarDemo(id: string) {
+      const a = acessosDemo.find((x) => x.id === id);
+      if (!a) return;
+      a.revogado = true;
+      gravar(() => supabase.from("acessos_demo").update({ revogado: true }).eq("id", id));
+      bump();
+      toast("Link de demonstração desativado.");
     },
 
     /** Registra um erro real que aconteceu no navegador (agrupa mensagens repetidas). */
