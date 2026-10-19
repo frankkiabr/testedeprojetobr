@@ -1201,6 +1201,10 @@ export type Database = {
           valor: number
         }[]
       }
+      excluir_imobiliaria: {
+        Args: { p_confirmacao: string; p_imob: string }
+        Returns: undefined
+      }
       imob_liberada: {
         Args: { p_status: string; p_teste_ate: string }
         Returns: boolean

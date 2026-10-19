@@ -768,6 +768,21 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       toast(status === "suspensa" ? `Acesso de ${c.nome} suspenso.` : `${c.nome} reativada.`);
     },
 
+    /** Frankkia: apaga a imobiliária e tudo dela (sem volta). Devolve o erro, ou null. */
+    async excluirImobiliaria(id: string, confirmacao: string): Promise<string | null> {
+      const c = clientes.find((x) => x.id === id);
+      if (!c) return null;
+      if (ehReal()) {
+        const { error } = await supabase.rpc("excluir_imobiliaria", { p_imob: id, p_confirmacao: confirmacao });
+        if (error) return /CONFIRMACAO_INVALIDA/.test(error.message) ? "O nome digitado não confere." : "Não foi possível excluir. Tente de novo.";
+      }
+      clientes.splice(clientes.indexOf(c), 1);
+      for (let k = pedidosUpgrade.length - 1; k >= 0; k--) if (pedidosUpgrade[k].imobiliariaId === id) pedidosUpgrade.splice(k, 1);
+      bump();
+      toast(`${c.nome} foi excluída.`);
+      return null;
+    },
+
     resendAcesso(id: string) {
       const c = clientes.find((x) => x.id === id);
       if (!c) return;

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, CalendarCheck, CheckCircle2, ShieldCheck } from "lucide-react";
 import { site } from "@/content";
@@ -17,7 +17,10 @@ const field =
  * Os pedidos aparecem no painel Frankkia, em "Interessados".
  */
 export default function Apresentacao() {
-  const form = useFormInteressado("pagina");
+  // Vindo de um plano da página inicial: a quantidade de corretores já chega escolhida
+  const [params] = useSearchParams();
+  const equipe = params.get("equipe") ?? "";
+  const form = useFormInteressado("pagina", { equipe: TAMANHOS_EQUIPE.includes(equipe) ? equipe : "" });
 
   return (
     <div className="grid min-h-screen bg-bg lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">

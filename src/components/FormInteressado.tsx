@@ -6,8 +6,8 @@ export type CamposInteressado = { nome: string; imobiliaria: string; email: stri
 const vazio: CamposInteressado = { nome: "", imobiliaria: "", email: "", telefone: "", equipe: "", mensagem: "", site: "" };
 
 /** Estado e envio do pedido de apresentação (usado no site e na página de apresentação). */
-export function useFormInteressado(origem: NovoInteressado["origem"]) {
-  const [f, setF] = useState<CamposInteressado>(vazio);
+export function useFormInteressado(origem: NovoInteressado["origem"], inicial: Partial<CamposInteressado> = {}) {
+  const [f, setF] = useState<CamposInteressado>({ ...vazio, ...inicial });
   const [enviando, setEnviando] = useState(false);
   const [enviado, setEnviado] = useState(false);
   const [erro, setErro] = useState<string | null>(null);

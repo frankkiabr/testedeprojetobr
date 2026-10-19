@@ -1,18 +1,13 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowRight, Check, Copy, Info, LogIn, Mail } from "lucide-react";
-import { demo, nav, site } from "@/content";
+import { Check, Copy, LogIn, Mail } from "lucide-react";
+import { nav, site } from "@/content";
 import { EASE_OUT_EXPO, scrollToId } from "@/lib/scroll";
-import { CampoArmadilha, useFormInteressado } from "./FormInteressado";
-
-const field =
-  "h-12 w-full rounded-2xl border border-white/10 bg-white/5 px-4 text-[0.9375rem] text-bg outline-hidden transition-colors placeholder:text-bg/40 focus:border-accent focus:bg-white/10";
+import { Logo } from "./ui";
 
 export function Footer({ onSearch }: { onSearch: () => void }) {
   const [copied, setCopied] = useState(false);
-  const form = useFormInteressado("site");
-  const sent = form.enviado;
 
   const copyEmail = async () => {
     try {
@@ -38,43 +33,9 @@ export function Footer({ onSearch }: { onSearch: () => void }) {
               viewport={{ once: true }}
               transition={{ duration: 0.9, ease: EASE_OUT_EXPO }}
             >
-              <p className="type-eyebrow text-bg/60">{demo.eyebrow}</p>
-              <h2 className="type-title mt-3 max-w-[32rem]">{demo.title}</h2>
-              <p className="mt-4 max-w-[30rem] text-bg/60 sm:text-lg">{demo.text}</p>
-
-              <form onSubmit={form.enviar} className="relative mt-8 grid gap-3 sm:grid-cols-2">
-                <CampoArmadilha {...form.campo("site")} />
-                <input className={field} placeholder={demo.fields.name} autoComplete="name" {...form.campo("nome")} />
-                <input className={field} placeholder={demo.fields.company} autoComplete="organization" {...form.campo("imobiliaria")} />
-                <input className={field} placeholder={demo.fields.email} type="email" autoComplete="email" {...form.campo("email")} />
-                <input className={field} placeholder={demo.fields.phone} type="tel" autoComplete="tel" {...form.campo("telefone")} />
-                <select className={`${field} sm:col-span-2 [&>option]:text-ink`} {...form.campo("equipe")}>
-                  <option value="" disabled>
-                    Quantidade de corretores
-                  </option>
-                  {demo.teamSize.map((s) => (
-                    <option key={s}>{s}</option>
-                  ))}
-                </select>
-                <button
-                  type="submit"
-                  disabled={form.enviando}
-                  className="group/button mt-2 inline-flex h-12 items-center justify-center gap-2 rounded-full bg-bg px-6 text-[0.9375rem] font-semibold text-ink transition-transform active:scale-[0.98] disabled:opacity-60 sm:col-span-2 sm:w-fit"
-                >
-                  {form.enviando ? "Enviando..." : demo.submit}
-                  <ArrowRight className="size-4 transition-transform group-hover/button:translate-x-0.5" />
-                </button>
-              </form>
-              <motion.p
-                key={sent ? "sent" : form.erro ? "erro" : "notice"}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`mt-4 flex items-start gap-2 text-sm ${sent ? "text-bg" : form.erro ? "text-rose-300" : "text-bg/50"}`}
-                aria-live="polite"
-              >
-                {sent ? <Check className="mt-0.5 size-4 shrink-0 text-verified" /> : <Info className="mt-0.5 size-4 shrink-0" />}
-                {sent ? demo.submitted : (form.erro ?? demo.notice)}
-              </motion.p>
+              <Logo className="text-[2.25rem] text-bg" />
+              <p className="type-title mt-6 max-w-[30rem]">{site.slogan}</p>
+              <p className="mt-4 max-w-[30rem] text-bg/60 sm:text-lg">{site.description}</p>
             </motion.div>
 
             <nav className="grid grid-cols-2 gap-8 text-[0.9375rem] lg:pt-2">

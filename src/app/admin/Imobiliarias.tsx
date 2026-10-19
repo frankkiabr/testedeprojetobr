@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Building2, ChevronRight, Lock, Mail, Pause, Play, Plus, RotateCcw, ShieldCheck } from "lucide-react";
+import { Building2, ChevronRight, Lock, Mail, Pause, Play, Plus, RotateCcw, ShieldCheck, Trash2 } from "lucide-react";
 import { clienteById, diasSemAcesso, listaClientes, mrrDe, PLANOS, STATUS_CLIENTE, statusDe } from "@/data/platform";
 import { useStore } from "@/data/store";
 import type { ClienteStatus, PlanoNome } from "@/data/types";
@@ -36,6 +36,10 @@ function ClienteDrawer({ id, onClose }: { id: string | null; onClose: () => void
   const c = id ? clienteById(id) : undefined;
   const [plano, setPlano] = useState<PlanoNome>("Equipe 15");
   const [confirm, setConfirm] = useState(false);
+  const [excluir, setExcluir] = useState(false);
+  const [nomeConfirma, setNomeConfirma] = useState("");
+  const [erroExcluir, setErroExcluir] = useState<string | null>(null);
+  const [excluindo, setExcluindo] = useState(false);
   useEffect(() => {
     if (c) setPlano(c.plano);
   }, [c?.id, c?.plano]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -71,17 +75,30 @@ function ClienteDrawer({ id, onClose }: { id: string | null; onClose: () => void
           </span>
         }
         footer={
-          <button onClick={() => setConfirm(true)} className={suspensa ? btn.accent : `${btn.outline} text-rose-600`}>
-            {suspensa ? (
-              <>
-                <Play className="size-4" /> Reativar acesso
-              </>
-            ) : (
-              <>
-                <Pause className="size-4" /> Suspender acesso
-              </>
-            )}
-          </button>
+          <>
+            <button
+              onClick={() => {
+                setNomeConfirma("");
+                setErroExcluir(null);
+                setExcluir(true);
+              }}
+              title="Apaga a imobiliária e todos os dados dela"
+              className={`${btn.outline} mr-auto text-rose-600`}
+            >
+              <Trash2 className="size-4" /> Excluir
+            </button>
+            <button onClick={() => setConfirm(true)} className={suspensa ? btn.accent : `${btn.outline} text-rose-600`}>
+              {suspensa ? (
+                <>
+                  <Play className="size-4" /> Reativar acesso
+                </>
+              ) : (
+                <>
+                  <Pause className="size-4" /> Suspender acesso
+                </>
+              )}
+            </button>
+          </>
         }
       >
         <div className="space-y-7">
@@ -216,6 +233,47 @@ function ClienteDrawer({ id, onClose }: { id: string | null; onClose: () => void
             </>
           )}
         </p>
+      </Modal>
+
+      <Modal
+        open={excluir}
+        onClose={() => setExcluir(false)}
+        title="Excluir imobiliária?"
+        footer={
+          <>
+            <button onClick={() => setExcluir(false)} className={btn.outline}>
+              Cancelar
+            </button>
+            <button
+              disabled={nomeConfirma.trim().toLowerCase() !== c.nome.trim().toLowerCase() || excluindo}
+              onClick={async () => {
+                setExcluindo(true);
+                const erro = await store.excluirImobiliaria(c.id, nomeConfirma);
+                setExcluindo(false);
+                if (erro) setErroExcluir(erro);
+                else {
+                  setExcluir(false);
+                  onClose();
+                }
+              }}
+              className={`${btn.primary} bg-rose-600 hover:bg-rose-700`}
+            >
+              <Trash2 className="size-4" /> {excluindo ? "Excluindo..." : "Excluir para sempre"}
+            </button>
+          </>
+        }
+      >
+        <div className="space-y-4 text-sm text-muted">
+          <p>
+            Apaga a <span className="font-semibold text-ink">{c.nome}</span> e <span className="font-semibold text-ink">todos os dados dela</span>: equipe, leads,
+            imóveis, vendas, agenda, Academy, chamados e pedidos. As contas de quem só fazia parte dela também são apagadas.{" "}
+            <span className="font-semibold text-rose-600">Não tem como desfazer.</span>
+          </p>
+          <Field label={`Para confirmar, digite o nome: ${c.nome}`}>
+            <input className={inputCls} value={nomeConfirma} onChange={(e) => setNomeConfirma(e.target.value)} autoComplete="off" />
+          </Field>
+          {erroExcluir && <p className="rounded-xl bg-rose-50 px-3 py-2 text-rose-700">{erroExcluir}</p>}
+        </div>
       </Modal>
     </>
   );

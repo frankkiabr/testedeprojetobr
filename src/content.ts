@@ -150,7 +150,7 @@ export const faq = {
     },
     {
       q: "Como solicitar uma demonstração?",
-      a: "Preencha o formulário de demonstração com seu nome, imobiliária, e-mail e WhatsApp. A equipe Frankkia fala com você pelo WhatsApp em até 24 horas para agendar uma apresentação sem compromisso.",
+      a: "Clique em “Solicitar demonstração” e deixe seu nome, imobiliária, e-mail e WhatsApp. A equipe Frankkia fala com você pelo WhatsApp em até 24 horas para agendar uma apresentação sem compromisso.",
     },
   ],
 };

@@ -1,10 +1,12 @@
 import { motion } from "framer-motion";
 import { ArrowRight, Users } from "lucide-react";
 import { pricing } from "@/content";
-import { EASE_OUT_EXPO, scrollToId } from "@/lib/scroll";
+import { useNavigate } from "react-router-dom";
+import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { Button } from "./ui";
 
 export function Pricing() {
+  const navigate = useNavigate();
   return (
     <section id="planos" className="pt-28 sm:pt-40">
       <div className="mx-auto w-full max-w-[70rem] px-5 sm:px-8">
@@ -51,12 +53,13 @@ export function Pricing() {
                   </p>
                   <div className={`my-8 h-px ${dark ? "bg-white/10" : "bg-line"}`} />
                   <Button
-                    href="#contato"
+                    href={`/apresentacao?equipe=${encodeURIComponent(p.seats)}`}
                     variant={dark ? "accent" : "outline"}
                     className="w-full"
                     onClick={(e) => {
                       e.preventDefault();
-                      scrollToId("contato");
+                      // Já chega na página de captura com o tamanho de equipe deste plano escolhido
+                      navigate(`/apresentacao?equipe=${encodeURIComponent(p.seats)}`);
                     }}
                     trailing={<ArrowRight className="size-[1em] group-hover/button:translate-x-0.5" />}
                   >

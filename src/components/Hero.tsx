@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { CalendarCheck } from "lucide-react";
 import { ecosystem, hero } from "@/content";
-import { EASE_OUT_EXPO, scrollToId } from "@/lib/scroll";
+import { useNavigate } from "react-router-dom";
+import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { Asterisk, Button, Scaled } from "./ui";
 import { Dashboard, DASHBOARD_SIZE } from "./mockups/Dashboard";
 
@@ -75,6 +76,7 @@ function Underline() {
 }
 
 export function Hero() {
+  const navigate = useNavigate();
   const [ready, setReady] = useState(false);
   const typed = useTypewriter(hero.typed, ready);
   const frame = useRef<HTMLDivElement>(null);
@@ -129,10 +131,10 @@ export function Hero() {
           className="mt-9 flex flex-wrap justify-center gap-3"
         >
           <Button
-            href="#contato"
+            href="/apresentacao"
             onClick={(e) => {
               e.preventDefault();
-              scrollToId("contato");
+              navigate("/apresentacao");
             }}
             icon={<CalendarCheck className="size-[1em]" />}
           >

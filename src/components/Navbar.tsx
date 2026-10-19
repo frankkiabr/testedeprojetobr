@@ -9,7 +9,7 @@ import { Logo, LogoMark } from "./ui";
 const SECTIONS = ["top", ...nav.map((n) => n.id), "contato"];
 const LABELS: Record<string, string> = {
   top: site.name,
-  contato: "Demonstração",
+  contato: "Contato",
   ...Object.fromEntries(nav.map((n) => [n.id, n.label])),
 };
 
@@ -118,14 +118,13 @@ export function Navbar() {
                 <Link to="/login" className="rounded-full px-3.5 py-2 text-sm font-medium text-bg/70 transition-colors hover:bg-bg/15 hover:text-bg">
                   Entrar
                 </Link>
-                <a
-                  href="#contato"
-                  onClick={go("contato")}
+                <Link
+                  to="/apresentacao"
                   className="group/button inline-flex h-10 items-center gap-2 rounded-full bg-bg px-4 text-sm font-semibold text-ink transition-transform active:scale-[0.98]"
                 >
                   Solicitar demonstração
                   <ArrowRight className="size-4 transition-transform duration-200 group-hover/button:translate-x-0.5" />
-                </a>
+                </Link>
               </div>
             </motion.div>
           ) : (
