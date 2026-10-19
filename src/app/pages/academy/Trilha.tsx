@@ -7,7 +7,7 @@ import { aulaConcluida, corretoresAtivos, duracaoTrilha, progressoEquipe, progre
 import { useStore } from "@/data/store";
 import type { Aula, Trilha as TrilhaT } from "@/data/types";
 import { fmtBytes, samplePdfUrl } from "@/lib/files";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/frankkia/client";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { useScope } from "../../session";
 import { Avatar, Card, CardHeader, ProgressBar, stagger } from "../../kit";

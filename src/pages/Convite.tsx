@@ -8,7 +8,7 @@ import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { Logo } from "@/components/ui";
 import { Field, inputCls, normalizePhone, SelectField, Toaster } from "@/app/forms";
 import { inicioDe, useSession } from "@/app/session";
-import { legado as supabase, mensagemErro } from "@/integrations/supabase/client";
+import { mensagemErro, supabase } from "@/integrations/frankkia/client";
 
 type ConviteInfo = { email: string; imobiliaria: string; papel: "admin" | "corretor"; demo: boolean };
 

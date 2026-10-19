@@ -27,7 +27,7 @@ import {
   trilhas,
 } from "./demo";
 import { captacaoTitulo, captacaoById, vagasLivres } from "./queries";
-import { enviarConvitePorEmail } from "@/integrations/supabase/client";
+import { enviarConvitePorEmail } from "@/integrations/frankkia/client";
 import { aoMudar, compromissoParaBanco, configurarGravacao, contexto as ctxDados, ehReal, enfileirar, falhou, gravar, leadParaBanco, novoId, supabase } from "./sync";
 import { clientes, errosSistema, nomeDaTela, novaReferencia, pedidoAberto, pedidoById, pedidosUpgrade, PLANOS, todosChamados } from "./platform";
 import type {

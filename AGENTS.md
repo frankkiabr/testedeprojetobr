@@ -36,20 +36,35 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
 - Só o administrador registra vendas e locações; o corretor apenas "informa o fechamento".
 - O painel Frankkia nunca mostra dados internos das imobiliárias (só conta, plano e volumes de uso).
 
-## Banco de dados (Lovable Cloud)
-- O banco atual tem só o modelo novo: organizations, plans, subscriptions, profiles, memberships,
-  membership_roles, invitations, audit_logs, user_roles. Tipos gerados em
-  `src/integrations/supabase/types.ts`; estrutura e RLS em `supabase/migrations/`.
-- O protótipo antigo (`sync.ts`, `store.tsx`, `session.tsx`, `app/equipe-dados.ts`,
-  `app/admin/Imobiliarias.tsx`, `pages/Convite.tsx`) consulta tabelas que não existem mais
-  (imobiliarias, membros, convites, perfis, leads...). Usa o acesso sem tipos `legado`
-  (`client.ts`) só para não travar o build; o cliente tipado `supabase` fica reservado ao modelo
-  novo. Migre essas telas — não amplie o `legado`.
-- Login: `client.ts` e `src/app/session.tsx` (modo "real" ou "demo"). `src/app/Guard.tsx` protege `/app` e `/admin`.
-- Stripe (`criar-checkout`, `stripe-webhook`) e convite por e-mail (`enviar-convite`) seguem no repo;
-  segredos ficam no backend, nunca no código. Só a chave publicável vai no `.env`.
+## ⚠️ Regra do banco (leia antes de mexer em qualquer coisa de dados)
+- O banco da Frankkia é o **Supabase próprio** do dono, projeto `yvbbktrufoyhtiotholf`. **Não é o Lovable Cloud.**
+- O app conecta por `src/integrations/frankkia/client.ts` (endereço e chave publicável fixos no código, de propósito).
+  Os tipos do banco ficam em `src/integrations/frankkia/types.ts`.
+- `src/integrations/supabase/` e o `.env` são reescritos pelo Lovable Cloud e apontam para outro banco (vazio, com
+  outras tabelas: organizations, memberships...). **Não use esse banco, não gere tipos a partir dele e não "migre" as
+  telas para ele.** Se o build acusar tabelas inexistentes, o problema é olhar para o banco errado — não mude o código
+  da Frankkia. Pedidos visuais (ícones, textos, cores) não devem mexer em nada de banco.
 
-
+## Banco de dados (Supabase próprio, não Lovable Cloud)
+- Projeto Supabase `yvbbktrufoyhtiotholf` (São Paulo). Estrutura e regras de segurança (RLS) em `supabase/migrations/`.
+- Tipos gerados em `src/integrations/frankkia/types.ts` (`npx supabase gen types typescript --linked --schema public > src/integrations/frankkia/types.ts`).
+- As regras de negócio acima são garantidas **no banco** (RLS, gatilhos e funções). Não as contorne no app.
+  Ranking, estudo de mercado, registrar venda/locação, aceitar convite e liberar upgrade usam funções do banco
+  (`ranking_mes`, `estudo_mercado`, `ofertas_mercado`, `registrar_transacao`, `aceitar_convite`, `liberar_upgrade`).
+- Login: `src/integrations/frankkia/client.ts` (conexão) e `src/app/session.tsx` (sessão: modo "real" pelo banco ou "demo"
+  pelos perfis de exemplo). `src/app/Guard.tsx` protege `/app` e `/admin`.
+- Dados: no login real, `src/data/sync.ts` preenche as mesmas listas de `demo.ts` com os dados do banco, e cada ação de
+  `store.tsx` grava no banco com `gravar(...)` (em ordem, por uma fila). Ao criar uma ação nova, siga esse padrão.
+  Corretor: ranking e estudo de mercado vêm de `ranking_mes`/`estudo_mercado`/`ofertas_mercado` (sem dados dos colegas).
+- Arquivos: vídeos da Academy são links do YouTube/Vimeo ("não listado", tocam em iframe); PDFs/Word vão para o
+  armazenamento `academy` (privado, até 20 MB) e a logo para `marca` (pública, PNG até 5 MB), na pasta `<id da imobiliária>/`.
+- Painel Frankkia no login real: `painel_imobiliarias()` traz só dados de conta e volumes de uso.
+- Teste grátis: `imobiliarias.teste_dias` (definido pela Frankkia) vira `teste_ate` no 1º acesso do administrador;
+  vencido, o banco bloqueia os dados (`imob_liberada`) e o app mostra a tela de contratar plano.
+- Pagamento: Stripe em modo de teste (funções `criar-checkout` e `stripe-webhook` em `supabase/functions/`). O webhook marca
+  o pedido como pago; a Frankkia libera o plano. Sem Stripe configurada, a Frankkia pode confirmar o pagamento à mão.
+- E-mail: função `enviar-convite` (Resend). Segredos ficam no Supabase (Edge Functions → Secrets), nunca no código.
+- Nunca coloque a chave secreta (service_role) no app ou no repositório; só a chave publicável vai no `.env`.
 
 ## Próxima fase
 Login real e papéis; trocar `demo.ts`/`platform.ts` pelas tabelas; transformar as ações de `store.tsx`

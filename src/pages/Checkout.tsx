@@ -12,7 +12,7 @@ import { Logo } from "@/components/ui";
 import { Segmented } from "@/app/kit";
 import { btn } from "@/app/forms";
 import { useSession } from "@/app/session";
-import { abrirPagamentoStripe } from "@/integrations/supabase/client";
+import { abrirPagamentoStripe } from "@/integrations/frankkia/client";
 import { recarregarDados } from "@/data/sync";
 
 type Metodo = NonNullable<PedidoUpgrade["metodo"]>;

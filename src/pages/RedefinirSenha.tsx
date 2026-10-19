@@ -6,7 +6,7 @@ import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { Logo } from "@/components/ui";
 import { Field, inputCls } from "@/app/forms";
 import { inicioDe, useSession } from "@/app/session";
-import { mensagemErro, supabase } from "@/integrations/supabase/client";
+import { mensagemErro, supabase } from "@/integrations/frankkia/client";
 
 /** Nova senha, a partir do link "Esqueceu a senha?" enviado por e-mail. */
 export default function RedefinirSenha() {

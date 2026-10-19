@@ -7,7 +7,7 @@ import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { Logo, Scaled } from "@/components/ui";
 import { Dashboard, DASHBOARD_SIZE } from "@/components/mockups/Dashboard";
 import { inicioDe, useSession } from "@/app/session";
-import { mensagemErro, setLembrar, supabase } from "@/integrations/supabase/client";
+import { mensagemErro, setLembrar, supabase } from "@/integrations/frankkia/client";
 import type { Role } from "@/data/types";
 
 const field =

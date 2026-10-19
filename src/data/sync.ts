@@ -29,10 +29,10 @@ import type {
   Trilha,
   Usuario,
 } from "./types";
-import { legado as supabase, mensagemErro } from "@/integrations/supabase/client";
+import { mensagemErro, supabase } from "@/integrations/frankkia/client";
+import type { Database } from "@/integrations/frankkia/types";
 
-/** Linhas das tabelas antigas (sem tipos gerados: essas tabelas não existem mais no banco). */
-type Row<T extends string> = Record<string, any> & { __tabela?: T };
+type Row<T extends keyof Database["public"]["Tables"]> = Database["public"]["Tables"][T]["Row"];
 
 // ---------- Avisos de mudança (para as telas se redesenharem) ----------
 
@@ -261,7 +261,7 @@ export async function carregarReal(conta: ContaDados) {
     trocarLista(
       P.clientes,
       (painel.data ?? []).map(
-        (c: any): Cliente => ({
+        (c): Cliente => ({
           id: c.id,
           nome: c.nome,
           cidade: c.cidade,
@@ -521,7 +521,7 @@ async function carregarRanking(imob: string, meses: number) {
   const res = await Promise.all(lista.map((m) => supabase.rpc("ranking_mes", { p_imob: imob, p_mes: `${m.key}-01` })));
   const out: Record<string, LinhaRanking[]> = {};
   res.forEach((r, k) => {
-    out[lista[k].key] = (r.data ?? []).map((x: any) => ({
+    out[lista[k].key] = (r.data ?? []).map((x) => ({
       corretorId: x.corretor_id,
       vgv: Number(x.vgv),
       alugados: x.alugados,
@@ -535,7 +535,7 @@ async function carregarRanking(imob: string, meses: number) {
 
 async function carregarMercado(imob: string) {
   const [f, o] = await Promise.all([supabase.rpc("estudo_mercado", { p_imob: imob }), supabase.rpc("ofertas_mercado", { p_imob: imob })]);
-  const fechados: LinhaMercado[] = (f.data ?? []).map((r: any) => {
+  const fechados: LinhaMercado[] = (f.data ?? []).map((r) => {
     const im: Imovel = {
       id: `m-im-${r.transacao_id}`,
       categoria: r.categoria as CategoriaImovel,
@@ -560,7 +560,7 @@ async function carregarMercado(imob: string) {
     const t: Transacao = { id: r.transacao_id, tipo: r.tipo as Transacao["tipo"], captacaoId: c.id, valor: Number(r.valor), honorariosPct: 0, data: r.data, participantes: [] };
     return { t, c, im };
   });
-  const ofertas: OfertaMercado[] = (o.data ?? []).map((r: any, k: number) => ({
+  const ofertas: OfertaMercado[] = (o.data ?? []).map((r, k) => ({
     c: { id: `m-of-${k}`, finalidade: r.finalidade, valor: Number(r.valor), areaM2: Number(r.area_m2), status: "ativa" } as Captacao,
     im: { id: `m-of-im-${k}`, categoria: r.categoria as CategoriaImovel, endereco: { logradouro: "", numero: "", bairro: r.bairro, cidade: "", uf: "" }, criadoEm: "" },
   }));

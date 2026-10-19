@@ -5,7 +5,7 @@ import { frankkiaUser } from "@/data/platform";
 import type { Role, Usuario } from "@/data/types";
 import { userById, type Scope } from "@/data/queries";
 import { aoMudar, carregarReal, usarDemo } from "@/data/sync";
-import { legado as supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/frankkia/client";
 
 /**
  * SESSÃO.

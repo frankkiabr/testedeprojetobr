@@ -9,7 +9,7 @@ import { useStore } from "@/data/store";
 import type { PlanoNome } from "@/data/types";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { useScope, useSession } from "../session";
-import { mensagemErro, supabase } from "@/integrations/supabase/client";
+import { mensagemErro, supabase } from "@/integrations/frankkia/client";
 import { Avatar, Card, PageHeader, ProgressBar, Segmented, stagger } from "../kit";
 import { btn, Field, formatPhone, inputCls, normalizePhone, SelectField } from "../forms";
 import { PedidoUpgradeStatus, useIrParaPagamento } from "../upgrade";
