@@ -36,6 +36,14 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
 - Só o administrador registra vendas e locações; o corretor apenas "informa o fechamento".
 - O painel Frankkia nunca mostra dados internos das imobiliárias (só conta, plano e volumes de uso).
 
-## Próxima fase (Lovable Cloud)
-Login real e papéis; trocar `demo.ts`/`platform.ts` por tabelas seguindo `types.ts`; transformar as ações de `store.tsx`
+## Banco de dados (Supabase próprio, não Lovable Cloud)
+- Projeto Supabase `yvbbktrufoyhtiotholf` (São Paulo). Estrutura e regras de segurança (RLS) em `supabase/migrations/`.
+- Tipos gerados em `src/integrations/supabase/types.ts` (`npx supabase gen types typescript --linked --schema public`).
+- As regras de negócio acima são garantidas **no banco** (RLS, gatilhos e funções). Não as contorne no app.
+  Ranking, estudo de mercado, registrar venda/locação, aceitar convite e liberar upgrade usam funções do banco
+  (`ranking_mes`, `estudo_mercado`, `ofertas_mercado`, `registrar_transacao`, `aceitar_convite`, `liberar_upgrade`).
+- Nunca coloque a chave secreta (service_role) no app ou no repositório; só a chave publicável vai no `.env`.
+
+## Próxima fase
+Login real e papéis; trocar `demo.ts`/`platform.ts` pelas tabelas; transformar as ações de `store.tsx`
 em gravações; Stripe e Google Agenda conforme `PENDENTES.md`.
