@@ -52,6 +52,15 @@ export const supabase = createClient<Database>(url, key, {
   auth: { storage, persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
 });
 
+/**
+ * Acesso às tabelas do protótipo antigo (imobiliarias, membros, convites, perfis, leads...).
+ * Elas não existem mais no banco atual, que hoje só tem o modelo novo (organizations, plans,
+ * memberships...). O app funciona hoje em modo de demonstração; essas rotinas ficam sem
+ * verificação de tipos de propósito, para não fingir que o esquema antigo ainda existe.
+ * O cliente tipado acima continua sendo o caminho para tudo que usa o modelo novo.
+ */
+export const legado = supabase as unknown as SupabaseClient<any, "public", any>;
+
 /** Envia o convite por e-mail (Resend). Se o e-mail ainda não estiver configurado, devolve enviado: false. */
 export async function enviarConvitePorEmail(token: string): Promise<boolean> {
   const { data, error } = await supabase.functions.invoke("enviar-convite", { body: { token, origem: window.location.origin } });

@@ -3,7 +3,7 @@ import { admin, convites as convitesDemo, imobiliaria } from "@/data/demo";
 import { corretoresAtivos, corretoresInativos } from "@/data/queries";
 import { useStore } from "@/data/store";
 import type { Usuario } from "@/data/types";
-import { enviarConvitePorEmail, mensagemErro, supabase } from "@/integrations/supabase/client";
+import { enviarConvitePorEmail, legado as supabase, mensagemErro } from "@/integrations/supabase/client";
 import { recarregarDados } from "@/data/sync";
 import { useSession } from "./session";
 

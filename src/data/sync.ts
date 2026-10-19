@@ -29,10 +29,10 @@ import type {
   Trilha,
   Usuario,
 } from "./types";
-import { mensagemErro, supabase } from "@/integrations/supabase/client";
-import type { Database } from "@/integrations/supabase/types";
+import { legado as supabase, mensagemErro } from "@/integrations/supabase/client";
 
-type Row<T extends keyof Database["public"]["Tables"]> = Database["public"]["Tables"][T]["Row"];
+/** Linhas das tabelas antigas (sem tipos gerados: essas tabelas não existem mais no banco). */
+type Row<T extends string> = Record<string, any> & { __tabela?: T };
 
 // ---------- Avisos de mudança (para as telas se redesenharem) ----------
 
