@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -1103,6 +1103,13 @@ export type Database = {
         Returns: boolean
       }
       liberar_upgrade: { Args: { p_pedido: string }; Returns: undefined }
+      minhas_participacoes: {
+        Args: { p_imob: string }
+        Returns: {
+          soma_pct: number
+          transacao_id: string
+        }[]
+      }
       ofertas_mercado: {
         Args: { p_imob: string }
         Returns: {

@@ -1,9 +1,10 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import type { User } from "@supabase/supabase-js";
-import { admin, corretorDemo } from "@/data/demo";
+import { admin, corretorDemo, corretores } from "@/data/demo";
 import { frankkiaUser } from "@/data/platform";
 import type { Role, Usuario } from "@/data/types";
-import type { Scope } from "@/data/queries";
+import { userById, type Scope } from "@/data/queries";
+import { aoMudar, carregarReal, usarDemo } from "@/data/sync";
 import { supabase } from "@/integrations/supabase/client";
 
 /**
@@ -11,8 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
  * - "real": login com e-mail e senha no Supabase. O papel vem do banco (Frankkia, administrador ou corretor).
  * - "demo": perfis de exemplo escolhidos em "Explorar a demonstração" / "Ver como".
  * - "nenhuma": ninguém entrou.
- * Enquanto as telas ainda usam os dados de exemplo, o login real mostra a identidade real
- * (nome, e-mail, imobiliária) sobre os dados de exemplo do mesmo papel.
+ * No login real, `carregarReal` preenche as telas com os dados do banco antes de mostrá-las.
  */
 export type Modo = "real" | "demo" | "nenhuma";
 
@@ -29,7 +29,11 @@ export type Conta = {
 
 type Ctx = {
   modo: Modo;
+  /** Verificando o login ou carregando os dados do banco. */
   carregando: boolean;
+  /** Os dados do banco não carregaram (ex.: sem internet). */
+  erroDados: boolean;
+  tentarDeNovo: () => void;
   role: Role;
   /** Só na demonstração: troca o perfil de exemplo. */
   setRole: (r: Role) => void;
@@ -178,15 +182,84 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     if (authUser) await supabase.auth.signOut();
   };
 
-  const base = role === "frankkia" ? frankkiaUser : role === "corretor" ? corretorDemo : admin;
-  const user: Usuario =
-    modo === "real" && conta
-      ? { ...base, nome: conta.nome || base.nome, email: conta.email, iniciais: conta.iniciais || base.iniciais }
-      : base;
+  // ---------- Dados das telas: do banco (login real) ou de exemplo (demonstração) ----------
+  const [dadosProntos, setDadosProntos] = useState(false);
+  const [erroDados, setErroDados] = useState(false);
+  const [, redesenhar] = useState(0);
+  useEffect(() => aoMudar(() => redesenhar((n) => n + 1)), []);
+
+  const chaveConta = conta ? `${conta.usuarioId}|${conta.papel}|${conta.frankkia}|${conta.imobiliaria?.id ?? ""}` : "";
+  const carregarDados = useCallback(
+    async (silencioso: boolean) => {
+      if (!conta) return;
+      if (!silencioso) setDadosProntos(false);
+      setErroDados(false);
+      try {
+        await carregarReal({
+          usuarioId: conta.usuarioId,
+          email: conta.email,
+          nome: conta.nome,
+          frankkia: conta.frankkia,
+          papel: conta.papel,
+          imobId: conta.imobiliaria?.id ?? null,
+        });
+      } catch {
+        setErroDados(true);
+      } finally {
+        setDadosProntos(true);
+      }
+    },
+    [chaveConta], // eslint-disable-line react-hooks/exhaustive-deps
+  );
+
+  useEffect(() => {
+    if (modo !== "real") {
+      usarDemo();
+      setDadosProntos(true);
+      return;
+    }
+    if (carregando) return;
+    if (!conta) {
+      setDadosProntos(true);
+      return;
+    }
+    carregarDados(false);
+  }, [modo, carregando, carregarDados]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Uma gravação recusada pelo banco pede para recarregar os dados verdadeiros
+  useEffect(() => {
+    const f = () => carregarDados(true);
+    window.addEventListener("frankkia:recarregar", f);
+    return () => window.removeEventListener("frankkia:recarregar", f);
+  }, [carregarDados]);
+
+  const demoCorretor = corretores.find((c) => c.id === corretorDemo.id) ?? corretorDemo;
+  let user: Usuario = role === "frankkia" ? frankkiaUser : role === "corretor" ? demoCorretor : admin;
+  if (modo === "real" && conta && !conta.frankkia) {
+    user = userById(conta.usuarioId) ?? {
+      id: conta.usuarioId,
+      imobiliariaId: conta.imobiliaria?.id ?? "",
+      nome: conta.nome || conta.email,
+      email: conta.email,
+      papel: conta.papel ?? "corretor",
+      iniciais: conta.iniciais,
+    };
+  }
 
   return (
     <SessionContext.Provider
-      value={{ modo, carregando, role, setRole, user, conta, sair, recarregar: () => carregar(authUser) }}
+      value={{
+        modo,
+        carregando: carregando || (modo === "real" && !dadosProntos),
+        erroDados,
+        tentarDeNovo: () => carregarDados(false),
+        role,
+        setRole,
+        user,
+        conta,
+        sair,
+        recarregar: () => carregar(authUser),
+      }}
     >
       {children}
     </SessionContext.Provider>

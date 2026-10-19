@@ -2,7 +2,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Briefcase, Building2, Home, Info, Plus, Store, TreePine, Trash2, Warehouse } from "lucide-react";
 import {
-  BAIRROS,
   CATEGORIAS,
   CATEGORIAS_COM_UNIDADE,
   CHECKLIST_MARKETING,
@@ -14,6 +13,7 @@ import {
   UFS,
 } from "@/data/demo";
 import {
+  bairrosCadastrados,
   captacaoById,
   captacaoTitulo,
   captacoesOf,
@@ -308,7 +308,7 @@ export function ImovelFormModal({
         <Field label="Bairro" className="sm:col-span-6">
           <input list="bairros-imovel" className={inputCls} value={f.bairro} onChange={(e) => setF({ ...f, bairro: e.target.value })} placeholder="Ex.: Umarizal" />
           <datalist id="bairros-imovel">
-            {BAIRROS.map((b) => (
+            {bairrosCadastrados().map((b) => (
               <option key={b} value={b} />
             ))}
           </datalist>

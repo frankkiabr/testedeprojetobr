@@ -37,10 +37,22 @@ function SemAcesso() {
 
 /** Protege a área da imobiliária ("app") e o painel do criador ("admin"). */
 export function Guard({ area, children }: { area: "app" | "admin"; children: ReactNode }) {
-  const { modo, carregando, role, conta } = useSession();
+  const { modo, carregando, role, conta, erroDados, tentarDeNovo } = useSession();
   const loc = useLocation();
 
   if (carregando) return <Carregando />;
+  if (modo === "real" && erroDados)
+    return (
+      <div className="grid min-h-screen place-items-center bg-canvas/60 px-4">
+        <div className="w-full max-w-md rounded-3xl border border-line bg-bg p-10 text-center">
+          <h1 className="type-title !text-[1.75rem]">Não foi possível carregar seus dados</h1>
+          <p className="mt-3 text-muted">Verifique sua conexão com a internet e tente de novo.</p>
+          <button onClick={tentarDeNovo} className="mt-8 inline-flex h-12 items-center rounded-full bg-ink px-6 font-semibold text-bg transition hover:bg-ink/85">
+            Tentar de novo
+          </button>
+        </div>
+      </div>
+    );
   if (modo === "nenhuma") return <Navigate to="/login" replace state={{ de: loc.pathname + loc.search }} />;
 
   if (area === "admin") return role === "frankkia" ? <>{children}</> : <Navigate to={inicioDe(role)} replace />;

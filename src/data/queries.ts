@@ -1,6 +1,6 @@
 /**
  * CÁLCULOS DA PLATAFORMA (VGV, locação, VGC, rankings, pendências, mercado, aniversários).
- * As telas só usam estas funções; quando o banco real entrar, basta trocar a origem dos dados.
+ * As telas só usam estas funções. No login real, as listas são preenchidas com os dados do banco (`sync.ts`).
  */
 import {
   admin,
@@ -12,12 +12,14 @@ import {
   imobiliaria,
   imoveis,
   leads,
+  outrosMembros,
   parceiros,
   progresso,
   proprietarios,
   transacoes,
 } from "./demo";
 import type { Captacao, Endereco, Finalidade, Imovel, Lead, Participante, Transacao, Trilha, Usuario } from "./types";
+import { ctx, OUTROS_PARTICIPANTES, type LinhaMercado, type OfertaMercado } from "./contexto";
 
 const DAY = 864e5;
 
@@ -55,10 +57,11 @@ export const leadById = (id: string) => leads.find((l) => l.id === id);
 // ---------- Pessoas ----------
 
 export function userById(id: string): Usuario | undefined {
-  return id === admin.id ? admin : corretores.find((c) => c.id === id);
+  return id === admin.id ? admin : (corretores.find((c) => c.id === id) ?? outrosMembros.find((c) => c.id === id));
 }
 export const parceiroById = (id: string) => parceiros.find((p) => p.id === id);
-export const participanteNome = (p: Participante) => (p.tipo === "corretor" ? userById(p.refId)?.nome : parceiroById(p.refId)?.nome) ?? "—";
+export const participanteNome = (p: Participante) =>
+  p.refId === OUTROS_PARTICIPANTES ? "Outros participantes" : ((p.tipo === "corretor" ? userById(p.refId)?.nome : parceiroById(p.refId)?.nome) ?? "—");
 export const creciLabel = (u: Pick<Usuario, "creci" | "creciUF" | "estagiario">) =>
   u.estagiario ? "Estagiário(a)" : u.creci ? `CRECI ${u.creci}${u.creciUF ? `/${u.creciUF}` : ""}` : "CRECI pendente";
 
@@ -150,6 +153,12 @@ export const RANKING_LABELS: Record<RankingKind, string> = {
 };
 
 export function ranking(kind: RankingKind, month: string) {
+  // Login real do corretor: os números da equipe vêm do banco (ranking_mes), sem expor dados dos colegas.
+  const doBanco = ctx.ranking?.[month];
+  if (doBanco)
+    return corretoresAtivos()
+      .map((c) => ({ user: c, value: doBanco.find((r) => r.corretorId === c.id)?.[kind] ?? 0 }))
+      .sort((a, b) => b.value - a.value);
   return corretoresAtivos()
     .map((c) => ({ user: c, value: metrics({ corretorId: c.id }, month)[kind] }))
     .sort((a, b) => b.value - a.value);
@@ -246,28 +255,49 @@ export const aniversariantes = (ateDias: number) =>
 
 export type FiltroMercado = { tipo: Finalidade; categoria: string; bairro: string; meses: number };
 
+/** Negócios fechados e ofertas ativas da imobiliária inteira (no login real do corretor, vêm do banco sem nomes). */
+function baseMercado(): { fechados: LinhaMercado[]; ofertas: OfertaMercado[] } {
+  if (ctx.mercado) return ctx.mercado;
+  const fechados: LinhaMercado[] = [];
+  transacoes.forEach((t) => {
+    const c = captacaoById(t.captacaoId);
+    const im = c && imovelById(c.imovelId);
+    if (c && im) fechados.push({ t, c, im });
+  });
+  const ofertas: OfertaMercado[] = [];
+  captacoes.forEach((c) => {
+    const im = c.status === "ativa" ? imovelById(c.imovelId) : undefined;
+    if (im) ofertas.push({ c, im });
+  });
+  return { fechados, ofertas };
+}
+
+const unicos = (xs: string[]) => [...new Set(xs)].filter(Boolean).sort((a, b) => a.localeCompare(b));
+
+/** Bairros que aparecem nos negócios e nas ofertas (filtro do estudo de mercado). */
+export function bairrosMercado() {
+  const b = baseMercado();
+  return unicos([...b.fechados.map((r) => r.im.endereco.bairro), ...b.ofertas.map((r) => r.im.endereco.bairro)]);
+}
+
+/** Bairros já cadastrados nos imóveis (sugestões ao cadastrar um imóvel novo). */
+export const bairrosCadastrados = () => unicos(imoveis.map((i) => i.endereco.bairro));
+
 const media = (xs: number[]) => (xs.length ? xs.reduce((s, x) => s + x, 0) / xs.length : 0);
 
 export function mercado(f: FiltroMercado) {
   const limite = f.meses ? Date.now() - f.meses * 30 * DAY : 0;
   const passa = (im: Imovel) => (!f.categoria || im.categoria === f.categoria) && (!f.bairro || im.endereco.bairro === f.bairro);
 
-  const linhas = transacoes
-    .filter((t) => t.tipo === f.tipo && new Date(t.data).getTime() >= limite)
-    .map((t) => {
-      const c = captacaoById(t.captacaoId)!;
-      const im = imovelById(c.imovelId)!;
-      return { t, c, im, m2: t.valor / c.areaM2, dias: (new Date(t.data).getTime() - new Date(c.captadoEm).getTime()) / DAY };
-    })
+  const base = baseMercado();
+  const linhas = base.fechados
+    .filter(({ t }) => t.tipo === f.tipo && new Date(t.data).getTime() >= limite)
+    .map(({ t, c, im }) => ({ t, c, im, m2: t.valor / c.areaM2, dias: (new Date(t.data).getTime() - new Date(c.captadoEm).getTime()) / DAY }))
     .filter((r) => passa(r.im))
     .sort((a, b) => b.t.data.localeCompare(a.t.data));
 
   // Oferta atual (captações ativas) para comparar preço pedido × preço fechado
-  const oferta = captacoes
-    .filter((c) => c.status === "ativa" && c.finalidade === f.tipo)
-    .map((c) => ({ c, im: imovelById(c.imovelId)! }))
-    .filter((r) => passa(r.im))
-    .map((r) => r.c.valor / r.c.areaM2);
+  const oferta = base.ofertas.filter((r) => r.c.finalidade === f.tipo && passa(r.im)).map((r) => r.c.valor / r.c.areaM2);
 
   const agrupar = (chave: (r: (typeof linhas)[number]) => string) => {
     const g = new Map<string, typeof linhas>();

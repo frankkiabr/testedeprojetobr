@@ -8,7 +8,8 @@ import { vagasUsadas } from "@/data/queries";
 import { useStore } from "@/data/store";
 import type { PlanoNome } from "@/data/types";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
-import { useScope } from "../session";
+import { useScope, useSession } from "../session";
+import { mensagemErro, supabase } from "@/integrations/supabase/client";
 import { Avatar, Card, PageHeader, ProgressBar, Segmented, stagger } from "../kit";
 import { btn, Field, formatPhone, inputCls, normalizePhone, SelectField } from "../forms";
 import { PedidoUpgradeStatus, useIrParaPagamento } from "../upgrade";
@@ -149,6 +150,7 @@ function Plano() {
 function Perfil() {
   const { updateUsuario, toast } = useStore();
   const { user } = useScope();
+  const { modo, conta } = useSession();
   const init = () => ({
     nome: user.nome,
     email: user.email,
@@ -242,9 +244,24 @@ function Perfil() {
           <button
             className={btn.outline}
             disabled={!senhaOk}
-            onClick={() => {
-              setSenha({ atual: "", nova: "", confirma: "" });
-              toast("Na versão final, a senha será alterada com segurança.");
+            onClick={async () => {
+              if (modo !== "real") {
+                setSenha({ atual: "", nova: "", confirma: "" });
+                toast("Demonstração: no login real, a senha é alterada com segurança.");
+                return;
+              }
+              // Confere a senha atual antes de trocar
+              const { error: errAtual } = await supabase.auth.signInWithPassword({ email: conta?.email ?? "", password: senha.atual });
+              if (errAtual) {
+                toast("A senha atual não confere.");
+                return;
+              }
+              const { error } = await supabase.auth.updateUser({ password: senha.nova });
+              if (error) toast(mensagemErro(error));
+              else {
+                setSenha({ atual: "", nova: "", confirma: "" });
+                toast("Senha alterada.");
+              }
             }}
           >
             Alterar senha

@@ -4,6 +4,7 @@ import { corretoresAtivos, corretoresInativos } from "@/data/queries";
 import { useStore } from "@/data/store";
 import type { Usuario } from "@/data/types";
 import { mensagemErro, supabase } from "@/integrations/supabase/client";
+import { recarregarDados } from "@/data/sync";
 import { useSession } from "./session";
 
 export type ConviteEquipe = { id: string; email: string; enviadoEm: string; link: string };
@@ -122,16 +123,19 @@ export function useEquipe(): Equipe {
         .single();
       if (error) return { erro: error.code === "23505" ? "Já existe um convite pendente para este e-mail." : mensagemErro(error) };
       await carregar();
+      recarregarDados();
       return { link: linkDe(data.token) };
     },
     reenviar: async (id) => dados?.convites.find((c) => c.id === id)?.link ?? null,
     cancelar: async (id) => {
       await supabase.from("convites").update({ status: "cancelado" }).eq("id", id);
       await carregar();
+      recarregarDados();
     },
     setAtivo: async (usuarioId, ativo) => {
       const { error } = await supabase.from("membros").update({ ativo }).eq("imobiliaria_id", imobId!).eq("usuario_id", usuarioId);
       await carregar();
+      recarregarDados();
       return error ? mensagemErro(error) : null;
     },
   };

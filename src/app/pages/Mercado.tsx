@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Clock, Info, MapPin, Ruler, Scale, TrendingUp } from "lucide-react";
-import { BAIRROS, CATEGORIAS, imobiliaria } from "@/data/demo";
-import { imovelNome, mercado, type FiltroMercado } from "@/data/queries";
+import { CATEGORIAS, imobiliaria } from "@/data/demo";
+import { bairrosMercado, imovelNome, mercado, type FiltroMercado } from "@/data/queries";
 import { useStore } from "@/data/store";
 import type { Finalidade } from "@/data/types";
 import { brl, int } from "@/lib/format";
@@ -56,7 +56,7 @@ export default function Mercado() {
           ]}
         />
         <Select label="Categoria" value={f.categoria} onChange={(v) => setF({ ...f, categoria: v })} options={[{ value: "", label: "Todas as categorias" }, ...CATEGORIAS.map((c) => ({ value: c, label: c }))]} />
-        <Select label="Bairro" icon={<MapPin className="size-4" />} value={f.bairro} onChange={(v) => setF({ ...f, bairro: v })} options={[{ value: "", label: "Todos os bairros" }, ...BAIRROS.map((b) => ({ value: b, label: b }))]} />
+        <Select label="Bairro" icon={<MapPin className="size-4" />} value={f.bairro} onChange={(v) => setF({ ...f, bairro: v })} options={[{ value: "", label: "Todos os bairros" }, ...bairrosMercado().map((b) => ({ value: b, label: b }))]} />
         <Select
           label="Período"
           value={String(f.meses)}

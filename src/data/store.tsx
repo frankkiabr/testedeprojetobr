@@ -1,7 +1,7 @@
 /**
- * ARMAZENAMENTO INTERATIVO DA DEMONSTRAÇÃO.
- * Cadastros e alterações ficam na memória do navegador (somem ao recarregar a página).
- * Na próxima fase, cada ação aqui vira uma gravação no banco do Lovable Cloud.
+ * AÇÕES DA PLATAFORMA (cadastrar, editar, registrar...).
+ * Cada ação atualiza a tela na hora. No login real, ela também grava no banco (`gravar`);
+ * na demonstração, as mudanças ficam só na memória do navegador.
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import {
@@ -27,6 +27,7 @@ import {
   trilhas,
 } from "./demo";
 import { captacaoTitulo, captacaoById, vagasLivres } from "./queries";
+import { aoMudar, compromissoParaBanco, configurarGravacao, contexto as ctxDados, ehReal, enfileirar, falhou, gravar, leadParaBanco, novoId, supabase } from "./sync";
 import { clientes, errosSistema, nomeDaTela, novaReferencia, pedidoAberto, pedidoById, pedidosUpgrade, PLANOS, todosChamados } from "./platform";
 import type {
   ArquivoMarca,
@@ -59,9 +60,29 @@ function sincronizarVisita(c: Compromisso) {
   if (!l) return;
   l.visitaEm = c.inicio;
   if (l.etapa === "novo" || l.etapa === "contato") l.etapa = "visita";
+  salvarLead(l);
 }
 
-const uid = (p: string) => `${p}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+const uid = novoId;
+
+// ---------- Gravações no banco (só no login real) ----------
+
+function salvarLead(l: Lead) {
+  const { id, imobiliaria_id, criado_em, ...campos } = leadParaBanco(l);
+  void imobiliaria_id;
+  void criado_em;
+  return gravar(() => supabase.from("leads").update(campos).eq("id", id));
+}
+const inserirCompromisso = (c: Compromisso) => gravar(() => supabase.from("compromissos").insert(compromissoParaBanco(c)));
+function salvarCompromisso(c: Compromisso) {
+  const { id, imobiliaria_id, ...campos } = compromissoParaBanco(c);
+  void imobiliaria_id;
+  return gravar(() => supabase.from("compromissos").update(campos).eq("id", id));
+}
+const removerCompromissoBanco = (id: string) => gravar(() => supabase.from("compromissos").delete().eq("id", id));
+const salvarChecklists = (c: Captacao) =>
+  gravar(() => supabase.from("captacoes").update({ checklist_captacao: c.checklistCaptacao, checklist_marketing: c.checklistMarketing }).eq("id", c.id));
+const ARQUIVOS_NA_PROXIMA_ETAPA = "O envio de arquivos (vídeos, PDFs e logo) entra na próxima etapa.";
 
 function createActions(bump: () => void, toast: (text: string) => void) {
   return {
@@ -76,6 +97,7 @@ function createActions(bump: () => void, toast: (text: string) => void) {
         checklist: CHECKLIST_LEAD.map(() => false),
       };
       leads.unshift(lead);
+      gravar(() => supabase.from("leads").insert(leadParaBanco(lead)));
       bump();
       toast("Lead cadastrado.");
       return lead;
@@ -85,16 +107,23 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       const l = leads.find((x) => x.id === id);
       if (!l) return;
       Object.assign(l, patch);
+      salvarLead(l);
       // A data de visita do lead e o compromisso de visita na agenda andam juntos.
       if ("visitaEm" in patch) {
         const i = compromissos.findIndex((c) => c.leadId === id && c.tipo === "visita");
         if (!patch.visitaEm) {
-          if (i >= 0) compromissos.splice(i, 1);
+          if (i >= 0) removerCompromissoBanco(compromissos.splice(i, 1)[0].id);
         } else {
           const ini = new Date(patch.visitaEm);
           const fim = new Date(ini.getTime() + 60 * 60_000).toISOString();
-          if (i >= 0) Object.assign(compromissos[i], { inicio: ini.toISOString(), fim });
-          else compromissos.push({ id: uid("ag"), donoId: l.corretorId, titulo: `Visita com ${l.nome}`, tipo: "visita", inicio: ini.toISOString(), fim, leadId: l.id, local: "A combinar" });
+          if (i >= 0) {
+            Object.assign(compromissos[i], { inicio: ini.toISOString(), fim });
+            salvarCompromisso(compromissos[i]);
+          } else {
+            const c: Compromisso = { id: uid("ag"), donoId: l.corretorId, titulo: `Visita com ${l.nome}`, tipo: "visita", inicio: ini.toISOString(), fim, leadId: l.id, local: "A combinar" };
+            compromissos.push(c);
+            inserirCompromisso(c);
+          }
         }
       }
       bump();
@@ -105,6 +134,7 @@ function createActions(bump: () => void, toast: (text: string) => void) {
     addCompromisso(input: Omit<Compromisso, "id">) {
       const c: Compromisso = { ...input, id: uid("ag") };
       compromissos.push(c);
+      inserirCompromisso(c);
       sincronizarVisita(c);
       bump();
       toast("Compromisso criado.");
@@ -115,6 +145,7 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       const c = compromissos.find((x) => x.id === id);
       if (!c) return;
       Object.assign(c, patch);
+      salvarCompromisso(c);
       sincronizarVisita(c);
       bump();
       if (aviso) toast(aviso);
@@ -124,9 +155,13 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       const i = compromissos.findIndex((x) => x.id === id);
       if (i < 0) return;
       const [c] = compromissos.splice(i, 1);
+      removerCompromissoBanco(c.id);
       if (c.tipo === "visita" && c.leadId) {
         const l = leads.find((x) => x.id === c.leadId);
-        if (l) l.visitaEm = undefined;
+        if (l) {
+          l.visitaEm = undefined;
+          salvarLead(l);
+        }
       }
       bump();
       toast("Compromisso excluído.");
@@ -148,12 +183,16 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       const l = leads.find((x) => x.id === id);
       if (!l) return;
       l.checklist = l.checklist.map((v, k) => (k === step ? !v : v));
+      salvarLead(l);
       bump();
     },
 
     addProprietario(input: Omit<Proprietario, "id">) {
       const p: Proprietario = { ...input, id: uid("p") };
       proprietarios.unshift(p);
+      gravar(() =>
+        supabase.from("proprietarios").insert({ id: p.id, imobiliaria_id: ctxDados.imobId, corretor_id: p.corretorId, nome: p.nome, whatsapp: p.whatsapp }),
+      );
       bump();
       toast("Proprietário cadastrado.");
       return p;
@@ -163,6 +202,21 @@ function createActions(bump: () => void, toast: (text: string) => void) {
     addImovel(input: Pick<Imovel, "categoria" | "nome" | "endereco">) {
       const im: Imovel = { ...input, id: uid("im"), criadoEm: new Date().toISOString() };
       imoveis.unshift(im);
+      const e = im.endereco;
+      gravar(() =>
+        supabase.from("imoveis").insert({
+          id: im.id,
+          imobiliaria_id: ctxDados.imobId,
+          categoria: im.categoria,
+          nome: im.nome ?? null,
+          logradouro: e.logradouro,
+          numero: e.numero,
+          bairro: e.bairro,
+          cidade: e.cidade,
+          uf: e.uf,
+          criado_por: ctxDados.userId,
+        }),
+      );
       bump();
       toast("Imóvel cadastrado.");
       return im;
@@ -179,6 +233,23 @@ function createActions(bump: () => void, toast: (text: string) => void) {
         checklistMarketing: CHECKLIST_MARKETING.map(() => false),
       };
       captacoes.unshift(c);
+      gravar(() =>
+        supabase.from("captacoes").insert({
+          id: c.id,
+          imobiliaria_id: ctxDados.imobId,
+          corretor_id: c.corretorId,
+          proprietario_id: c.proprietarioId,
+          imovel_id: c.imovelId,
+          unidade: c.unidade ?? null,
+          finalidade: c.finalidade,
+          valor: c.valor,
+          area_m2: c.areaM2,
+          status: c.status,
+          captado_em: c.captadoEm,
+          checklist_captacao: c.checklistCaptacao,
+          checklist_marketing: c.checklistMarketing,
+        }),
+      );
       bump();
       toast("Captação cadastrada.");
       return c;
@@ -188,6 +259,7 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       const c = captacoes.find((x) => x.id === id);
       if (!c) return;
       c.checklistCaptacao = c.checklistCaptacao.map((v, k) => (k === step ? !v : v));
+      salvarChecklists(c);
       bump();
     },
 
@@ -195,10 +267,11 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       const c = captacoes.find((x) => x.id === id);
       if (!c) return;
       c.checklistMarketing = c.checklistMarketing.map((v, k) => (k === step ? (value ?? !v) : v));
+      salvarChecklists(c);
       bump();
     },
 
-    /** Só o administrador registra vendas e locações. */
+    /** Só o administrador registra vendas e locações (no banco, tudo numa operação só). */
     addTransacao(input: Omit<Transacao, "id">, fechamentoId?: string) {
       const t: Transacao = { ...input, id: uid("tr") };
       transacoes.unshift(t);
@@ -209,6 +282,23 @@ function createActions(bump: () => void, toast: (text: string) => void) {
         const f = fechamentos.find((x) => x.id === fechamentoId);
         if (f) f.status = "registrado";
       }
+      if (ehReal())
+        enfileirar(async () => {
+          const { data, error } = await supabase.rpc("registrar_transacao", {
+            p_captacao: input.captacaoId,
+            p_valor: input.valor,
+            p_honorarios: input.honorariosPct,
+            p_data: input.data,
+            p_cliente: input.cliente ?? "",
+            p_participantes: input.participantes.map((p) => ({ tipo: p.tipo, ref_id: p.refId, pct: p.pct })),
+            ...(fechamentoId ? { p_fechamento: fechamentoId } : {}),
+          });
+          if (error) falhou(error);
+          else if (data) {
+            t.id = data; // id definitivo, criado pelo banco
+            bump();
+          }
+        });
       bump();
       toast(input.tipo === "venda" ? "Venda registrada. VGV e VGC atualizados." : "Locação registrada. Volume de locação e VGC atualizados.");
       return t;
@@ -217,6 +307,16 @@ function createActions(bump: () => void, toast: (text: string) => void) {
     addParceiro(input: Omit<Parceiro, "id">) {
       const p: Parceiro = { ...input, id: uid("pa") };
       parceiros.push(p);
+      gravar(() =>
+        supabase.from("parceiros").insert({
+          id: p.id,
+          imobiliaria_id: ctxDados.imobId,
+          nome: p.nome,
+          creci: p.creci ?? null,
+          empresa: p.empresa ?? null,
+          telefone: p.telefone ?? null,
+        }),
+      );
       bump();
       toast("Parceiro cadastrado.");
       return p;
@@ -224,7 +324,21 @@ function createActions(bump: () => void, toast: (text: string) => void) {
 
     /** O corretor informa o fechamento; o administrador confere e registra. */
     informarFechamento(input: Pick<FechamentoInformado, "corretorId" | "captacaoId" | "tipo" | "valor" | "data" | "observacao">) {
-      fechamentos.unshift({ ...input, id: uid("fi"), criadoEm: new Date().toISOString(), status: "pendente" });
+      const f: FechamentoInformado = { ...input, id: uid("fi"), criadoEm: new Date().toISOString(), status: "pendente" };
+      fechamentos.unshift(f);
+      gravar(() =>
+        supabase.from("fechamentos_informados").insert({
+          id: f.id,
+          imobiliaria_id: ctxDados.imobId,
+          corretor_id: f.corretorId,
+          captacao_id: f.captacaoId,
+          tipo: f.tipo,
+          valor: f.valor,
+          data: f.data,
+          observacao: f.observacao ?? null,
+          status: "pendente",
+        }),
+      );
       bump();
       const c = captacaoById(input.captacaoId);
       toast(`Fechamento de ${c ? captacaoTitulo(c) : "captação"} enviado ao administrador.`);
@@ -234,6 +348,7 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       const f = fechamentos.find((x) => x.id === id);
       if (!f) return;
       f.status = "descartado";
+      gravar(() => supabase.from("fechamentos_informados").update({ status: "descartado" }).eq("id", id));
       bump();
       toast("Fechamento informado descartado.");
     },
@@ -244,6 +359,9 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       const hues = [226, 158, 268, 32, 196, 340];
       const t: Trilha = { ...input, id: uid("t"), criadoEm: new Date().toISOString(), capaHue: hues[trilhas.length % hues.length], aulas: [] };
       trilhas.push(t);
+      gravar(() =>
+        supabase.from("trilhas").insert({ id: t.id, imobiliaria_id: ctxDados.imobId, titulo: t.titulo, subtitulo: t.subtitulo, capa_hue: t.capaHue, criado_em: t.criadoEm }),
+      );
       bump();
       toast("Trilha criada. Agora adicione as aulas.");
       return t;
@@ -253,6 +371,7 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       const t = trilhas.find((x) => x.id === id);
       if (!t) return;
       Object.assign(t, patch);
+      gravar(() => supabase.from("trilhas").update({ titulo: t.titulo, subtitulo: t.subtitulo }).eq("id", id));
       bump();
       toast("Trilha atualizada.");
     },
@@ -261,6 +380,7 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       const i = trilhas.findIndex((x) => x.id === id);
       if (i < 0) return;
       trilhas.splice(i, 1);
+      gravar(() => supabase.from("trilhas").delete().eq("id", id));
       bump();
       toast("Trilha excluída.");
     },
@@ -268,6 +388,10 @@ function createActions(bump: () => void, toast: (text: string) => void) {
     addAula(trilhaId: string, aula: Omit<Aula, "id">) {
       const t = trilhas.find((x) => x.id === trilhaId);
       if (!t) return;
+      if (ehReal()) {
+        toast(ARQUIVOS_NA_PROXIMA_ETAPA);
+        return;
+      }
       const a: Aula = { ...aula, id: uid("a") };
       t.aulas.push(a);
       bump();
@@ -279,6 +403,7 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       const t = trilhas.find((x) => x.id === trilhaId);
       if (!t) return;
       t.aulas = t.aulas.filter((a) => a.id !== aulaId);
+      gravar(() => supabase.from("aulas").delete().eq("id", aulaId));
       bump();
       toast("Aula removida.");
     },
@@ -287,6 +412,11 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       const feitas = progresso[userId] ?? [];
       const done = feitas.includes(aulaId);
       progresso[userId] = done ? feitas.filter((x) => x !== aulaId) : [...feitas, aulaId];
+      gravar(() =>
+        done
+          ? supabase.from("progresso_aulas").delete().eq("usuario_id", userId).eq("aula_id", aulaId)
+          : supabase.from("progresso_aulas").insert({ usuario_id: userId, aula_id: aulaId, imobiliaria_id: ctxDados.imobId }),
+      );
       bump();
       if (!done) toast("Aula concluída.");
     },
@@ -294,6 +424,10 @@ function createActions(bump: () => void, toast: (text: string) => void) {
     // ---------- Marketing ----------
 
     setLogo(logo: ArquivoMarca | null) {
+      if (ehReal()) {
+        toast(ARQUIVOS_NA_PROXIMA_ETAPA);
+        return;
+      }
       marca.logo = logo;
       bump();
       toast(logo ? "Logo atualizada para toda a equipe." : "Logo removida.");
@@ -346,6 +480,12 @@ function createActions(bump: () => void, toast: (text: string) => void) {
 
     updateImobiliaria(patch: Partial<Pick<Imobiliaria, "nome" | "cnpj" | "email" | "telefone" | "cidade">>) {
       Object.assign(imobiliaria, patch);
+      gravar(() =>
+        supabase
+          .from("imobiliarias")
+          .update({ nome: imobiliaria.nome, cnpj: imobiliaria.cnpj || null, email: imobiliaria.email || null, telefone: imobiliaria.telefone || null, cidade: imobiliaria.cidade || null })
+          .eq("id", imobiliaria.id),
+      );
       bump();
       toast("Dados da imobiliária salvos.");
     },
@@ -433,8 +573,29 @@ function createActions(bump: () => void, toast: (text: string) => void) {
     updateUsuario(id: string, patch: Partial<Pick<Usuario, "nome" | "email" | "telefone" | "aniversario" | "creci" | "creciUF" | "estagiario">>) {
       const u = id === admin.id ? admin : corretores.find((x) => x.id === id);
       if (!u) return;
-      Object.assign(u, patch);
+      const emailNovo = patch.email && patch.email.toLowerCase() !== u.email.toLowerCase() ? patch.email.trim().toLowerCase() : null;
+      // No login real, o e-mail só muda depois da confirmação enviada para o endereço novo.
+      Object.assign(u, ehReal() ? { ...patch, email: u.email } : patch);
       if (patch.nome) u.iniciais = patch.nome.trim().split(/\s+/).map((p) => p[0]).slice(0, 2).join("").toUpperCase();
+      gravar(() =>
+        supabase
+          .from("perfis")
+          .update({
+            nome: u.nome,
+            iniciais: u.iniciais,
+            telefone: u.telefone ?? null,
+            aniversario: u.aniversario ?? null,
+            creci: u.creci ?? null,
+            creci_uf: u.creciUF ?? null,
+            estagiario: !!u.estagiario,
+          })
+          .eq("id", id),
+      );
+      if (ehReal() && emailNovo)
+        supabase.auth.updateUser({ email: emailNovo }).then(({ error }) => {
+          if (error) falhou(error);
+          else toast(`Enviamos um link de confirmação para ${emailNovo}. O e-mail muda depois que você clicar nele.`);
+        });
       bump();
       toast("Perfil atualizado.");
     },
@@ -442,7 +603,19 @@ function createActions(bump: () => void, toast: (text: string) => void) {
     // ---------- Ajuda ----------
 
     addChamado(input: Pick<Chamado, "autorId" | "assunto" | "categoria" | "mensagem">) {
-      chamados.unshift({ ...input, id: uid("ch"), imobiliariaId: imobiliaria.id, criadoEm: new Date().toISOString(), status: "aberto" });
+      const c: Chamado = { ...input, id: uid("ch"), imobiliariaId: imobiliaria.id, criadoEm: new Date().toISOString(), status: "aberto" };
+      chamados.unshift(c);
+      gravar(() =>
+        supabase.from("chamados").insert({
+          id: c.id,
+          imobiliaria_id: c.imobiliariaId,
+          autor_id: c.autorId,
+          assunto: c.assunto,
+          categoria: c.categoria,
+          mensagem: c.mensagem,
+          status: "aberto",
+        }),
+      );
       bump();
       toast("Chamado enviado para a equipe Frankkia.");
     },
@@ -509,6 +682,7 @@ function createActions(bump: () => void, toast: (text: string) => void) {
     /** Registra um erro real que aconteceu no navegador (agrupa mensagens repetidas). */
     captureErro(mensagem: string, path: string) {
       const local = nomeDaTela(path);
+      if (ehReal()) supabase.rpc("registrar_erro", { p_mensagem: mensagem, p_local: local }).then(() => undefined);
       const now = new Date().toISOString();
       const e = errosSistema.find((x) => x.mensagem === mensagem && x.local === local);
       if (e) {
@@ -536,6 +710,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 3200);
   }, []);
   const actions = useMemo(() => createActions(bump, toast), [bump, toast]);
+
+  // Dados recarregados do banco (ou de volta à demonstração): redesenha as telas.
+  useEffect(() => aoMudar(bump), [bump]);
+  useEffect(() => configurarGravacao({ aviso: toast, recarregar: () => window.dispatchEvent(new Event("frankkia:recarregar")) }), [toast]);
 
   // Captura erros reais do navegador e envia para "Erros do sistema" no painel Frankkia.
   useEffect(() => {

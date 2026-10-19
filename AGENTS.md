@@ -43,8 +43,12 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
   Ranking, estudo de mercado, registrar venda/locação, aceitar convite e liberar upgrade usam funções do banco
   (`ranking_mes`, `estudo_mercado`, `ofertas_mercado`, `registrar_transacao`, `aceitar_convite`, `liberar_upgrade`).
 - Login: `src/integrations/supabase/client.ts` (conexão) e `src/app/session.tsx` (sessão: modo "real" pelo banco ou "demo"
-  pelos perfis de exemplo). `src/app/Guard.tsx` protege `/app` e `/admin`. A tela Equipe já usa o banco (`src/app/equipe-dados.ts`);
-  as demais telas ainda usam os dados de exemplo.
+  pelos perfis de exemplo). `src/app/Guard.tsx` protege `/app` e `/admin`.
+- Dados: no login real, `src/data/sync.ts` preenche as mesmas listas de `demo.ts` com os dados do banco, e cada ação de
+  `store.tsx` grava no banco com `gravar(...)` (em ordem, por uma fila). Ao criar uma ação nova, siga esse padrão.
+  Corretor: ranking e estudo de mercado vêm de `ranking_mes`/`estudo_mercado`/`ofertas_mercado` (sem dados dos colegas).
+- Ainda em dados de exemplo no login real: painel Frankkia (exceto a agenda), upgrades/pagamento e envio de arquivos
+  (aulas da Academy e logo do Marketing).
 - Nunca coloque a chave secreta (service_role) no app ou no repositório; só a chave publicável vai no `.env`.
 
 ## Próxima fase

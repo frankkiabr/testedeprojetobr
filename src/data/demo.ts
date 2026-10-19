@@ -1,6 +1,6 @@
 /**
- * DADOS DE EXEMPLO (fictícios).
- * Na próxima fase, o Lovable Cloud substitui este arquivo pelo banco de dados real.
+ * DADOS DE EXEMPLO (fictícios), usados na demonstração.
+ * No login real, `sync.ts` preenche estas mesmas listas com os dados do banco.
  * Os dados são gerados de forma determinística, então são sempre os mesmos a cada visita.
  */
 import type {
@@ -164,6 +164,9 @@ export const corretores: Usuario[] = TEAM.map(([nome, , diasAniv, estagiario], i
 
 /** Corretor usado no modo "Ver como corretor". */
 export const corretorDemo = corretores[1];
+
+/** Outras pessoas da imobiliária (ex.: um segundo administrador). Vazio na demonstração. */
+export const outrosMembros: Usuario[] = [];
 
 export const parceiros: Parceiro[] = [
   { id: "pa-1", nome: "Ricardo Fontes", creci: "58231-F", empresa: "Fontes Negócios Imobiliários", telefone: "5511991234567" },
