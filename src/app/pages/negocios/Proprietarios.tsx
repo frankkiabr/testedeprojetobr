@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ChevronRight, MessageCircle, Plus, UserRound, Users } from "lucide-react";
+import { ChevronRight, Plus, UserRound, Users } from "lucide-react";
 import { CHECKLIST_MARKETING, proprietarios } from "@/data/demo";
 import { captacaoCategoria, captacaoTitulo, captacoesDoProprietario, corretoresAtivos, done, proprietariosOf, pessoa, userById } from "@/data/queries";
 import { useStore } from "@/data/store";
@@ -10,6 +10,7 @@ import { useScope } from "../../session";
 import { Avatar, Card, ProgressBar, Select } from "../../kit";
 import { btn, Drawer, EmptyState, formatPhone, SearchInput, waLink } from "../../forms";
 import { ImovelCover, ProprietarioFormModal, StatusBadge, valorLabel } from "./shared";
+import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 
 function ProprietarioDrawer({ id, onClose }: { id: string | null; onClose: () => void }) {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ function ProprietarioDrawer({ id, onClose }: { id: string | null; onClose: () =>
         <div className="space-y-6">
           <div className="flex flex-wrap gap-2">
             <a href={waLink(p.whatsapp)} target="_blank" rel="noreferrer" className={btn.whatsapp}>
-              <MessageCircle className="size-4" /> Conversar no WhatsApp
+              <WhatsAppIcon className="size-4" /> Conversar no WhatsApp
             </a>
           </div>
           {isAdmin && (
@@ -149,7 +150,7 @@ export default function Proprietarios() {
                           onClick={(e) => e.stopPropagation()}
                           className="inline-flex items-center gap-1.5 rounded-full bg-[#e7f8ec] px-2.5 py-1 text-xs font-semibold text-[#128c4a] hover:bg-[#d3f3dd]"
                         >
-                          <MessageCircle className="size-3.5" /> {formatPhone(p.whatsapp)}
+                          <WhatsAppIcon className="size-3.5" /> {formatPhone(p.whatsapp)}
                         </a>
                       </td>
                       <td className="px-3 py-3">

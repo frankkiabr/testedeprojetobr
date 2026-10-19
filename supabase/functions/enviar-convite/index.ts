@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
     const papel = convite.papel === "admin" ? "administrador(a)" : "corretor(a)";
     const html = `
 <div style="font-family:Inter,Arial,sans-serif;max-width:520px;margin:0 auto;padding:32px;color:#0f1a33">
-  <p style="font-size:22px;font-weight:700;margin:0 0 24px">frankkia.</p>
+  <p style="font-size:22px;font-weight:700;margin:0 0 24px">frankkia</p>
   <h1 style="font-size:24px;margin:0 0 12px">Você foi convidado(a) para a ${esc(imob)}</h1>
   <p style="font-size:15px;line-height:1.6;color:#4a5570">Crie seu acesso à Frankkia como ${papel}. Leva menos de 2 minutos.</p>
   <p style="margin:28px 0"><a href="${link}" style="background:#0f1a33;color:#fff;text-decoration:none;padding:14px 26px;border-radius:999px;font-weight:600;display:inline-block">Criar meu acesso</a></p>

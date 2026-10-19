@@ -1,4 +1,5 @@
 /** Peças compartilhadas pelas abas de Negócios: capas, etiquetas e formulários de cadastro. */
+import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 import { useEffect, useMemo, useState } from "react";
 import { Briefcase, Building2, Home, Info, Plus, Store, TreePine, Trash2, Warehouse } from "lucide-react";
 import {
@@ -885,7 +886,7 @@ export function ReportModal({ captacao, open, onClose }: { captacao: Captacao; o
             }}
             className={btn.whatsapp}
           >
-            Enviar pelo WhatsApp
+            <WhatsAppIcon className="size-4" /> Enviar pelo WhatsApp
           </a>
         </>
       }

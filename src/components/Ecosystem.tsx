@@ -1,5 +1,5 @@
-import { useRef, useState } from "react";
-import { AnimatePresence, motion, useMotionValue, useScroll, useSpring, useTransform, type MotionValue } from "framer-motion";
+import { useRef } from "react";
+import { motion, useScroll, useTransform, type MotionValue } from "framer-motion";
 import { ArrowRight, TrendingUp } from "lucide-react";
 import { ecosystem, type Module, type Pill, type Segment } from "@/content";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
@@ -56,21 +56,8 @@ function PillIcon({ kind, progress, range }: { kind: Pill["pill"]; progress: Mot
 }
 
 function ModuleList({ modules }: { modules: Module[] }) {
-  const box = useRef<HTMLDivElement>(null);
-  const [hovered, setHovered] = useState<Module | null>(null);
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const sx = useSpring(x, { stiffness: 260, damping: 30 });
-  const sy = useSpring(y, { stiffness: 260, damping: 30 });
-
-  const onMove = (e: React.PointerEvent) => {
-    const r = box.current!.getBoundingClientRect();
-    x.set(e.clientX - r.left);
-    y.set(e.clientY - r.top);
-  };
-
   return (
-    <div ref={box} className="relative isolate" onPointerMove={onMove} onPointerLeave={() => setHovered(null)}>
+    <div className="relative isolate">
       <ul>
         {modules.map((m, i) => {
           const Icon = m.icon;
@@ -84,7 +71,6 @@ function ModuleList({ modules }: { modules: Module[] }) {
               className="border-t border-line last:border-b"
             >
               <div
-                onPointerEnter={() => setHovered(m)}
                 className="group relative isolate grid w-full grid-cols-[auto_1fr_auto] items-center gap-4 py-5 sm:gap-8 sm:py-7"
               >
                 <span className="absolute inset-0 -z-10 origin-bottom scale-y-0 rounded-2xl bg-canvas transition-transform duration-500 ease-out-expo group-hover:scale-y-100" />
@@ -108,42 +94,6 @@ function ModuleList({ modules }: { modules: Module[] }) {
           );
         })}
       </ul>
-
-      {/* Prévia que segue o cursor */}
-      <motion.div style={{ x: sx, y: sy }} className="pointer-events-none absolute left-0 top-0 z-10 hidden [@media(pointer:fine)]:block">
-        <AnimatePresence>
-          {hovered && (
-            <motion.div
-              key="preview"
-              initial={{ scale: 0.6, opacity: 0, rotate: -6 }}
-              animate={{ scale: 1, opacity: 1, rotate: 0 }}
-              exit={{ scale: 0.6, opacity: 0, rotate: 6 }}
-              transition={{ duration: 0.45, ease: EASE_OUT_EXPO }}
-              className="-ml-28 -mt-24 h-48 w-56 overflow-hidden rounded-3xl bg-ink shadow-lift"
-            >
-              <AnimatePresence mode="popLayout" initial={false}>
-                <motion.div
-                  key={hovered.name}
-                  initial={{ y: "100%" }}
-                  animate={{ y: 0 }}
-                  exit={{ y: "-100%" }}
-                  transition={{ duration: 0.45, ease: EASE_OUT_EXPO }}
-                  className="relative flex size-full flex-col justify-between p-5 text-white"
-                >
-                  <div className="absolute inset-0 bg-[radial-gradient(90%_80%_at_85%_10%,#2f5bea_0%,transparent_70%)]" />
-                  <span className="relative grid size-12 place-items-center rounded-2xl bg-white/15">
-                    <hovered.icon className="size-6" />
-                  </span>
-                  <span className="relative">
-                    <span className="block text-[11px] font-semibold uppercase tracking-[0.16em] text-white/60">Frankkia</span>
-                    <span className="font-display text-2xl font-semibold tracking-tight">{hovered.name}</span>
-                  </span>
-                </motion.div>
-              </AnimatePresence>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
     </div>
   );
 }

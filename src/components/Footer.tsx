@@ -13,7 +13,6 @@ export function Footer({ onSearch }: { onSearch: () => void }) {
   const [copied, setCopied] = useState(false);
   const form = useFormInteressado("site");
   const sent = form.enviado;
-  const giant = site.name.toUpperCase().split("");
 
   const copyEmail = async () => {
     try {
@@ -31,7 +30,7 @@ export function Footer({ onSearch }: { onSearch: () => void }) {
     <footer id="contato" className="mt-28 px-3 pb-3 sm:mt-40 sm:px-4 sm:pb-4">
       <div className="relative mx-auto max-w-[90rem] overflow-hidden rounded-panel bg-ink text-bg">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_10%_0%,rgb(47_91_234/0.35),transparent_70%)]" />
-        <div className="relative mx-auto w-full max-w-[70rem] px-5 pt-20 sm:px-8 sm:pt-28">
+        <div className="relative mx-auto w-full max-w-[70rem] px-5 pb-8 pt-20 sm:px-8 sm:pt-28">
           <div className="grid gap-14 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:gap-20">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -134,24 +133,6 @@ export function Footer({ onSearch }: { onSearch: () => void }) {
             <p>{site.email}</p>
           </div>
         </div>
-
-        <p
-          aria-hidden
-          className="pointer-events-none relative mt-6 -mb-[0.18em] flex select-none justify-center overflow-hidden text-center font-display text-[18.5vw] font-bold uppercase leading-[0.8] tracking-[-0.06em]"
-        >
-          {giant.map((ch, i) => (
-            <motion.span
-              key={i}
-              className="inline-block"
-              initial={{ y: "60%", opacity: 0 }}
-              whileInView={{ y: 0, opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 1, delay: i * 0.06, ease: EASE_OUT_EXPO }}
-            >
-              {ch}
-            </motion.span>
-          ))}
-        </p>
       </div>
     </footer>
   );

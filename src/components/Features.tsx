@@ -46,7 +46,7 @@ function FeatureCard({ item, index }: { item: (typeof features.items)[number]; i
         <span className="absolute bottom-4 left-4 flex max-w-[calc(100%-2rem)] items-center gap-3 rounded-full bg-ink/85 py-2 pl-4 pr-2 text-bg backdrop-blur-md">
           <span className="type-eyebrow truncate">
             {item.title}
-            <span className="hidden sm:inline"> · {item.tag}</span>
+            {item.tag && <span className="hidden sm:inline"> · {item.tag}</span>}
           </span>
           <span className="grid size-7 shrink-0 place-items-center rounded-full bg-white/15 text-sm transition-transform duration-500 ease-out-expo group-hover:-rotate-45">
             <ArrowRight className="size-3.5" />

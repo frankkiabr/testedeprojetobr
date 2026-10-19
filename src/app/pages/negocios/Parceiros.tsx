@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Handshake, MessageCircle, Plus } from "lucide-react";
+import { Handshake, Plus } from "lucide-react";
 import { parceiros, transacoes } from "@/data/demo";
 import { parteDe } from "@/data/queries";
 import { useStore } from "@/data/store";
@@ -9,6 +9,7 @@ import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { Avatar, Card } from "../../kit";
 import { btn, EmptyState, formatPhone, waLink } from "../../forms";
 import { ParceiroFormModal } from "./shared";
+import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 
 /** Corretores externos (sem acesso), usados para registrar parcerias. Só o administrador vê. */
 export default function Parceiros() {
@@ -67,7 +68,7 @@ export default function Parceiros() {
                       <td className="px-3 py-3">
                         {p.telefone ? (
                           <a href={waLink(p.telefone)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-full bg-[#e7f8ec] px-2.5 py-1 text-xs font-semibold text-[#128c4a]">
-                            <MessageCircle className="size-3.5" /> {formatPhone(p.telefone)}
+                            <WhatsAppIcon className="size-3.5" /> {formatPhone(p.telefone)}
                           </a>
                         ) : (
                           "—"

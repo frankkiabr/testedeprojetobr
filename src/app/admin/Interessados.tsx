@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Ban, Copy, Inbox, Link2, Mail, MessageCircle, MonitorPlay, Plus } from "lucide-react";
+import { Ban, Copy, Inbox, Link2, Mail, MonitorPlay, Plus } from "lucide-react";
 import { acessosDemo, demoAtiva, interessados, linkDemo, STATUS_INTERESSADO } from "@/data/platform";
 import { useStore } from "@/data/store";
 import type { Interessado, StatusInteressado } from "@/data/types";
@@ -8,6 +8,7 @@ import { relTime } from "@/lib/format";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { Badge, Card, CardHeader, PageHeader, Segmented, stagger } from "../kit";
 import { btn, EmptyState, Field, formatPhone, inputCls, Modal, SelectField, waLink } from "../forms";
+import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 
 type Filtro = "abertos" | "todos";
 
@@ -102,7 +103,7 @@ export default function Interessados() {
                       onClick={() => i.status === "novo" && store.setInteressado(i.id, { status: "em_contato" })}
                       className={`${btn.accent} h-9 px-3 text-xs`}
                     >
-                      <MessageCircle className="size-3.5" /> WhatsApp
+                      <WhatsAppIcon className="size-3.5" /> WhatsApp
                     </a>
                     <a href={`mailto:${i.email}`} className={`${btn.outline} h-9 px-3 text-xs`}>
                       <Mail className="size-3.5" /> E-mail
@@ -231,7 +232,7 @@ export default function Interessados() {
           <>
             {criado?.telefone && (
               <a href={waLink(criado.telefone, msgDemo(criado.nome, criado.link, criado.dias))} target="_blank" rel="noreferrer" className={btn.accent}>
-                <MessageCircle className="size-4" /> Enviar pelo WhatsApp
+                <WhatsAppIcon className="size-4" /> Enviar pelo WhatsApp
               </a>
             )}
             <button onClick={() => setCriado(null)} className={btn.outline}>

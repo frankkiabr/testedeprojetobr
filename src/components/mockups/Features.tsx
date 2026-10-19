@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { CalendarDays, Check, ClipboardList, LineChart, MessageCircle, Users } from "lucide-react";
 import type { FeatureKey } from "@/content";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
+import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 
 /**
  * Interfaces demonstrativas das funções exibidas no site (dados ilustrativos).
@@ -229,7 +230,7 @@ function RelatorioMock({ active }: { active: boolean }) {
       </div>
       <motion.div {...rise(active, 1.2)} className="mt-4 flex justify-end">
         <span className="inline-flex items-center gap-2 rounded-full bg-[#25d366] px-4 py-2 text-[13px] font-semibold text-white">
-          <MessageCircle className="size-4" /> Enviar pelo WhatsApp
+          <WhatsAppIcon className="size-4" /> Enviar pelo WhatsApp
         </span>
       </motion.div>
     </Stage>

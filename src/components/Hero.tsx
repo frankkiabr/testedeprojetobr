@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
-import { ArrowDown, MessageCircle } from "lucide-react";
+import { CalendarCheck } from "lucide-react";
 import { ecosystem, hero } from "@/content";
 import { EASE_OUT_EXPO, scrollToId } from "@/lib/scroll";
 import { Asterisk, Button, Scaled } from "./ui";
@@ -134,20 +134,9 @@ export function Hero() {
               e.preventDefault();
               scrollToId("contato");
             }}
-            icon={<MessageCircle className="size-[1em]" />}
+            icon={<CalendarCheck className="size-[1em]" />}
           >
             {hero.primary}
-          </Button>
-          <Button
-            href="#planos"
-            variant="outline"
-            onClick={(e) => {
-              e.preventDefault();
-              scrollToId("planos");
-            }}
-            trailing={<ArrowDown className="size-[1em] group-hover/button:translate-y-0.5" />}
-          >
-            {hero.secondary}
           </Button>
         </motion.div>
       </div>

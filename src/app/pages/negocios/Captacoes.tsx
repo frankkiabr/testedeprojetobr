@@ -1,7 +1,8 @@
+import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { BadgeDollarSign, FileText, Handshake, MapPin, MessageCircle, Plus, Ruler, UserRound, Users } from "lucide-react";
+import { BadgeDollarSign, FileText, Handshake, MapPin, Plus, Ruler, UserRound, Users } from "lucide-react";
 import { CHECKLIST_CAPTACAO, CHECKLIST_MARKETING } from "@/data/demo";
 import {
   captacaoById,
@@ -186,7 +187,7 @@ function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: () => voi
                   <p className="text-xs text-muted">{formatPhone(prop.whatsapp)}</p>
                 </div>
                 <a href={waLink(prop.whatsapp)} target="_blank" rel="noreferrer" aria-label="WhatsApp do proprietário" className="grid size-10 place-items-center rounded-full bg-[#25d366] text-white">
-                  <MessageCircle className="size-4" />
+                  <WhatsAppIcon className="size-4" />
                 </a>
               </div>
             )}

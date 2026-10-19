@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { BadgeDollarSign, CalendarClock, Columns3, List, MessageCircle, Phone, Plus, Users } from "lucide-react";
+import { BadgeDollarSign, CalendarClock, Columns3, List, Phone, Plus, Users } from "lucide-react";
 import { CHECKLIST_LEAD, ETAPAS } from "@/data/demo";
 import { atendido, corretoresAtivos, leadById, leadsOf, pessoa, userById } from "@/data/queries";
 import { useStore } from "@/data/store";
@@ -11,6 +11,7 @@ import { useScope } from "../../session";
 import { Avatar, Badge, Card, ProgressBar, Segmented, Select } from "../../kit";
 import { btn, CheckItem, Drawer, EmptyState, Field, formatPhone, inputCls, SearchInput, toLocalInput, waLink } from "../../forms";
 import { ETAPA_DOT, ETAPA_STYLE, LeadFormModal } from "./shared";
+import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 
 const PERIODOS = [
   { value: "30", label: "Últimos 30 dias" },
@@ -191,7 +192,7 @@ function LeadDrawer({ id, onClose }: { id: string | null; onClose: () => void })
           {/* Contato */}
           <div className="flex flex-wrap items-center gap-2">
             <a href={waLink(lead.telefone)} target="_blank" rel="noreferrer" className={btn.whatsapp}>
-              <MessageCircle className="size-4" /> WhatsApp
+              <WhatsAppIcon className="size-4" /> WhatsApp
             </a>
             <a href={`tel:+${lead.telefone}`} className={btn.outline}>
               <Phone className="size-4" /> {formatPhone(lead.telefone)}

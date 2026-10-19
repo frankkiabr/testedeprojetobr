@@ -95,7 +95,6 @@ export const features = {
     {
       key: "relatorio",
       title: "Relatório ao proprietário",
-      tag: "Marketing",
       text: "Marque as ações de divulgação do imóvel e envie ao proprietário um relatório pronto pelo WhatsApp.",
     },
     {
@@ -104,7 +103,7 @@ export const features = {
       tag: "Inteligência",
       text: "Preço do m² por bairro, tempo médio de venda e margem de negociação, a partir dos negócios fechados pela imobiliária.",
     },
-  ] as { key: FeatureKey; title: string; tag: string; text: string }[],
+  ] as { key: FeatureKey; title: string; tag?: string; text: string }[],
 };
 
 export const pricing = {

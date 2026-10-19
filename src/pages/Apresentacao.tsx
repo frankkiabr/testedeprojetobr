@@ -1,11 +1,12 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, CalendarCheck, CheckCircle2, MessageCircle, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ArrowRight, CalendarCheck, CheckCircle2, ShieldCheck } from "lucide-react";
 import { site } from "@/content";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { Logo, Scaled } from "@/components/ui";
 import { Dashboard, DASHBOARD_SIZE } from "@/components/mockups/Dashboard";
 import { CampoArmadilha, TAMANHOS_EQUIPE, useFormInteressado } from "@/components/FormInteressado";
+import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 
 const field =
   "h-12 w-full rounded-2xl border border-line-strong bg-bg px-4 text-[0.9375rem] outline-hidden transition-colors placeholder:text-subtle focus:border-accent focus:ring-4 focus:ring-accent/10";
@@ -96,7 +97,7 @@ export default function Apresentacao() {
 
               <ul className="mt-8 space-y-2.5 text-sm text-muted">
                 <li className="flex items-center gap-2.5">
-                  <MessageCircle className="size-4 shrink-0 text-accent" /> Primeiro contato pelo WhatsApp em até 24 horas.
+                  <WhatsAppIcon className="size-4 shrink-0 text-accent" /> Primeiro contato pelo WhatsApp em até 24 horas.
                 </li>
                 <li className="flex items-center gap-2.5">
                   <CalendarCheck className="size-4 shrink-0 text-accent" /> Apresentação no horário que for melhor para você.

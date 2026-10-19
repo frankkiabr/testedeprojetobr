@@ -37,11 +37,11 @@ export function Button({
   );
 }
 
-/** Marca escrita: "frankkia." com o ponto na cor de destaque. */
+/** Marca escrita: "frankkia" (sem ponto). */
 export function Logo({ className = "" }: { className?: string }) {
   return (
     <span className={`font-display font-semibold tracking-tight ${className}`}>
-      frankkia<span className="text-accent">.</span>
+      frankkia
     </span>
   );
 }
