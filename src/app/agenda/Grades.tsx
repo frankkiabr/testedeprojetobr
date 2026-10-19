@@ -160,7 +160,7 @@ export function GradeHorarios({ dias, eventos, onAbrir, onNovo, onMover, mostrar
                           e.dataTransfer.setData("text/plain", `${c.id}|${desloc}`);
                         }}
                         onClick={() => onAbrir(c)}
-                        className={`size-full cursor-grab overflow-hidden rounded-lg border-l-[3px] px-2 py-1 text-left shadow-sm transition-shadow hover:shadow-soft active:cursor-grabbing ${TIPOS[c.tipo].card}`}
+                        className={`size-full cursor-grab overflow-hidden rounded-lg border-l-[3px] px-2 py-1 text-left shadow-xs transition-shadow hover:shadow-soft active:cursor-grabbing ${TIPOS[c.tipo].card}`}
                       >
                         <p className={`flex items-center gap-1 font-semibold leading-tight ${curto ? "truncate text-[0.6875rem]" : "text-xs"}`}>
                           {sincronizado(c.donoId) && <Link2 className="size-3 shrink-0 opacity-60" />}

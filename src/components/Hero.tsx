@@ -160,7 +160,7 @@ export function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.2, delay: 0.9, ease: EASE_OUT_EXPO }}
           style={{ rotateX, scale, transformOrigin: "50% 0%" }}
-          className="rounded-[20px] bg-gradient-to-b from-accent-soft to-canvas p-1.5 shadow-lift ring-1 ring-line sm:rounded-[34px] sm:p-3"
+          className="rounded-[20px] bg-linear-to-b from-accent-soft to-canvas p-1.5 shadow-lift ring-1 ring-line sm:rounded-[34px] sm:p-3"
         >
           <Scaled width={DASHBOARD_SIZE.width} height={DASHBOARD_SIZE.height} className="rounded-[16px] sm:rounded-[26px]">
             <Dashboard active={inView} />

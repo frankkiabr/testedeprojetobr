@@ -50,7 +50,7 @@ export function ChatBar() {
             value={msg}
             onChange={(e) => setMsg(e.target.value)}
             placeholder="Envie uma mensagem..."
-            className="min-w-0 flex-1 bg-transparent px-1 text-sm outline-none placeholder:text-subtle"
+            className="min-w-0 flex-1 bg-transparent px-1 text-sm outline-hidden placeholder:text-subtle"
           />
           <button
             type="submit"

@@ -7,7 +7,7 @@ import { Asterisk, Scaled } from "./ui";
 import { FEATURE_SIZE, FeatureMock } from "./mockups/Features";
 
 /** Texto gigante preso no meio da tela, deslizando na horizontal conforme a rolagem. */
-function GiantMarquee({ text, target }: { text: string; target: React.RefObject<HTMLElement> }) {
+function GiantMarquee({ text, target }: { text: string; target: React.RefObject<HTMLElement | null> }) {
   const { scrollYProgress } = useScroll({ target, offset: ["start end", "end start"] });
   const x = useTransform(scrollYProgress, [0, 1], ["0%", "-40%"]);
   return (
@@ -53,7 +53,7 @@ function FeatureCard({ item, index }: { item: (typeof features.items)[number]; i
           </span>
         </span>
       </div>
-      <div className="mt-5 flex items-baseline gap-4 rounded-2xl bg-bg/90 px-1 py-1 backdrop-blur-sm">
+      <div className="mt-5 flex items-baseline gap-4 rounded-2xl bg-bg/90 px-1 py-1 backdrop-blur-xs">
         <span className="font-mono text-xs text-muted">{String(index + 1).padStart(2, "0")}</span>
         <div>
           <h3 className="type-subtitle">{item.title}</h3>

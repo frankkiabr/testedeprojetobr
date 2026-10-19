@@ -231,7 +231,7 @@ export function AppLayout() {
         {drawer && (
           <>
             <motion.div
-              className="fixed inset-0 z-40 bg-ink/30 backdrop-blur-sm lg:hidden"
+              className="fixed inset-0 z-40 bg-ink/30 backdrop-blur-xs lg:hidden"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}

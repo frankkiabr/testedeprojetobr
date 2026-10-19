@@ -10,7 +10,7 @@ import { useSession } from "@/app/session";
 import type { Role } from "@/data/types";
 
 const field =
-  "h-12 w-full rounded-2xl border border-line-strong bg-bg px-4 text-[0.9375rem] outline-none transition-colors placeholder:text-subtle focus:border-accent focus:ring-4 focus:ring-accent/10";
+  "h-12 w-full rounded-2xl border border-line-strong bg-bg px-4 text-[0.9375rem] outline-hidden transition-colors placeholder:text-subtle focus:border-accent focus:ring-4 focus:ring-accent/10";
 
 /** Tela de login — visual. Na próxima fase, o Lovable Cloud cuida da autenticação. */
 export default function Login() {

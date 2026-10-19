@@ -105,7 +105,7 @@ export function Select({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="h-full cursor-pointer appearance-none bg-transparent pr-9 outline-none"
+        className="h-full cursor-pointer appearance-none bg-transparent pr-9 outline-hidden"
       >
         {options.map((o) => (
           <option key={o.value} value={o.value}>

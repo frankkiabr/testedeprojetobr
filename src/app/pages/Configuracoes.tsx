@@ -270,7 +270,7 @@ function Perfil() {
 function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {
   return (
     <button role="switch" aria-checked={on} onClick={onChange} className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${on ? "bg-accent" : "bg-line-strong"}`}>
-      <motion.span layout transition={{ type: "spring", stiffness: 600, damping: 35 }} className={`absolute top-1 size-5 rounded-full bg-white shadow ${on ? "right-1" : "left-1"}`} />
+      <motion.span layout transition={{ type: "spring", stiffness: 600, damping: 35 }} className={`absolute top-1 size-5 rounded-full bg-white shadow-sm ${on ? "right-1" : "left-1"}`} />
     </button>
   );
 }

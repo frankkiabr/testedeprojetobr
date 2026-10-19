@@ -54,7 +54,7 @@ export function CommandPalette({ open, setOpen }: { open: boolean; setOpen: (v: 
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-[70] flex items-start justify-center bg-ink/30 px-4 pt-[15vh] backdrop-blur-sm"
+          className="fixed inset-0 z-[70] flex items-start justify-center bg-ink/30 px-4 pt-[15vh] backdrop-blur-xs"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -87,7 +87,7 @@ export function CommandPalette({ open, setOpen }: { open: boolean; setOpen: (v: 
                   } else if (e.key === "Enter" && items[sel]) choose(items[sel]);
                 }}
                 placeholder="Buscar seções, funções, planos..."
-                className="h-14 flex-1 bg-transparent text-[0.9375rem] outline-none placeholder:text-subtle"
+                className="h-14 flex-1 bg-transparent text-[0.9375rem] outline-hidden placeholder:text-subtle"
               />
               <kbd className="rounded-md border border-line-strong px-1.5 py-0.5 font-mono text-[0.6875rem] text-muted">esc</kbd>
             </div>

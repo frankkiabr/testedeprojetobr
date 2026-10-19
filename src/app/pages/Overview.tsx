@@ -132,11 +132,11 @@ export default function Overview() {
       {/* Aniversário do próprio usuário */}
       {diasAteAniversario(user) === 0 && (
         <motion.div {...stagger(1)}>
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-rose-500 via-fuchsia-500 to-accent p-6 text-white">
+          <div className="relative overflow-hidden rounded-3xl bg-linear-to-r from-rose-500 via-fuchsia-500 to-accent p-6 text-white">
             {Array.from({ length: 14 }).map((_, i) => (
               <motion.span
                 key={i}
-                className="absolute size-2 rounded-sm"
+                className="absolute size-2 rounded-xs"
                 style={{ left: `${(i * 7.3) % 100}%`, top: -10, background: ["#fde68a", "#ffffff", "#a5f3fc", "#fbcfe8"][i % 4] }}
                 animate={{ y: [0, 140], rotate: [0, 360], opacity: [1, 0] }}
                 transition={{ duration: 2.4 + (i % 5) * 0.3, repeat: Infinity, delay: i * 0.18, ease: "easeIn" }}

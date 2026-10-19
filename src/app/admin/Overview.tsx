@@ -115,7 +115,7 @@ export default function AdminOverview() {
         <motion.div {...stagger(1)}>
           <Link
             to="/admin/upgrades"
-            className="group flex flex-col gap-3 rounded-3xl bg-gradient-to-r from-accent to-accent-deep p-5 text-white sm:flex-row sm:items-center sm:justify-between"
+            className="group flex flex-col gap-3 rounded-3xl bg-linear-to-r from-accent to-accent-deep p-5 text-white sm:flex-row sm:items-center sm:justify-between"
           >
             <span className="flex items-center gap-3">
               <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-white/15">

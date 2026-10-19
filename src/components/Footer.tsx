@@ -6,7 +6,7 @@ import { demo, nav, site } from "@/content";
 import { EASE_OUT_EXPO, scrollToId } from "@/lib/scroll";
 
 const field =
-  "h-12 w-full rounded-2xl border border-white/10 bg-white/5 px-4 text-[0.9375rem] text-bg outline-none transition-colors placeholder:text-bg/40 focus:border-accent focus:bg-white/10";
+  "h-12 w-full rounded-2xl border border-white/10 bg-white/5 px-4 text-[0.9375rem] text-bg outline-hidden transition-colors placeholder:text-bg/40 focus:border-accent focus:bg-white/10";
 
 export function Footer({ onSearch }: { onSearch: () => void }) {
   const [copied, setCopied] = useState(false);

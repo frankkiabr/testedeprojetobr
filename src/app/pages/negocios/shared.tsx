@@ -59,7 +59,7 @@ export function ImovelCover({ categoria, className = "" }: { categoria: Categori
           linear-gradient(140deg, hsl(${hue} 70% 94%), hsl(${hue} 55% 80%))`,
       }}
     >
-      <Icon className="size-12 text-white drop-shadow-sm" strokeWidth={1.5} />
+      <Icon className="size-12 text-white drop-shadow-xs" strokeWidth={1.5} />
     </div>
   );
 }
@@ -695,7 +695,7 @@ export function TransacaoFormModal({
                   <select
                     value={p.tipo}
                     onChange={(e) => setPart(i, { tipo: e.target.value as Participante["tipo"], refId: "" })}
-                    className="h-10 rounded-lg border border-line-strong bg-bg px-2 text-xs font-semibold outline-none"
+                    className="h-10 rounded-lg border border-line-strong bg-bg px-2 text-xs font-semibold outline-hidden"
                   >
                     <option value="corretor">Da equipe</option>
                     <option value="parceiro">Parceiro externo</option>
@@ -703,7 +703,7 @@ export function TransacaoFormModal({
                   <select
                     value={p.refId}
                     onChange={(e) => (e.target.value === "__novo" ? setNovoParceiro(i) : setPart(i, { refId: e.target.value }))}
-                    className="h-10 min-w-0 rounded-lg border border-line-strong bg-bg px-2 text-sm outline-none"
+                    className="h-10 min-w-0 rounded-lg border border-line-strong bg-bg px-2 text-sm outline-hidden"
                   >
                     <option value="" disabled>
                       Selecione
@@ -720,7 +720,7 @@ export function TransacaoFormModal({
                       value={p.pct || ""}
                       onChange={(e) => setPart(i, { pct: num(e.target.value) })}
                       inputMode="decimal"
-                      className="h-10 w-full rounded-lg border border-line-strong bg-bg pl-2 pr-6 text-right text-sm outline-none"
+                      className="h-10 w-full rounded-lg border border-line-strong bg-bg pl-2 pr-6 text-right text-sm outline-hidden"
                     />
                     <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted">%</span>
                   </label>
@@ -891,7 +891,7 @@ export function ReportModal({ captacao, open, onClose }: { captacao: Captacao; o
       }
     >
       <div className="rounded-2xl bg-[#e7f8ec] p-4">
-        <div className="ml-auto max-w-[92%] whitespace-pre-wrap rounded-2xl rounded-tr-sm bg-white p-4 text-sm leading-relaxed shadow-sm">{text}</div>
+        <div className="ml-auto max-w-[92%] whitespace-pre-wrap rounded-2xl rounded-tr-xs bg-white p-4 text-sm leading-relaxed shadow-xs">{text}</div>
       </div>
       <p className="mt-3 text-xs text-subtle">Ao enviar, a ação “Relatório ao proprietário” é marcada automaticamente no checklist.</p>
     </Modal>

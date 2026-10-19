@@ -1,6 +1,23 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+/* Cores, fontes, sombras e animações da Frankkia continuam definidas em tailwind.config.ts */
+@config "../tailwind.config.ts";
+
+/* Compatibilidade com o Tailwind 3 (mantém o visual original):
+   - bordas sem cor explícita usam a cor de linha da marca (no Tailwind 4 seria a cor do texto);
+   - botões voltam a mostrar o cursor de "mãozinha". */
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: #e8ebf1;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
 
 @layer base {
   html {
@@ -34,7 +51,7 @@ html.lenis body {
 /* Escala tipográfica (valores medidos no site original) */
 @layer components {
   .type-hero {
-    font-family: theme("fontFamily.display");
+    font-family: 'Space Grotesk', 'Inter', ui-sans-serif, system-ui, sans-serif;
     letter-spacing: -0.035em;
     text-wrap: balance;
     font-size: 2.75rem;
@@ -42,7 +59,7 @@ html.lenis body {
     line-height: 1;
   }
   .type-statement {
-    font-family: theme("fontFamily.display");
+    font-family: 'Space Grotesk', 'Inter', ui-sans-serif, system-ui, sans-serif;
     letter-spacing: -0.035em;
     text-wrap: balance;
     font-size: 2.125rem;
@@ -50,7 +67,7 @@ html.lenis body {
     line-height: 1.1;
   }
   .type-title {
-    font-family: theme("fontFamily.display");
+    font-family: 'Space Grotesk', 'Inter', ui-sans-serif, system-ui, sans-serif;
     letter-spacing: -0.025em;
     text-wrap: balance;
     font-size: 2rem;
@@ -58,7 +75,7 @@ html.lenis body {
     line-height: 1.1;
   }
   .type-giant {
-    font-family: theme("fontFamily.display");
+    font-family: 'Space Grotesk', 'Inter', ui-sans-serif, system-ui, sans-serif;
     letter-spacing: -0.045em;
     text-transform: uppercase;
     white-space: nowrap;
@@ -67,14 +84,14 @@ html.lenis body {
     line-height: 0.85;
   }
   .type-index {
-    font-family: theme("fontFamily.display");
+    font-family: 'Space Grotesk', 'Inter', ui-sans-serif, system-ui, sans-serif;
     letter-spacing: -0.03em;
     font-size: 1.5rem;
     font-weight: 500;
     line-height: 1.1;
   }
   .type-subtitle {
-    font-family: theme("fontFamily.display");
+    font-family: 'Space Grotesk', 'Inter', ui-sans-serif, system-ui, sans-serif;
     letter-spacing: -0.015em;
     font-size: 1.5rem;
     font-weight: 500;

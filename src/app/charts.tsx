@@ -54,7 +54,7 @@ export function LineArea({ data, format, height = 220 }: { data: Point[]; format
         {pts.map((p, i) => (
           <motion.span
             key={`d-${i}-${key}`}
-            className={`pointer-events-none absolute size-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-accent shadow ${
+            className={`pointer-events-none absolute size-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-accent shadow-sm ${
               hover === i || i === pts.length - 1 ? "opacity-100" : "opacity-0"
             } transition-opacity`}
             style={{ left: `${p.x}%`, top: `${p.y}%` }}
@@ -123,11 +123,11 @@ export function GroupedBars({
       </div>
       <div className="mt-4 flex gap-5 text-xs text-muted">
         <span className="flex items-center gap-2">
-          <span className="size-2.5 rounded-sm bg-accent-soft" />
+          <span className="size-2.5 rounded-xs bg-accent-soft" />
           {labels[0]}
         </span>
         <span className="flex items-center gap-2">
-          <span className="size-2.5 rounded-sm bg-accent" />
+          <span className="size-2.5 rounded-xs bg-accent" />
           {labels[1]}
         </span>
       </div>

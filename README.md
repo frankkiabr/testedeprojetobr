@@ -5,12 +5,15 @@ todas as telas funcionam com **dados de exemplo** (somem ao recarregar a página
 
 ## Stack
 
-Vite + React 18 + TypeScript + Tailwind CSS 3 · `react-router-dom` (rotas) · `framer-motion` (animações) · `lenis` (rolagem suave) · `lucide-react` (ícones).
+Modelo Lovable **TanStack Start** (React 19 + TypeScript + Tailwind CSS 4) · `react-router-dom` (rotas das telas) ·
+`framer-motion` (animações) · `lenis` (rolagem suave) · `lucide-react` (ícones).
+O app roda inteiro no navegador: `src/routes/__root.tsx` monta `src/App.tsx`. Detalhes para agentes em `AGENTS.md`.
 
 ```bash
-npm install
-npm run dev     # http://localhost:8080
-npm run build   # verificação de tipos + build de produção
+npm install --legacy-peer-deps   # (o Lovable usa bun e não precisa da flag)
+npm run dev        # http://localhost:8080
+npm run typecheck  # verificação de tipos
+npm run build      # build de produção (Cloudflare/nitro)
 ```
 
 ## Onde fica cada coisa

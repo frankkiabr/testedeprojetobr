@@ -6,7 +6,7 @@ import { useStore } from "@/data/store";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 
 export const inputCls =
-  "h-11 w-full rounded-xl border border-line-strong bg-bg px-3.5 text-sm outline-none transition placeholder:text-subtle focus:border-accent focus:ring-4 focus:ring-accent/10";
+  "h-11 w-full rounded-xl border border-line-strong bg-bg px-3.5 text-sm outline-hidden transition placeholder:text-subtle focus:border-accent focus:ring-4 focus:ring-accent/10";
 
 export const btn = {
   primary:
@@ -56,7 +56,7 @@ export function Modal({
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-[60] flex items-end justify-center bg-ink/30 backdrop-blur-sm sm:items-center sm:p-4"
+          className="fixed inset-0 z-[60] flex items-end justify-center bg-ink/30 backdrop-blur-xs sm:items-center sm:p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -188,7 +188,7 @@ export function SearchInput({ value, onChange, placeholder }: { value: string; o
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="h-full w-full min-w-[12rem] rounded-xl border border-line-strong bg-bg pl-10 pr-3 text-sm outline-none transition placeholder:text-subtle focus:border-accent focus:ring-4 focus:ring-accent/10"
+        className="h-full w-full min-w-[12rem] rounded-xl border border-line-strong bg-bg pl-10 pr-3 text-sm outline-hidden transition placeholder:text-subtle focus:border-accent focus:ring-4 focus:ring-accent/10"
       />
     </label>
   );

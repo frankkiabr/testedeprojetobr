@@ -213,7 +213,7 @@ function RelatorioMock({ active }: { active: boolean }) {
           initial={{ opacity: 0, y: 20, scale: 0.96 }}
           animate={active ? { opacity: 1, y: 0, scale: 1 } : {}}
           transition={{ duration: 0.7, delay: 0.2, ease: EASE_OUT_EXPO }}
-          className="ml-auto max-w-[88%] rounded-2xl rounded-tr-sm bg-white p-4 text-[13px] leading-relaxed shadow-sm"
+          className="ml-auto max-w-[88%] rounded-2xl rounded-tr-xs bg-white p-4 text-[13px] leading-relaxed shadow-xs"
         >
           <p>Olá, Helena! Tudo bem?</p>
           <p className="mt-2">Segue o relatório de divulgação do seu imóvel (Apto 302 · Edifício Aurora):</p>

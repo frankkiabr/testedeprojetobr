@@ -160,7 +160,7 @@ export function UpgradeNudge({ aPartirDe = 0.7, compact = false }: { aPartirDe?:
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-accent to-accent-deep p-6 text-white"
+          className="relative overflow-hidden rounded-3xl bg-linear-to-br from-accent to-accent-deep p-6 text-white"
         >
           <Sparkles className="absolute -right-4 -top-4 size-28 text-white/10" />
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/70">{cheio ? "Plano cheio" : "Sua equipe está crescendo"}</p>
