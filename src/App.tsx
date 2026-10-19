@@ -18,6 +18,8 @@ import Mercado from "@/app/pages/Mercado";
 import AgendaPage from "@/app/pages/AgendaPage";
 import AgendaAdmin from "@/app/admin/AgendaAdmin";
 import Convite from "@/pages/Convite";
+import RedefinirSenha from "@/pages/RedefinirSenha";
+import { Guard } from "@/app/Guard";
 import Checkout from "@/pages/Checkout";
 import Upgrades from "@/app/admin/Upgrades";
 import Academy from "@/app/pages/academy/Academy";
@@ -43,11 +45,19 @@ export default function App() {
               {/* Site público */}
               <Route path="/" element={<Landing />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/redefinir-senha" element={<RedefinirSenha />} />
               <Route path="/convite/:id" element={<Convite />} />
               <Route path="/checkout/:id" element={<Checkout />} />
 
               {/* Área logada da imobiliária (administrador e corretor) */}
-              <Route path="/app" element={<AppLayout />}>
+              <Route
+                path="/app"
+                element={
+                  <Guard area="app">
+                    <AppLayout />
+                  </Guard>
+                }
+              >
                 <Route index element={<Navigate to="visao-geral" replace />} />
                 <Route path="visao-geral" element={<Overview />} />
                 <Route path="agenda" element={<AgendaPage />} />
@@ -85,7 +95,14 @@ export default function App() {
               </Route>
 
               {/* Painel da Frankkia (você) */}
-              <Route path="/admin" element={<AdminLayout />}>
+              <Route
+                path="/admin"
+                element={
+                  <Guard area="admin">
+                    <AdminLayout />
+                  </Guard>
+                }
+              >
                 <Route index element={<AdminOverview />} />
                 <Route path="agenda" element={<AgendaAdmin />} />
                 <Route path="imobiliarias" element={<Imobiliarias />} />

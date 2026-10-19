@@ -1,5 +1,14 @@
 # Pendências da Frankkia
 
+## E-mails do login (convites, confirmação, nova senha)
+
+**Feito:** login real, convite por link, primeiro acesso, "Esqueceu a senha?".
+**Falta:**
+- Configurar um serviço de e-mail próprio no Supabase (ex.: Resend — Authentication → Emails → SMTP).
+  O e-mail padrão do Supabase é só para testes: poucos envios por hora e apenas para e-mails da equipe do projeto.
+- Envio automático do convite por e-mail (hoje o administrador copia o link e envia por WhatsApp/e-mail).
+- Textos dos e-mails em português (Authentication → Emails → Templates).
+
 ## Upgrade de plano com Stripe
 
 **Feito (demonstração):** escolher plano → tela de pagamento simulada (cartão/PIX/boleto) → status para o administrador → "Pedidos de upgrade" no painel Frankkia → botão "Liberar plano" (vagas extras na hora).

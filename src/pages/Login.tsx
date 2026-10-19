@@ -1,26 +1,62 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Eye, EyeOff, Info } from "lucide-react";
 import { site } from "@/content";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { Logo, Scaled } from "@/components/ui";
 import { Dashboard, DASHBOARD_SIZE } from "@/components/mockups/Dashboard";
-import { useSession } from "@/app/session";
+import { inicioDe, useSession } from "@/app/session";
+import { mensagemErro, setLembrar, supabase } from "@/integrations/supabase/client";
 import type { Role } from "@/data/types";
 
 const field =
   "h-12 w-full rounded-2xl border border-line-strong bg-bg px-4 text-[0.9375rem] outline-hidden transition-colors placeholder:text-subtle focus:border-accent focus:ring-4 focus:ring-accent/10";
 
-/** Tela de login — visual. Na próxima fase, o Lovable Cloud cuida da autenticação. */
+/** Tela de login: e-mail e senha no Supabase. O papel (Frankkia, administrador, corretor) vem do banco. */
 export default function Login() {
   const [show, setShow] = useState(false);
-  const { setRole } = useSession();
+  const { setRole, modo, role, carregando } = useSession();
   const navigate = useNavigate();
+  const loc = useLocation();
+  const destino = (loc.state as { de?: string } | null)?.de;
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [lembrar, setLembrarState] = useState(true);
+  const [enviando, setEnviando] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
+  const [aviso, setAviso] = useState<string | null>(null);
+
+  // Já entrou de verdade: vai direto para a sua área
+  if (modo === "real" && !carregando) return <Navigate to={destino ?? inicioDe(role)} replace />;
 
   const enter = (r: Role) => {
     setRole(r);
-    navigate(r === "frankkia" ? "/admin" : "/app/visao-geral");
+    navigate(inicioDe(r));
+  };
+
+  const entrar = async () => {
+    setErro(null);
+    setAviso(null);
+    setEnviando(true);
+    setLembrar(lembrar);
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password: senha });
+    setEnviando(false);
+    if (error) setErro(mensagemErro(error));
+    // sucesso: a sessão muda e o redirecionamento acima leva para a área certa
+  };
+
+  const esqueci = async () => {
+    setErro(null);
+    setAviso(null);
+    const e = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) {
+      setErro("Digite seu e-mail no campo acima e clique de novo em “Esqueceu a senha?”.");
+      return;
+    }
+    const { error } = await supabase.auth.resetPasswordForEmail(e, { redirectTo: `${window.location.origin}/redefinir-senha` });
+    if (error) setErro(mensagemErro(error));
+    else setAviso("Se houver uma conta com este e-mail, enviamos um link para criar uma nova senha.");
   };
 
   return (
@@ -50,12 +86,20 @@ export default function Login() {
             className="mt-8 space-y-3"
             onSubmit={(e) => {
               e.preventDefault();
-              enter("admin");
+              entrar();
             }}
           >
-            <input className={field} type="email" placeholder="E-mail" autoComplete="off" />
+            <input className={field} type="email" placeholder="E-mail" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
             <div className="relative">
-              <input className={`${field} pr-12`} type={show ? "text" : "password"} placeholder="Senha" autoComplete="off" />
+              <input
+                className={`${field} pr-12`}
+                type={show ? "text" : "password"}
+                placeholder="Senha"
+                autoComplete="current-password"
+                value={senha}
+                onChange={(e) => setSenha(e.target.value)}
+                required
+              />
               <button
                 type="button"
                 onClick={() => setShow(!show)}
@@ -67,17 +111,21 @@ export default function Login() {
             </div>
             <div className="flex items-center justify-between py-1 text-sm">
               <label className="flex items-center gap-2 text-muted">
-                <input type="checkbox" className="size-4 accent-accent" /> Lembrar de mim
+                <input type="checkbox" className="size-4 accent-accent" checked={lembrar} onChange={(e) => setLembrarState(e.target.checked)} /> Lembrar de
+                mim
               </label>
-              <button type="button" className="font-medium text-accent hover:text-accent-deep">
+              <button type="button" onClick={esqueci} className="font-medium text-accent hover:text-accent-deep">
                 Esqueceu a senha?
               </button>
             </div>
+            {erro && <p className="rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700">{erro}</p>}
+            {aviso && <p className="rounded-xl bg-verified-soft px-3 py-2 text-sm text-verified">{aviso}</p>}
             <button
               type="submit"
-              className="group/button inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-ink font-semibold text-bg transition-[background-color,transform] hover:bg-ink/85 active:scale-[0.98]"
+              disabled={enviando}
+              className="group/button inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-ink font-semibold text-bg transition-[background-color,transform] hover:bg-ink/85 active:scale-[0.98] disabled:opacity-60"
             >
-              Entrar
+              {enviando ? "Entrando..." : "Entrar"}
               <ArrowRight className="size-4 transition-transform group-hover/button:translate-x-0.5" />
             </button>
           </form>
@@ -85,7 +133,7 @@ export default function Login() {
           <div className="mt-8 rounded-2xl border border-dashed border-line-strong bg-canvas/60 p-4">
             <p className="flex items-start gap-2 text-sm text-muted">
               <Info className="mt-0.5 size-4 shrink-0 text-accent" />
-              Versão demonstrativa: o login ainda não está ativo. Escolha um perfil para explorar.
+              Quer só conhecer? Explore a demonstração com dados de exemplo.
             </p>
             <div className="mt-3 grid grid-cols-3 gap-2">
               {(

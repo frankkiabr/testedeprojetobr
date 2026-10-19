@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Link, NavLink, Navigate, useLocation, useOutlet } from "react-router-dom";
-import { AlertOctagon, Building2, CalendarDays, ExternalLink, LayoutGrid, LifeBuoy, Menu, Rocket, X } from "lucide-react";
-import { errosSistema, frankkiaUser, pedidosUpgrade, todosChamados } from "@/data/platform";
+import { Link, NavLink, useLocation, useNavigate, useOutlet } from "react-router-dom";
+import { AlertOctagon, Building2, CalendarDays, ExternalLink, LayoutGrid, LifeBuoy, LogOut, Menu, Rocket, X } from "lucide-react";
+import { errosSistema, pedidosUpgrade, todosChamados } from "@/data/platform";
 import { useStore } from "@/data/store";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { Logo } from "@/components/ui";
@@ -13,6 +13,8 @@ import { Toaster } from "../forms";
 
 function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   useStore();
+  const { sair } = useSession();
+  const navigate = useNavigate();
   const abertos = todosChamados().filter((c) => c.status !== "resolvido").length;
   const novos = errosSistema.filter((e) => e.status === "novo").length;
   const aLiberar = pedidosUpgrade.filter((p) => p.pagamento === "confirmado" && !p.liberado).length;
@@ -66,6 +68,15 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         <Link to="/" className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-bg/60 hover:bg-white/5 hover:text-bg">
           <ExternalLink className="size-[18px]" /> Ver o site
         </Link>
+        <button
+          onClick={async () => {
+            await sair();
+            navigate("/");
+          }}
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-bg/60 hover:bg-white/5 hover:text-bg"
+        >
+          <LogOut className="size-[18px]" /> Sair
+        </button>
       </div>
     </div>
   );
@@ -73,7 +84,7 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
 
 /** Painel do criador da Frankkia. Só abre no perfil "Frankkia". */
 export function AdminLayout() {
-  const { role } = useSession();
+  const { modo, user } = useSession();
   const loc = useLocation();
   const outlet = useOutlet();
   const [drawer, setDrawer] = useState(false);
@@ -82,8 +93,6 @@ export function AdminLayout() {
     setDrawer(false);
     window.scrollTo(0, 0);
   }, [loc.pathname]);
-
-  if (role !== "frankkia") return <Navigate to="/app/visao-geral" replace />;
 
   return (
     <div className="min-h-screen bg-canvas/60">
@@ -121,13 +130,15 @@ export function AdminLayout() {
             <div className="hidden md:block">
               <RoleSwitcher />
             </div>
-            <span className="hidden text-sm text-muted xl:block">{frankkiaUser.email}</span>
-            <Avatar user={frankkiaUser} className="size-10 bg-ink text-[0.8125rem] text-bg" />
+            <span className="hidden text-sm text-muted xl:block">{user.email}</span>
+            <Avatar user={user} className="size-10 bg-ink text-[0.8125rem] text-bg" />
           </div>
         </header>
-        <div className="flex justify-center border-b border-line bg-bg px-4 py-2 md:hidden">
-          <RoleSwitcher />
-        </div>
+        {modo === "demo" && (
+          <div className="flex justify-center border-b border-line bg-bg px-4 py-2 md:hidden">
+            <RoleSwitcher />
+          </div>
+        )}
 
         <main className="mx-auto w-full max-w-[84rem] px-4 py-8 sm:px-8 sm:py-10">
           {/* Só anima a entrada (sem esperar a saída), para não deixar a tela em branco em trocas rápidas. */}

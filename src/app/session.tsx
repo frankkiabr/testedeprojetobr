@@ -1,39 +1,196 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import type { User } from "@supabase/supabase-js";
 import { admin, corretorDemo } from "@/data/demo";
+import { frankkiaUser } from "@/data/platform";
 import type { Role, Usuario } from "@/data/types";
 import type { Scope } from "@/data/queries";
+import { supabase } from "@/integrations/supabase/client";
 
 /**
- * SESSÃO DE DEMONSTRAÇÃO.
- * Hoje o perfil é escolhido no seletor "Ver como". Na próxima fase, o login do Lovable Cloud
- * define o usuário e o papel (administrador ou corretor) automaticamente.
+ * SESSÃO.
+ * - "real": login com e-mail e senha no Supabase. O papel vem do banco (Frankkia, administrador ou corretor).
+ * - "demo": perfis de exemplo escolhidos em "Explorar a demonstração" / "Ver como".
+ * - "nenhuma": ninguém entrou.
+ * Enquanto as telas ainda usam os dados de exemplo, o login real mostra a identidade real
+ * (nome, e-mail, imobiliária) sobre os dados de exemplo do mesmo papel.
  */
-type Ctx = { role: Role; setRole: (r: Role) => void; user: Usuario };
+export type Modo = "real" | "demo" | "nenhuma";
+
+export type ImobiliariaConta = { id: string; nome: string; plano: string; limite: number; status: string };
+export type Conta = {
+  usuarioId: string;
+  email: string;
+  nome: string;
+  iniciais: string;
+  frankkia: boolean;
+  papel: "admin" | "corretor" | null;
+  imobiliaria: ImobiliariaConta | null;
+};
+
+type Ctx = {
+  modo: Modo;
+  carregando: boolean;
+  role: Role;
+  /** Só na demonstração: troca o perfil de exemplo. */
+  setRole: (r: Role) => void;
+  user: Usuario;
+  conta: Conta | null;
+  sair: () => Promise<void>;
+  recarregar: () => Promise<void>;
+};
 const SessionContext = createContext<Ctx | null>(null);
 const KEY = "frankkia-demo-role";
 
-function readRole(): Role {
+function readDemoRole(): Role | null {
   try {
     const r = localStorage.getItem(KEY);
     if (r === "admin" || r === "corretor" || r === "frankkia") return r;
   } catch {
     /* armazenamento indisponível */
   }
-  return "admin";
+  return null;
+}
+function writeDemoRole(r: Role | null) {
+  try {
+    if (r) localStorage.setItem(KEY, r);
+    else localStorage.removeItem(KEY);
+  } catch {
+    /* armazenamento indisponível */
+  }
+}
+
+const iniciaisDe = (nome: string, email: string) => {
+  const p = nome.trim().split(/\s+/).filter(Boolean);
+  if (p.length) return ((p[0][0] ?? "") + (p.length > 1 ? p[p.length - 1][0] : "")).toUpperCase();
+  return email.slice(0, 2).toUpperCase();
+};
+
+/** Primeiro acesso por convite com confirmação de e-mail: os dados do cadastro ficam guardados na conta
+ *  e o convite é aceito automaticamente no primeiro login. */
+async function aceitarConvitePendente(u: User) {
+  const m = u.user_metadata ?? {};
+  if (!m.convite_token) return;
+  const { error } = await supabase.rpc("aceitar_convite", {
+    p_token: m.convite_token,
+    p_nome: m.nome ?? "",
+    p_telefone: m.telefone ?? "",
+    p_aniversario: m.aniversario || null,
+    p_creci: m.creci ?? "",
+    p_creci_uf: m.creci_uf ?? "",
+    p_estagiario: !!m.estagiario,
+  } as never);
+  // aceito ou inválido: de qualquer forma, não tenta de novo
+  if (!error || /CONVITE_INVALIDO|EMAIL_DIFERENTE/.test(error.message)) {
+    await supabase.auth.updateUser({ data: { convite_token: null } });
+  }
+}
+
+async function carregarConta(u: User): Promise<Conta> {
+  await aceitarConvitePendente(u);
+  const [perfil, membros, fk] = await Promise.all([
+    supabase.from("perfis").select("nome, iniciais, email").eq("id", u.id).maybeSingle(),
+    supabase
+      .from("membros")
+      .select("papel, imobiliarias(id, nome, plano, limite_corretores, status)")
+      .eq("usuario_id", u.id)
+      .eq("ativo", true)
+      .order("criado_em")
+      .limit(1),
+    supabase.from("frankkia_admins").select("usuario_id").eq("usuario_id", u.id).maybeSingle(),
+  ]);
+  const email = perfil.data?.email || u.email || "";
+  const nome = perfil.data?.nome || (u.user_metadata?.nome as string) || "";
+  const m = membros.data?.[0];
+  const i = m?.imobiliarias as { id: string; nome: string; plano: string; limite_corretores: number; status: string } | null | undefined;
+  return {
+    usuarioId: u.id,
+    email,
+    nome,
+    iniciais: perfil.data?.iniciais || iniciaisDe(nome, email),
+    frankkia: !!fk.data,
+    papel: (m?.papel as "admin" | "corretor" | undefined) ?? null,
+    imobiliaria: i ? { id: i.id, nome: i.nome, plano: i.plano, limite: i.limite_corretores, status: i.status } : null,
+  };
 }
 
 export function SessionProvider({ children }: { children: ReactNode }) {
-  const [role, setRoleState] = useState<Role>(readRole);
-  const setRole = (r: Role) => {
-    setRoleState(r);
-    try {
-      localStorage.setItem(KEY, r);
-    } catch {
-      /* armazenamento indisponível */
+  const [demoRole, setDemoRole] = useState<Role | null>(readDemoRole);
+  const [authUser, setAuthUser] = useState<User | null>(null);
+  const [conta, setConta] = useState<Conta | null>(null);
+  const [carregando, setCarregando] = useState(true);
+  const usuarioAtual = useRef<string | null>(null);
+
+  const carregar = useCallback(async (u: User | null, silencioso = false) => {
+    if (!u) {
+      setConta(null);
+      setCarregando(false);
+      return;
     }
+    if (!silencioso) setCarregando(true);
+    try {
+      setConta(await carregarConta(u));
+    } catch {
+      setConta(null);
+    } finally {
+      setCarregando(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    let vivo = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (!vivo) return;
+      usuarioAtual.current = data.session?.user?.id ?? null;
+      setAuthUser(data.session?.user ?? null);
+      carregar(data.session?.user ?? null);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((evento, sessao) => {
+      if (evento === "INITIAL_SESSION" || evento === "TOKEN_REFRESHED") return;
+      const u = sessao?.user ?? null;
+      // mesma conta (ex.: outra aba renovou a sessão): atualiza sem esconder a tela
+      const mesma = evento === "USER_UPDATED" || (evento === "SIGNED_IN" && u?.id === usuarioAtual.current);
+      if (!mesma) setCarregando(true); // já marca antes de trocar o usuário, para não piscar "sem acesso"
+      usuarioAtual.current = u?.id ?? null;
+      setAuthUser(u);
+      // fora do callback (recomendação do Supabase para não travar o login)
+      setTimeout(() => carregar(u, mesma), 0);
+    });
+    return () => {
+      vivo = false;
+      sub.subscription.unsubscribe();
+    };
+  }, [carregar]);
+
+  const modo: Modo = authUser ? "real" : demoRole ? "demo" : "nenhuma";
+
+  // Papel: no login real vem do banco; na demonstração, do perfil escolhido.
+  const role: Role = modo === "real" ? (conta?.frankkia ? "frankkia" : (conta?.papel ?? "corretor")) : (demoRole ?? "admin");
+
+  const setRole = (r: Role) => {
+    if (authUser) return; // no login real o papel não muda pelo seletor
+    setDemoRole(r);
+    writeDemoRole(r);
   };
-  const user = role === "corretor" ? corretorDemo : admin;
-  return <SessionContext.Provider value={{ role, setRole, user }}>{children}</SessionContext.Provider>;
+
+  const sair = async () => {
+    setDemoRole(null);
+    writeDemoRole(null);
+    if (authUser) await supabase.auth.signOut();
+  };
+
+  const base = role === "frankkia" ? frankkiaUser : role === "corretor" ? corretorDemo : admin;
+  const user: Usuario =
+    modo === "real" && conta
+      ? { ...base, nome: conta.nome || base.nome, email: conta.email, iniciais: conta.iniciais || base.iniciais }
+      : base;
+
+  return (
+    <SessionContext.Provider
+      value={{ modo, carregando, role, setRole, user, conta, sair, recarregar: () => carregar(authUser) }}
+    >
+      {children}
+    </SessionContext.Provider>
+  );
 }
 
 export function useSession() {
@@ -49,3 +206,6 @@ export function useScope() {
   const scope: Scope = isAdmin ? {} : { corretorId: user.id };
   return { isAdmin, user, scope };
 }
+
+/** Para onde vai cada papel ao entrar. */
+export const inicioDe = (r: Role) => (r === "frankkia" ? "/admin" : "/app/visao-geral");

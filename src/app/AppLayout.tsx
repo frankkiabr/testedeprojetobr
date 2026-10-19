@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Link, NavLink, Navigate, useLocation, useNavigate, useOutlet } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate, useOutlet } from "react-router-dom";
 import {
   AlertTriangle,
   BarChart3,
@@ -123,9 +123,10 @@ const ROLES: { value: Role; label: string }[] = [
 
 /** Seletor só da fase de demonstração: permite ver a plataforma com os olhos de cada perfil. */
 export function RoleSwitcher() {
-  const { role, setRole } = useSession();
+  const { role, setRole, modo } = useSession();
   const navigate = useNavigate();
   const loc = useLocation();
+  if (modo !== "demo") return null;
   const change = (r: Role) => {
     setRole(r);
     if (r === "frankkia") navigate("/admin");
@@ -155,7 +156,7 @@ export function RoleSwitcher() {
 }
 
 function UserMenu() {
-  const { user, role } = useSession();
+  const { user, role, sair } = useSession();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -194,7 +195,12 @@ function UserMenu() {
               >
                 <Settings2 className="size-4 text-muted" /> Configurações
               </button>
-              <button onClick={() => navigate("/")} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm hover:bg-canvas">
+              <button
+                onClick={async () => {
+                  await sair();
+                  navigate("/");
+                }}
+                className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm hover:bg-canvas">
                 <LogOut className="size-4 text-muted" /> Sair
               </button>
             </div>
@@ -206,7 +212,7 @@ function UserMenu() {
 }
 
 export function AppLayout() {
-  const { role } = useSession();
+  const { role, modo, conta } = useSession();
   useStore();
   const loc = useLocation();
   const outlet = useOutlet();
@@ -217,7 +223,9 @@ export function AppLayout() {
     window.scrollTo(0, 0);
   }, [loc.pathname]);
 
-  if (role === "frankkia") return <Navigate to="/admin" replace />;
+  // No login real, nome e situação vêm da imobiliária do usuário; na demonstração, da imobiliária de exemplo.
+  const nomeImob = (modo === "real" && conta?.imobiliaria?.nome) || imobiliaria.nome;
+  const suspensa = modo === "real" ? conta?.imobiliaria?.status === "suspensa" : clienteById(imobiliaria.id)?.status === "suspensa";
 
   return (
     <div className="min-h-screen bg-canvas/50">
@@ -265,7 +273,7 @@ export function AppLayout() {
             <div className="hidden md:block">
               <RoleSwitcher />
             </div>
-            <span className="hidden text-sm text-muted xl:block">{imobiliaria.nome}</span>
+            <span className="hidden text-sm text-muted xl:block">{nomeImob}</span>
             <button aria-label="Notificações" className="relative grid size-10 place-items-center rounded-full text-muted hover:bg-canvas hover:text-ink">
               <Bell className="size-[18px]" />
               <span className="absolute right-2.5 top-2.5 size-2 rounded-full bg-accent ring-2 ring-bg" />
@@ -274,17 +282,19 @@ export function AppLayout() {
           </div>
         </header>
 
-        {clienteById(imobiliaria.id)?.status === "suspensa" && (
+        {suspensa && (
           <div className="flex items-center justify-center gap-2 bg-rose-600 px-4 py-2.5 text-center text-sm font-medium text-white">
             <AlertTriangle className="size-4 shrink-0" />
-            O acesso da {imobiliaria.nome} está suspenso. Fale com a Frankkia para regularizar.
+            O acesso da {nomeImob} está suspenso. Fale com a Frankkia para regularizar.
           </div>
         )}
 
-        {/* Seletor de perfil no celular */}
-        <div className="flex justify-center border-b border-line bg-bg px-4 py-2 md:hidden">
-          <RoleSwitcher />
-        </div>
+        {/* Seletor de perfil no celular (só na demonstração) */}
+        {modo === "demo" && (
+          <div className="flex justify-center border-b border-line bg-bg px-4 py-2 md:hidden">
+            <RoleSwitcher />
+          </div>
+        )}
 
         <main className="mx-auto w-full max-w-[84rem] px-4 py-8 sm:px-8 sm:py-10">
           {/* Só anima a entrada da página nova. Esperar a saída da anterior ("mode=wait")

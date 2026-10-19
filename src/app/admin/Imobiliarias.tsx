@@ -9,6 +9,8 @@ import { brl, int, relTime } from "@/lib/format";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { Avatar, Badge, Card, PageHeader, ProgressBar, Select, stagger } from "../kit";
 import { btn, Drawer, EmptyState, Field, inputCls, Modal, SearchInput, SelectField } from "../forms";
+import { useSession } from "../session";
+import { mensagemErro, supabase } from "@/integrations/supabase/client";
 
 const PLANO_OPTS = (Object.keys(PLANOS) as PlanoNome[]).map((p) => ({ value: p, label: `${p} · ${brl(PLANOS[p].preco)}/mês` }));
 const iniciais = (s: string) =>
@@ -196,14 +198,90 @@ function ClienteDrawer({ id, onClose }: { id: string | null; onClose: () => void
 
 function NovaImobiliariaModal({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: (id: string) => void }) {
   const { addCliente } = useStore();
+  const { modo } = useSession();
   const empty = { nome: "", cidade: "", cnpj: "", plano: "Equipe 15" as PlanoNome, adminNome: "", adminEmail: "" };
   const [f, setF] = useState(empty);
+  const [criada, setCriada] = useState<{ id: string; link: string } | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
+  const [enviando, setEnviando] = useState(false);
+  const [copiado, setCopiado] = useState(false);
   useEffect(() => {
-    if (open) setF(empty);
+    if (open) {
+      setF(empty);
+      setCriada(null);
+      setErro(null);
+      setCopiado(false);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
   const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.adminEmail.trim());
   const ok = f.nome.trim() && f.cidade.trim() && f.adminNome.trim() && emailOk;
+
+  const criar = async () => {
+    const dados = { ...f, nome: f.nome.trim(), cidade: f.cidade.trim(), adminNome: f.adminNome.trim(), adminEmail: f.adminEmail.trim().toLowerCase() };
+    if (modo !== "real") {
+      const c = addCliente(dados);
+      onClose();
+      onCreated(c.id);
+      return;
+    }
+    // Login real: cria no banco e gera o convite do administrador
+    setErro(null);
+    setEnviando(true);
+    const { data: token, error } = await supabase.rpc("criar_imobiliaria", {
+      p_nome: dados.nome,
+      p_cidade: dados.cidade,
+      p_cnpj: dados.cnpj,
+      p_plano: dados.plano,
+      p_admin_email: dados.adminEmail,
+    });
+    setEnviando(false);
+    if (error || !token) {
+      setErro(mensagemErro(error));
+      return;
+    }
+    const c = addCliente(dados); // lista desta tela ainda usa os dados de exemplo (próxima etapa)
+    setCriada({ id: c.id, link: `${window.location.origin}/convite/${token}` });
+  };
+
+  if (criada)
+    return (
+      <Modal
+        open={open}
+        onClose={() => {
+          onClose();
+          onCreated(criada.id);
+        }}
+        title="Imobiliária criada"
+        subtitle={`Envie este link para ${f.adminEmail.trim().toLowerCase()}: é o primeiro acesso do administrador.`}
+        footer={
+          <button
+            className={btn.accent}
+            onClick={() => {
+              onClose();
+              onCreated(criada.id);
+            }}
+          >
+            Concluir
+          </button>
+        }
+      >
+        <div className="space-y-3">
+          <div className="flex gap-2">
+            <input readOnly className={inputCls} value={criada.link} onFocus={(e) => e.target.select()} />
+            <button
+              className={btn.outline}
+              onClick={() => {
+                navigator.clipboard?.writeText(criada.link).then(() => setCopiado(true));
+              }}
+            >
+              {copiado ? "Copiado" : "Copiar"}
+            </button>
+          </div>
+          <p className="text-xs text-muted">O envio automático por e-mail entra numa próxima etapa. O link vale até o convite ser usado.</p>
+        </div>
+      </Modal>
+    );
 
   return (
     <Modal
@@ -213,19 +291,12 @@ function NovaImobiliariaModal({ open, onClose, onCreated }: { open: boolean; onC
       subtitle="Depois do pagamento, cadastre a imobiliária e envie o acesso do administrador."
       footer={
         <>
+          {erro && <p className="mr-auto self-center text-sm text-rose-700">{erro}</p>}
           <button onClick={onClose} className={btn.outline}>
             Cancelar
           </button>
-          <button
-            disabled={!ok}
-            className={btn.accent}
-            onClick={() => {
-              const c = addCliente({ ...f, nome: f.nome.trim(), cidade: f.cidade.trim(), adminNome: f.adminNome.trim(), adminEmail: f.adminEmail.trim().toLowerCase() });
-              onClose();
-              onCreated(c.id);
-            }}
-          >
-            <Mail className="size-4" /> Criar e enviar acesso
+          <button disabled={!ok || enviando} className={btn.accent} onClick={criar}>
+            <Mail className="size-4" /> {enviando ? "Criando..." : "Criar e enviar acesso"}
           </button>
         </>
       }

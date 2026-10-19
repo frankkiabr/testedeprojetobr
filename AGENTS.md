@@ -42,6 +42,9 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
 - As regras de negócio acima são garantidas **no banco** (RLS, gatilhos e funções). Não as contorne no app.
   Ranking, estudo de mercado, registrar venda/locação, aceitar convite e liberar upgrade usam funções do banco
   (`ranking_mes`, `estudo_mercado`, `ofertas_mercado`, `registrar_transacao`, `aceitar_convite`, `liberar_upgrade`).
+- Login: `src/integrations/supabase/client.ts` (conexão) e `src/app/session.tsx` (sessão: modo "real" pelo banco ou "demo"
+  pelos perfis de exemplo). `src/app/Guard.tsx` protege `/app` e `/admin`. A tela Equipe já usa o banco (`src/app/equipe-dados.ts`);
+  as demais telas ainda usam os dados de exemplo.
 - Nunca coloque a chave secreta (service_role) no app ou no repositório; só a chave publicável vai no `.env`.
 
 ## Próxima fase
