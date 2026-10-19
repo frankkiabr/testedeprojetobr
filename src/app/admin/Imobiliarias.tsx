@@ -241,6 +241,13 @@ function NovaImobiliariaModal({ open, onClose, onCreated }: { open: boolean; onC
   }, [open]);
   const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.adminEmail.trim());
   const ok = f.nome.trim() && f.cidade.trim() && f.adminNome.trim() && emailOk;
+  // Mostra o que falta (os campos do administrador ficam no fim da janela, às vezes fora da tela)
+  const faltando = [
+    !f.nome.trim() && "nome da imobiliária",
+    !f.cidade.trim() && "cidade",
+    !f.adminNome.trim() && "nome do administrador",
+    !emailOk && (f.adminEmail.trim() ? "e-mail válido do administrador" : "e-mail do administrador"),
+  ].filter(Boolean) as string[];
 
   const diasTeste = f.teste ? Math.min(90, Math.max(1, Number(f.testeDias) || 7)) : undefined;
   const criar = async () => {
@@ -327,7 +334,11 @@ function NovaImobiliariaModal({ open, onClose, onCreated }: { open: boolean; onC
       subtitle="Depois do pagamento, cadastre a imobiliária e envie o acesso do administrador."
       footer={
         <>
-          {erro && <p className="mr-auto self-center text-sm text-rose-700">{erro}</p>}
+          {erro ? (
+            <p className="mr-auto self-center text-sm text-rose-700">{erro}</p>
+          ) : (
+            faltando.length > 0 && <p className="mr-auto self-center text-xs text-muted">Falta preencher: {faltando.join(", ")}.</p>
+          )}
           <button onClick={onClose} className={btn.outline}>
             Cancelar
           </button>
