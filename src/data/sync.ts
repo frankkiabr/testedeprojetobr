@@ -5,6 +5,7 @@
  * As regras de quem vê o quê ficam no banco (RLS): cada corretor só recebe o que pode ver.
  */
 import * as D from "./demo";
+import * as P from "./platform";
 import { frankkiaUser } from "./platform";
 import { ctx, OUTROS_PARTICIPANTES, type LinhaMercado, type LinhaRanking, type OfertaMercado } from "./contexto";
 import { lastMonths } from "./queries";
@@ -12,6 +13,11 @@ import type {
   Captacao,
   CategoriaImovel,
   Chamado,
+  Cliente,
+  ClienteStatus,
+  ErroSistema,
+  PedidoUpgrade,
+  PlanoNome,
   Compromisso,
   FechamentoInformado,
   Imovel,
@@ -61,6 +67,10 @@ const ORIGINAL = structuredClone({
   convites: D.convites,
   chamados: D.chamados,
   frankkiaUser,
+  clientes: P.clientes,
+  pedidosUpgrade: P.pedidosUpgrade,
+  chamadosOutras: P.chamadosOutras,
+  errosSistema: P.errosSistema,
 });
 
 function trocarLista<T>(alvo: T[], novos: T[]) {
@@ -92,6 +102,10 @@ function aplicarDemo() {
   trocarLista(D.convites, o.convites);
   trocarLista(D.chamados, o.chamados);
   trocarObjeto(frankkiaUser, o.frankkiaUser);
+  trocarLista(P.clientes, o.clientes);
+  trocarLista(P.pedidosUpgrade, o.pedidosUpgrade);
+  trocarLista(P.chamadosOutras, o.chamadosOutras);
+  trocarLista(P.errosSistema, o.errosSistema);
   Object.assign(ctx, { modo: "demo", imobId: "", userId: "", papel: null, mercado: null, ranking: null });
 }
 
@@ -178,6 +192,33 @@ const paraCompromisso = (r: Row<"compromissos">): Compromisso => ({
   observacoes: u(r.observacoes),
 });
 
+const paraChamado = (c: Row<"chamados">): Chamado => ({
+  id: c.id,
+  imobiliariaId: c.imobiliaria_id,
+  autorId: c.autor_id,
+  assunto: c.assunto,
+  categoria: c.categoria,
+  mensagem: c.mensagem,
+  criadoEm: c.criado_em,
+  status: c.status as Chamado["status"],
+  resposta: u(c.resposta),
+});
+
+const paraPedido = (p: Row<"pedidos_upgrade">): PedidoUpgrade => ({
+  id: p.id,
+  imobiliariaId: p.imobiliaria_id,
+  planoAtual: p.plano_atual as PlanoNome,
+  planoNovo: p.plano_novo as PlanoNome,
+  valorMensal: Number(p.valor_mensal),
+  criadoEm: p.criado_em,
+  pagamento: p.pagamento as PedidoUpgrade["pagamento"],
+  metodo: u(p.metodo) as PedidoUpgrade["metodo"],
+  pagoEm: u(p.pago_em),
+  liberado: p.liberado,
+  liberadoEm: u(p.liberado_em),
+  referencia: p.referencia ?? p.id.slice(0, 8).toUpperCase(),
+});
+
 // ---------- Carregar tudo do banco ----------
 
 let geracao = 0;
@@ -198,15 +239,68 @@ export async function carregarReal(conta: ContaDados) {
     return;
   }
 
-  // Equipe Frankkia: o painel ainda usa os dados de exemplo das imobiliárias; só a agenda é real.
+  // Equipe Frankkia: contas, planos, volumes de uso, pedidos, chamados e erros (nunca o conteúdo das imobiliárias).
   if (papel === "frankkia" || !conta.imobId) {
-    const agenda = await todos<Row<"compromissos">>((a, b) =>
-      supabase.from("compromissos").select("*").is("imobiliaria_id", null).eq("dono_id", conta.usuarioId).order("inicio").range(a, b),
-    );
+    const [agenda, painel, pedidos, chamados, erros] = await Promise.all([
+      todos<Row<"compromissos">>((a, b) =>
+        supabase.from("compromissos").select("*").is("imobiliaria_id", null).eq("dono_id", conta.usuarioId).order("inicio").range(a, b),
+      ),
+      supabase.rpc("painel_imobiliarias"),
+      supabase.from("pedidos_upgrade").select("*").order("criado_em", { ascending: false }),
+      todos<Row<"chamados">>((a, b) => supabase.from("chamados").select("*").order("criado_em", { ascending: false }).range(a, b)),
+      supabase.from("erros_sistema").select("*").order("ultima_vez", { ascending: false }),
+    ]);
+    if (painel.error) throw painel.error;
+    const autores = [...new Set(chamados.map((c) => c.autor_id))];
+    const perfis = autores.length ? ((await supabase.from("perfis").select("id, nome, email").in("id", autores)).data ?? []) : [];
+    const nomeAutor = new Map(perfis.map((p) => [p.id, p.nome || p.email]));
     if (minha !== geracao) return;
     aplicarDemo();
     Object.assign(frankkiaUser, { id: conta.usuarioId, email: conta.email, nome: conta.nome || frankkiaUser.nome });
     trocarLista(D.compromissos, agenda.map(paraCompromisso));
+    trocarLista(
+      P.clientes,
+      (painel.data ?? []).map(
+        (c): Cliente => ({
+          id: c.id,
+          nome: c.nome,
+          cidade: c.cidade,
+          cnpj: c.cnpj,
+          plano: c.plano as PlanoNome,
+          status: c.status as ClienteStatus,
+          clienteDesde: c.cliente_desde,
+          ultimoAcesso: u(c.ultimo_acesso),
+          testeAte: u(c.teste_ate),
+          testeDias: u(c.teste_dias),
+          adminNome: c.admin_nome,
+          adminEmail: c.admin_email,
+          corretores: c.vagas,
+          uso: { negocios: c.uso_negocios, performance: c.uso_performance, academy: c.uso_academy, marketing: c.uso_marketing },
+        }),
+      ),
+    );
+    trocarLista(P.pedidosUpgrade, (pedidos.data ?? []).map(paraPedido));
+    trocarLista(P.chamadosOutras, []);
+    trocarLista(
+      D.chamados,
+      chamados.map((c) => ({ ...paraChamado(c), autorNome: nomeAutor.get(c.autor_id) })),
+    );
+    trocarLista(
+      P.errosSistema,
+      (erros.data ?? []).map(
+        (e): ErroSistema => ({
+          id: e.id,
+          mensagem: e.mensagem,
+          local: e.local,
+          ocorrencias: e.ocorrencias,
+          imobiliarias: e.imobiliarias_afetadas.length,
+          primeiraVez: e.primeira_vez,
+          ultimaVez: e.ultima_vez,
+          status: e.status as ErroSistema["status"],
+          origem: "capturado",
+        }),
+      ),
+    );
     Object.assign(ctx, { modo: "real", imobId: "", userId: conta.usuarioId, papel: "frankkia" });
     avisar();
     return;
@@ -214,7 +308,7 @@ export async function carregarReal(conta: ContaDados) {
 
   const imob = conta.imobId;
 
-  const [imobRow, membros, convites, parceiros, leads, proprietarios, imoveis, captacoes, transacoes, detalhes, participantes, fechamentos, compromissos, trilhas, aulas, progresso, chamados] =
+  const [imobRow, membros, convites, parceiros, leads, proprietarios, imoveis, captacoes, transacoes, detalhes, participantes, fechamentos, compromissos, trilhas, aulas, progresso, chamados, logo, pedidos] =
     await Promise.all([
       supabase.from("imobiliarias").select("*").eq("id", imob).single(),
       supabase.from("membros").select("*").eq("imobiliaria_id", imob),
@@ -235,6 +329,8 @@ export async function carregarReal(conta: ContaDados) {
       supabase.from("aulas").select("*").eq("imobiliaria_id", imob).order("ordem"),
       supabase.from("progresso_aulas").select("*").eq("imobiliaria_id", imob),
       supabase.from("chamados").select("*").eq("imobiliaria_id", imob).order("criado_em", { ascending: false }),
+      supabase.from("marca_logo").select("*").eq("imobiliaria_id", imob).maybeSingle(),
+      papel === "admin" ? supabase.from("pedidos_upgrade").select("*").eq("imobiliaria_id", imob).order("criado_em", { ascending: false }) : null,
     ]);
   if (imobRow.error) throw imobRow.error;
 
@@ -386,6 +482,8 @@ export async function carregarReal(conta: ContaDados) {
             arquivoNome: a.arquivo_nome,
             tamanhoBytes: Number(a.tamanho_bytes),
             duracaoMin: u(a.duracao_min),
+            videoUrl: u(a.video_url),
+            arquivoPath: u(a.arquivo_path),
           })),
       }),
     ),
@@ -393,23 +491,25 @@ export async function carregarReal(conta: ContaDados) {
   const prog: Record<string, string[]> = {};
   (progresso.data ?? []).forEach((p) => (prog[p.usuario_id] ??= []).push(p.aula_id));
   trocarObjeto(D.progresso, prog);
-  trocarObjeto(D.marca, { logo: null }); // envio de arquivos: próxima etapa
-  trocarLista(
-    D.chamados,
-    (chamados.data ?? []).map(
-      (c): Chamado => ({
-        id: c.id,
-        imobiliariaId: c.imobiliaria_id,
-        autorId: c.autor_id,
-        assunto: c.assunto,
-        categoria: c.categoria,
-        mensagem: c.mensagem,
-        criadoEm: c.criado_em,
-        status: c.status as Chamado["status"],
-        resposta: u(c.resposta),
-      }),
-    ),
-  );
+  const l = logo.data;
+  trocarObjeto(D.marca, {
+    logo: l
+      ? {
+          nome: l.nome,
+          url: supabase.storage.from("marca").getPublicUrl(l.arquivo_path).data.publicUrl,
+          path: l.arquivo_path,
+          tamanhoBytes: Number(l.tamanho_bytes),
+          largura: l.largura ?? 0,
+          altura: l.altura ?? 0,
+          enviadoEm: l.enviado_em,
+          transparente: l.transparente,
+        }
+      : null,
+  });
+  trocarLista(D.chamados, (chamados.data ?? []).map(paraChamado));
+  trocarLista(P.chamadosOutras, []);
+  trocarLista(P.clientes, []);
+  trocarLista(P.pedidosUpgrade, (pedidos?.data ?? []).map(paraPedido));
   Object.assign(ctx, { modo: "real", imobId: imob, userId: conta.usuarioId, papel, ranking, mercado });
   avisar();
 }

@@ -35,7 +35,7 @@ function useUpload() {
       setErro("Não foi possível ler este arquivo. Verifique se é um PNG válido.");
       return;
     }
-    setLogo({ nome: file.name, url, tamanhoBytes: file.size, enviadoEm: new Date().toISOString(), ...info });
+    setLogo({ nome: file.name, url, tamanhoBytes: file.size, enviadoEm: new Date().toISOString(), ...info }, file);
   };
   return { send, erro, busy };
 }

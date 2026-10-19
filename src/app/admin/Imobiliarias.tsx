@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Building2, ChevronRight, Lock, Mail, Pause, Play, Plus, RotateCcw, ShieldCheck } from "lucide-react";
-import { clienteById, diasSemAcesso, listaClientes, mrrDe, PLANOS, STATUS_CLIENTE } from "@/data/platform";
+import { clienteById, diasSemAcesso, listaClientes, mrrDe, PLANOS, STATUS_CLIENTE, statusDe } from "@/data/platform";
 import { useStore } from "@/data/store";
 import type { ClienteStatus, PlanoNome } from "@/data/types";
 import { brl, int, relTime } from "@/lib/format";
@@ -21,6 +21,15 @@ const iniciais = (s: string) =>
     .slice(0, 2)
     .join("")
     .toUpperCase();
+
+/** "Termina em 26/10 (faltam 3 dias)", "Terminou em 12/10" ou "7 dias, começam no 1º acesso". */
+function textoTeste(c: { status: ClienteStatus; testeAte?: string; testeDias?: number }) {
+  if (c.status === "aguardando" || !c.testeAte) return `${c.testeDias ?? 7} dias, começam no 1º acesso do administrador`;
+  const fim = new Date(c.testeAte);
+  const dias = Math.ceil((fim.getTime() - Date.now()) / 864e5);
+  const data = fim.toLocaleDateString("pt-BR");
+  return dias > 0 ? `Termina em ${data} (${dias === 1 ? "falta 1 dia" : `faltam ${dias} dias`})` : `Terminou em ${data}: acesso bloqueado`;
+}
 
 function ClienteDrawer({ id, onClose }: { id: string | null; onClose: () => void }) {
   const store = useStore();
@@ -58,7 +67,7 @@ function ClienteDrawer({ id, onClose }: { id: string | null; onClose: () => void
         subtitle={
           <span className="flex flex-wrap items-center gap-2">
             {c.cidade} · CNPJ {c.cnpj}
-            <Badge tone={STATUS_CLIENTE[c.status].tone}>{STATUS_CLIENTE[c.status].label}</Badge>
+            <Badge tone={statusDe(c).tone}>{statusDe(c).label}</Badge>
           </span>
         }
         footer={
@@ -94,6 +103,22 @@ function ClienteDrawer({ id, onClose }: { id: string | null; onClose: () => void
               </div>
               <ProgressBar value={c.corretores / limite} />
             </div>
+            {(c.status === "teste" || (c.status === "aguardando" && c.testeDias)) && (
+              <div className="col-span-2 flex flex-wrap items-center gap-3 rounded-2xl bg-accent-soft p-3.5">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs text-accent-deep">Teste grátis</p>
+                  <p className="mt-0.5 font-semibold">{textoTeste(c)}</p>
+                </div>
+                <button onClick={() => store.estenderTeste(c.id, 7)} className={`${btn.outline} h-9 bg-bg px-3 text-xs`}>
+                  +7 dias
+                </button>
+                {c.status === "teste" && (
+                  <button onClick={() => store.setClienteStatus(c.id, "ativa")} className={`${btn.primary} h-9 px-3 text-xs`}>
+                    Virar cliente pagante
+                  </button>
+                )}
+              </div>
+            )}
             <div className="col-span-2 rounded-2xl bg-canvas p-3.5">
               <p className="text-xs text-muted">Último acesso</p>
               <p className="mt-0.5 font-semibold">
@@ -199,7 +224,7 @@ function ClienteDrawer({ id, onClose }: { id: string | null; onClose: () => void
 function NovaImobiliariaModal({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: (id: string) => void }) {
   const { addCliente } = useStore();
   const { modo } = useSession();
-  const empty = { nome: "", cidade: "", cnpj: "", plano: "Equipe 15" as PlanoNome, adminNome: "", adminEmail: "" };
+  const empty = { nome: "", cidade: "", cnpj: "", plano: "Equipe 15" as PlanoNome, adminNome: "", adminEmail: "", teste: true, testeDias: "7" };
   const [f, setF] = useState(empty);
   const [criada, setCriada] = useState<{ id: string; link: string } | null>(null);
   const [erro, setErro] = useState<string | null>(null);
@@ -217,31 +242,37 @@ function NovaImobiliariaModal({ open, onClose, onCreated }: { open: boolean; onC
   const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.adminEmail.trim());
   const ok = f.nome.trim() && f.cidade.trim() && f.adminNome.trim() && emailOk;
 
+  const diasTeste = f.teste ? Math.min(90, Math.max(1, Number(f.testeDias) || 7)) : undefined;
   const criar = async () => {
-    const dados = { ...f, nome: f.nome.trim(), cidade: f.cidade.trim(), adminNome: f.adminNome.trim(), adminEmail: f.adminEmail.trim().toLowerCase() };
+    const { teste: _t, testeDias: _d, ...resto } = f;
+    void _t;
+    void _d;
+    const dados = { ...resto, nome: f.nome.trim(), cidade: f.cidade.trim(), adminNome: f.adminNome.trim(), adminEmail: f.adminEmail.trim().toLowerCase(), testeDias: diasTeste };
     if (modo !== "real") {
       const c = addCliente(dados);
       onClose();
       onCreated(c.id);
       return;
     }
-    // Login real: cria no banco e gera o convite do administrador
+    // Login real: cria no banco (com ou sem teste grátis) e gera o convite do administrador
     setErro(null);
     setEnviando(true);
-    const { data: token, error } = await supabase.rpc("criar_imobiliaria", {
+    const { data, error } = await supabase.rpc("criar_imobiliaria", {
       p_nome: dados.nome,
       p_cidade: dados.cidade,
       p_cnpj: dados.cnpj,
       p_plano: dados.plano,
       p_admin_email: dados.adminEmail,
+      ...(diasTeste ? { p_teste_dias: diasTeste } : {}),
     });
     setEnviando(false);
-    if (error || !token) {
+    const r = data?.[0];
+    if (error || !r) {
       setErro(mensagemErro(error));
       return;
     }
-    const c = addCliente(dados); // lista desta tela ainda usa os dados de exemplo (próxima etapa)
-    setCriada({ id: c.id, link: `${window.location.origin}/convite/${token}` });
+    const c = addCliente({ ...dados, id: r.imobiliaria_id });
+    setCriada({ id: c.id, link: `${window.location.origin}/convite/${r.token}` });
   };
 
   if (criada)
@@ -311,9 +342,30 @@ function NovaImobiliariaModal({ open, onClose, onCreated }: { open: boolean; onC
         <Field label="CNPJ (opcional)">
           <input className={inputCls} value={f.cnpj} onChange={(e) => setF({ ...f, cnpj: e.target.value })} placeholder="00.000.000/0001-00" />
         </Field>
-        <Field label="Plano contratado" className="sm:col-span-2">
+        <Field label={f.teste ? "Plano do teste (vagas liberadas)" : "Plano contratado"} className="sm:col-span-2">
           <SelectField value={f.plano} onChange={(v) => setF({ ...f, plano: v as PlanoNome })} options={PLANO_OPTS} />
         </Field>
+        <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-canvas p-4 sm:col-span-2">
+          <label className="flex flex-1 cursor-pointer items-center gap-2 text-sm font-semibold">
+            <input type="checkbox" className="size-4 accent-accent" checked={f.teste} onChange={(e) => setF({ ...f, teste: e.target.checked })} /> Teste grátis
+          </label>
+          {f.teste && (
+            <label className="flex items-center gap-2 text-sm text-muted">
+              <input
+                className={`${inputCls} h-9 w-16 text-center`}
+                inputMode="numeric"
+                value={f.testeDias}
+                onChange={(e) => setF({ ...f, testeDias: e.target.value.replace(/\D/g, "").slice(0, 2) })}
+              />
+              dias, a partir do 1º acesso
+            </label>
+          )}
+          <p className="w-full text-xs text-muted">
+            {f.teste
+              ? "Quando o prazo acabar, o acesso é bloqueado até a imobiliária contratar um plano (os dados ficam guardados)."
+              : "Sem teste: a imobiliária já entra como cliente pagante."}
+          </p>
+        </div>
         <div className="sm:col-span-2 mt-1 border-t border-line pt-4">
           <p className="text-sm font-semibold">Administrador da imobiliária</p>
           <p className="text-xs text-muted">Recebe o acesso por e-mail e depois convida os corretores.</p>
@@ -427,7 +479,7 @@ export default function Imobiliarias() {
                           </div>
                         </td>
                         <td className="px-3 py-3">
-                          <Badge tone={STATUS_CLIENTE[c.status].tone}>{STATUS_CLIENTE[c.status].label}</Badge>
+                          <Badge tone={statusDe(c).tone}>{statusDe(c).label}</Badge>
                         </td>
                         <td className={`px-3 py-3 ${dias !== null && dias >= 14 ? "font-semibold text-rose-600" : "text-muted"}`}>{c.ultimoAcesso ? relTime(c.ultimoAcesso) : "—"}</td>
                         <td className="px-3 py-3 text-right font-semibold tabular-nums">{mrrDe(c) ? brl(mrrDe(c)) : "—"}</td>

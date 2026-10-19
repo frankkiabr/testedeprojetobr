@@ -10,15 +10,44 @@ export function fmtBytes(b: number) {
 
 export const extOf = (name: string) => name.split(".").pop()?.toUpperCase() ?? "";
 
-/** Formatos aceitos na Academy: vídeo (MP4/MOV) ou documento (PDF/DOC/DOCX). */
-export function classifyAula(name: string): { tipo: "video" | "documento"; formato: FormatoAula } | null {
+/** Documentos aceitos na Academy (PDF/DOC/DOCX). Vídeos entram por link do YouTube ou Vimeo. */
+export function classifyAula(name: string): { tipo: "documento"; formato: FormatoAula } | null {
   const ext = extOf(name);
-  if (ext === "MP4" || ext === "MOV") return { tipo: "video", formato: ext };
   if (ext === "PDF" || ext === "DOC" || ext === "DOCX") return { tipo: "documento", formato: ext };
   return null;
 }
 
-export const ACCEPT_AULA = ".mp4,.mov,.pdf,.doc,.docx,video/mp4,video/quicktime,application/pdf";
+export const ACCEPT_AULA = ".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+/** Tamanho máximo de um documento da Academy. */
+export const MAX_DOCUMENTO = 20 * 1024 * 1024;
+
+/**
+ * Lê um link do YouTube ou do Vimeo e devolve o endereço do player para tocar dentro da Frankkia.
+ * Aceita youtu.be/ID, youtube.com/watch?v=ID, /shorts/ID, /embed/ID, vimeo.com/ID e vimeo.com/ID/código (não listado).
+ */
+export function linkDeVideo(bruto: string): { formato: "YOUTUBE" | "VIMEO"; embed: string } | null {
+  let u: URL;
+  try {
+    u = new URL(bruto.trim());
+  } catch {
+    return null;
+  }
+  const host = u.hostname.replace(/^www\.|^m\./, "");
+  const partes = u.pathname.split("/").filter(Boolean);
+  let yt: string | null = null;
+  if (host === "youtu.be") yt = partes[0] ?? null;
+  else if (host === "youtube.com" || host === "youtube-nocookie.com")
+    yt = u.searchParams.get("v") ?? (["shorts", "embed", "live"].includes(partes[0]) ? (partes[1] ?? null) : null);
+  if (yt && /^[\w-]{6,20}$/.test(yt)) return { formato: "YOUTUBE", embed: `https://www.youtube-nocookie.com/embed/${yt}?rel=0&modestbranding=1` };
+
+  if (host === "vimeo.com" || host === "player.vimeo.com") {
+    const nums = partes.filter((p) => p !== "video");
+    const id = nums[0];
+    const hash = u.searchParams.get("h") ?? (nums[1] && /^[\da-f]+$/i.test(nums[1]) ? nums[1] : null);
+    if (id && /^\d+$/.test(id)) return { formato: "VIMEO", embed: `https://player.vimeo.com/video/${id}${hash ? `?h=${hash}` : ""}` };
+  }
+  return null;
+}
 
 /**
  * Gera um PDF simples e válido (uma página) para os materiais de exemplo,

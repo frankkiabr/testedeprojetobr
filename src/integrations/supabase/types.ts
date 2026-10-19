@@ -28,6 +28,7 @@ export type Database = {
           tipo: string
           titulo: string
           trilha_id: string
+          video_url: string | null
         }
         Insert: {
           arquivo_nome: string
@@ -42,6 +43,7 @@ export type Database = {
           tipo: string
           titulo: string
           trilha_id: string
+          video_url?: string | null
         }
         Update: {
           arquivo_nome?: string
@@ -56,6 +58,7 @@ export type Database = {
           tipo?: string
           titulo?: string
           trilha_id?: string
+          video_url?: string | null
         }
         Relationships: [
           {
@@ -430,6 +433,8 @@ export type Database = {
           plano: string
           status: string
           telefone: string | null
+          teste_ate: string | null
+          teste_dias: number | null
           ultimo_acesso: string | null
         }
         Insert: {
@@ -445,6 +450,8 @@ export type Database = {
           plano?: string
           status?: string
           telefone?: string | null
+          teste_ate?: string | null
+          teste_dias?: number | null
           ultimo_acesso?: string | null
         }
         Update: {
@@ -460,6 +467,8 @@ export type Database = {
           plano?: string
           status?: string
           telefone?: string | null
+          teste_ate?: string | null
+          teste_dias?: number | null
           ultimo_acesso?: string | null
         }
         Relationships: [
@@ -1075,8 +1084,12 @@ export type Database = {
           p_cnpj: string
           p_nome: string
           p_plano: string
+          p_teste_dias?: number
         }
-        Returns: string
+        Returns: {
+          imobiliaria_id: string
+          token: string
+        }[]
       }
       estudo_mercado: {
         Args: { p_imob: string }
@@ -1095,7 +1108,12 @@ export type Database = {
           valor: number
         }[]
       }
+      imob_liberada: {
+        Args: { p_status: string; p_teste_ate: string }
+        Returns: boolean
+      }
       is_admin: { Args: { p_imob: string }; Returns: boolean }
+      is_admin_conta: { Args: { p_imob: string }; Returns: boolean }
       is_frankkia: { Args: never; Returns: boolean }
       is_member: { Args: { p_imob: string }; Returns: boolean }
       is_membro_ativo: {
@@ -1120,6 +1138,29 @@ export type Database = {
           valor: number
         }[]
       }
+      painel_imobiliarias: {
+        Args: never
+        Returns: {
+          admin_email: string
+          admin_nome: string
+          cidade: string
+          cliente_desde: string
+          cnpj: string
+          id: string
+          nome: string
+          plano: string
+          status: string
+          teste_ate: string
+          teste_dias: number
+          ultimo_acesso: string
+          uso_academy: number
+          uso_marketing: number
+          uso_negocios: number
+          uso_performance: number
+          vagas: number
+        }[]
+      }
+      pasta_imobiliaria: { Args: { p_nome: string }; Returns: string }
       pertence: { Args: { p_imob: string }; Returns: boolean }
       ranking_mes: {
         Args: { p_imob: string; p_mes: string }

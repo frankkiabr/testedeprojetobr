@@ -16,7 +16,11 @@ import { supabase } from "@/integrations/supabase/client";
  */
 export type Modo = "real" | "demo" | "nenhuma";
 
-export type ImobiliariaConta = { id: string; nome: string; plano: string; limite: number; status: string };
+export type ImobiliariaConta = { id: string; nome: string; plano: string; limite: number; status: string; testeAte: string | null };
+
+/** Teste grátis vencido: a imobiliária fica bloqueada até contratar um plano. */
+export const testeEncerrado = (i: ImobiliariaConta | null | undefined) =>
+  !!i && i.status === "teste" && !!i.testeAte && new Date(i.testeAte).getTime() < Date.now();
 export type Conta = {
   usuarioId: string;
   email: string;
@@ -95,7 +99,7 @@ async function carregarConta(u: User): Promise<Conta> {
     supabase.from("perfis").select("nome, iniciais, email").eq("id", u.id).maybeSingle(),
     supabase
       .from("membros")
-      .select("papel, imobiliarias(id, nome, plano, limite_corretores, status)")
+      .select("papel, imobiliarias(id, nome, plano, limite_corretores, status, teste_ate)")
       .eq("usuario_id", u.id)
       .eq("ativo", true)
       .order("criado_em")
@@ -105,7 +109,7 @@ async function carregarConta(u: User): Promise<Conta> {
   const email = perfil.data?.email || u.email || "";
   const nome = perfil.data?.nome || (u.user_metadata?.nome as string) || "";
   const m = membros.data?.[0];
-  const i = m?.imobiliarias as { id: string; nome: string; plano: string; limite_corretores: number; status: string } | null | undefined;
+  const i = m?.imobiliarias as { id: string; nome: string; plano: string; limite_corretores: number; status: string; teste_ate: string | null } | null | undefined;
   return {
     usuarioId: u.id,
     email,
@@ -113,7 +117,7 @@ async function carregarConta(u: User): Promise<Conta> {
     iniciais: perfil.data?.iniciais || iniciaisDe(nome, email),
     frankkia: !!fk.data,
     papel: (m?.papel as "admin" | "corretor" | undefined) ?? null,
-    imobiliaria: i ? { id: i.id, nome: i.nome, plano: i.plano, limite: i.limite_corretores, status: i.status } : null,
+    imobiliaria: i ? { id: i.id, nome: i.nome, plano: i.plano, limite: i.limite_corretores, status: i.status, testeAte: i.teste_ate } : null,
   };
 }
 

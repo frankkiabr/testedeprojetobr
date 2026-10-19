@@ -47,8 +47,12 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
 - Dados: no login real, `src/data/sync.ts` preenche as mesmas listas de `demo.ts` com os dados do banco, e cada ação de
   `store.tsx` grava no banco com `gravar(...)` (em ordem, por uma fila). Ao criar uma ação nova, siga esse padrão.
   Corretor: ranking e estudo de mercado vêm de `ranking_mes`/`estudo_mercado`/`ofertas_mercado` (sem dados dos colegas).
-- Ainda em dados de exemplo no login real: painel Frankkia (exceto a agenda), upgrades/pagamento e envio de arquivos
-  (aulas da Academy e logo do Marketing).
+- Arquivos: vídeos da Academy são links do YouTube/Vimeo ("não listado", tocam em iframe); PDFs/Word vão para o
+  armazenamento `academy` (privado, até 20 MB) e a logo para `marca` (pública, PNG até 5 MB), na pasta `<id da imobiliária>/`.
+- Painel Frankkia no login real: `painel_imobiliarias()` traz só dados de conta e volumes de uso.
+- Teste grátis: `imobiliarias.teste_dias` (definido pela Frankkia) vira `teste_ate` no 1º acesso do administrador;
+  vencido, o banco bloqueia os dados (`imob_liberada`) e o app mostra a tela de contratar plano.
+- Pagamento: ainda sem Stripe. O administrador cria o pedido; a Frankkia confirma o pagamento à mão e libera o plano.
 - Nunca coloque a chave secreta (service_role) no app ou no repositório; só a chave publicável vai no `.env`.
 
 ## Próxima fase

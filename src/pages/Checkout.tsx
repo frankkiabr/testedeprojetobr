@@ -11,6 +11,7 @@ import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { Logo } from "@/components/ui";
 import { Segmented } from "@/app/kit";
 import { btn } from "@/app/forms";
+import { useSession } from "@/app/session";
 
 type Metodo = NonNullable<PedidoUpgrade["metodo"]>;
 
@@ -23,16 +24,18 @@ type Metodo = NonNullable<PedidoUpgrade["metodo"]>;
 export default function Checkout() {
   const { id } = useParams();
   const store = useStore();
+  const { modo, carregando } = useSession();
   const pedido = id ? pedidoById(id) : undefined;
   const [metodo, setMetodo] = useState<Metodo>("cartao");
   const [processando, setProcessando] = useState(false);
 
+  if (carregando) return <Shell>{null}</Shell>;
   if (!pedido) {
     return (
       <Shell>
         <div className="rounded-3xl border border-line bg-bg p-10 text-center">
           <h1 className="type-title">Pedido não encontrado</h1>
-          <p className="mt-3 text-muted">Este pedido não existe mais. Lembre que, na demonstração, recarregar a página apaga o que foi criado.</p>
+          <p className="mt-3 text-muted">Este pedido não existe mais ou foi cancelado.</p>
           <Link to="/app/configuracoes" className="mt-6 inline-block text-sm font-semibold text-accent">
             Voltar para Configurações
           </Link>
@@ -94,6 +97,26 @@ export default function Checkout() {
           {/* Sem esperar animação de saída: a tela de resultado entra direto. */}
           {finalizado ? (
               <Resultado key="fim" pedido={pedido} />
+            ) : modo === "real" ? (
+              <motion.div key="combinar" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-4 text-center">
+                <span className="mx-auto grid size-16 place-items-center rounded-2xl bg-accent-soft text-accent">
+                  <Clock className="size-7" />
+                </span>
+                <h1 className="type-subtitle mt-5">Pedido recebido</h1>
+                <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted">
+                  O pagamento online (cartão, PIX e boleto pela Stripe) está chegando. Por enquanto, a equipe Frankkia entra em contato para combinar o pagamento e
+                  libera o plano {pedido.planoNovo} assim que ele for confirmado.
+                </p>
+                <p className="mt-4 font-mono text-xs text-subtle">Ref.: {pedido.referencia}</p>
+                <div className="mt-7 flex flex-wrap justify-center gap-2">
+                  <Link to="/app/configuracoes?aba=plano" className={btn.primary}>
+                    Voltar para a plataforma
+                  </Link>
+                  <button onClick={() => store.cancelarPedidoUpgrade(pedido.id)} className={btn.outline}>
+                    Cancelar pedido
+                  </button>
+                </div>
+              </motion.div>
             ) : (
               <motion.div key="pagar" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                 <div className="flex items-center justify-between">

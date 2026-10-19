@@ -11,9 +11,10 @@
 
 ## Upgrade de plano com Stripe
 
-**Feito (demonstração):** escolher plano → tela de pagamento simulada (cartão/PIX/boleto) → status para o administrador → "Pedidos de upgrade" no painel Frankkia → botão "Liberar plano" (vagas extras na hora).
+**Feito:** escolher plano (ou contratar ao fim do teste grátis) → pedido gravado no banco → no painel Frankkia,
+"Confirmar pagamento" (à mão, para PIX/transferência) → "Liberar plano" (vagas extras na hora).
 
-**No Lovable (Stripe real):**
+**Falta (Stripe real) — precisa de uma conta Stripe sua (grátis para criar; cobra só uma taxa por venda):**
 - Conectar a Stripe pelo Lovable e criar os 3 planos como produtos/preços de assinatura.
 - "Ir para pagamento" cria uma sessão do Stripe Checkout (página segura da Stripe; a Frankkia nunca vê o cartão).
 - Webhook da Stripe (`checkout.session.completed` / pagamentos de boleto) atualiza o status do pedido sozinho.

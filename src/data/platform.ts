@@ -1,6 +1,7 @@
 /**
  * DADOS DO PAINEL FRANKKIA (você, criador da plataforma).
- * Imobiliárias clientes, chamados de todas elas e erros do sistema — todos fictícios.
+ * Imobiliárias clientes, chamados de todas elas e erros do sistema (fictícios na demonstração;
+ * no login real da Frankkia, `sync.ts` preenche estas listas com o banco).
  * A "Imobiliária Exemplo" é a mesma usada na área logada, então mudanças aqui aparecem lá.
  */
 import { site } from "@/content";
@@ -217,7 +218,7 @@ export const diasSemAcesso = (c: Cliente) => (c.ultimoAcesso ? Math.floor((Date.
 
 // ---------- Chamados de todas as imobiliárias ----------
 
-const chamadosOutras: Chamado[] = [
+export const chamadosOutras: Chamado[] = [
   { id: "chp-1", imobiliariaId: "cli-3", autorId: "", autorNome: "Carla Duarte", assunto: "Vídeo .mov não carrega na Academy", categoria: "Problema técnico", mensagem: "Subi um vídeo em MOV de 900 MB e ele fica carregando sem terminar.", criadoEm: daysAgo(0.2), status: "aberto" },
   { id: "chp-2", imobiliariaId: "cli-8", autorId: "", autorNome: "Jorge Tavares", assunto: "Quero mudar para o plano Equipe 30", categoria: "Financeiro", mensagem: "Nossa equipe cresceu e precisamos de mais vagas.", criadoEm: daysAgo(1), status: "aberto" },
   { id: "chp-3", imobiliariaId: "cli-12", autorId: "", autorNome: "Paula Nogueira", assunto: "Relatório do WhatsApp sem o nome da imobiliária", categoria: "Sugestão", mensagem: "Seria bom incluir a logo ou o site no final do relatório enviado ao proprietário.", criadoEm: daysAgo(3), status: "em_andamento" },
@@ -258,4 +259,10 @@ export function nomeDaTela(path: string) {
     ["/admin", "Painel Frankkia"],
   ];
   return map.find(([p]) => path.startsWith(p))?.[1] ?? (path === "/" ? "Site" : path);
+}
+
+/** Situação para mostrar: um teste grátis com prazo vencido aparece como "Teste encerrado". */
+export function statusDe(c: Pick<Cliente, "status" | "testeAte">) {
+  if (c.status === "teste" && c.testeAte && new Date(c.testeAte).getTime() < Date.now()) return { label: "Teste encerrado", tone: "danger" as const };
+  return STATUS_CLIENTE[c.status];
 }

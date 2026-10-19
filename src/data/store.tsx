@@ -82,7 +82,6 @@ function salvarCompromisso(c: Compromisso) {
 const removerCompromissoBanco = (id: string) => gravar(() => supabase.from("compromissos").delete().eq("id", id));
 const salvarChecklists = (c: Captacao) =>
   gravar(() => supabase.from("captacoes").update({ checklist_captacao: c.checklistCaptacao, checklist_marketing: c.checklistMarketing }).eq("id", c.id));
-const ARQUIVOS_NA_PROXIMA_ETAPA = "O envio de arquivos (vídeos, PDFs e logo) entra na próxima etapa.";
 
 function createActions(bump: () => void, toast: (text: string) => void) {
   return {
@@ -385,15 +384,38 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       toast("Trilha excluída.");
     },
 
-    addAula(trilhaId: string, aula: Omit<Aula, "id">) {
+    /** Vídeo: só o link (YouTube/Vimeo). Documento: o arquivo vai para o armazenamento da imobiliária. */
+    addAula(trilhaId: string, aula: Omit<Aula, "id">, arquivo?: File) {
       const t = trilhas.find((x) => x.id === trilhaId);
       if (!t) return;
-      if (ehReal()) {
-        toast(ARQUIVOS_NA_PROXIMA_ETAPA);
-        return;
-      }
       const a: Aula = { ...aula, id: uid("a") };
+      const ordem = t.aulas.length;
       t.aulas.push(a);
+      if (ehReal())
+        enfileirar(async () => {
+          let path: string | null = null;
+          if (arquivo) {
+            path = `${ctxDados.imobId}/${a.id}-${arquivo.name.normalize("NFD").replace(/[^\w.-]+/g, "_")}`;
+            const up = await supabase.storage.from("academy").upload(path, arquivo, { contentType: arquivo.type || undefined });
+            if (up.error) return falhou(up.error);
+            a.arquivoPath = path;
+          }
+          const { error } = await supabase.from("aulas").insert({
+            id: a.id,
+            imobiliaria_id: ctxDados.imobId,
+            trilha_id: trilhaId,
+            titulo: a.titulo,
+            tipo: a.tipo,
+            formato: a.formato,
+            arquivo_nome: a.arquivoNome,
+            tamanho_bytes: a.tamanhoBytes,
+            duracao_min: a.duracaoMin ?? null,
+            video_url: a.videoUrl ?? null,
+            arquivo_path: path,
+            ordem,
+          });
+          if (error) falhou(error);
+        });
       bump();
       toast("Aula adicionada à trilha.");
       return a;
@@ -402,8 +424,12 @@ function createActions(bump: () => void, toast: (text: string) => void) {
     removeAula(trilhaId: string, aulaId: string) {
       const t = trilhas.find((x) => x.id === trilhaId);
       if (!t) return;
-      t.aulas = t.aulas.filter((a) => a.id !== aulaId);
-      gravar(() => supabase.from("aulas").delete().eq("id", aulaId));
+      const a = t.aulas.find((x) => x.id === aulaId);
+      t.aulas = t.aulas.filter((x) => x.id !== aulaId);
+      gravar(
+        () => supabase.from("aulas").delete().eq("id", aulaId),
+        ...(a?.arquivoPath ? [() => supabase.storage.from("academy").remove([a.arquivoPath!])] : []),
+      );
       bump();
       toast("Aula removida.");
     },
@@ -423,12 +449,37 @@ function createActions(bump: () => void, toast: (text: string) => void) {
 
     // ---------- Marketing ----------
 
-    setLogo(logo: ArquivoMarca | null) {
-      if (ehReal()) {
-        toast(ARQUIVOS_NA_PROXIMA_ETAPA);
-        return;
-      }
+    /** Logo da imobiliária (PNG). No login real, fica guardada no banco para toda a equipe baixar. */
+    setLogo(logo: ArquivoMarca | null, arquivo?: File) {
+      const antiga = marca.logo?.path;
       marca.logo = logo;
+      if (ehReal())
+        enfileirar(async () => {
+          const imob = ctxDados.imobId;
+          if (logo && arquivo) {
+            const path = `${imob}/logo-${Date.now()}.png`;
+            const up = await supabase.storage.from("marca").upload(path, arquivo, { contentType: "image/png" });
+            if (up.error) return falhou(up.error);
+            const { error } = await supabase.from("marca_logo").upsert({
+              imobiliaria_id: imob,
+              nome: logo.nome,
+              arquivo_path: path,
+              tamanho_bytes: logo.tamanhoBytes,
+              largura: logo.largura,
+              altura: logo.altura,
+              transparente: logo.transparente,
+              enviado_em: logo.enviadoEm,
+            });
+            if (error) return falhou(error);
+            logo.path = path;
+            logo.url = supabase.storage.from("marca").getPublicUrl(path).data.publicUrl;
+            bump();
+          } else if (!logo) {
+            const { error } = await supabase.from("marca_logo").delete().eq("imobiliaria_id", imob);
+            if (error) return falhou(error);
+          }
+          if (antiga) await supabase.storage.from("marca").remove([antiga]);
+        });
       bump();
       toast(logo ? "Logo atualizada para toda a equipe." : "Logo removida.");
     },
@@ -518,6 +569,8 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       let p = pedidoAberto(imobiliaria.id);
       if (p && p.pagamento === "aguardando") {
         Object.assign(p, { planoNovo: plano, valorMensal: PLANOS[plano].preco });
+        const id = p.id;
+        gravar(() => supabase.from("pedidos_upgrade").update({ plano_novo: plano, valor_mensal: PLANOS[plano].preco }).eq("id", id));
       } else if (!p) {
         p = {
           id: uid("up"),
@@ -528,12 +581,37 @@ function createActions(bump: () => void, toast: (text: string) => void) {
           criadoEm: new Date().toISOString(),
           pagamento: "aguardando",
           liberado: false,
-          referencia: novaReferencia(),
+          referencia: ehReal() ? `FK-${Date.now().toString(36).toUpperCase()}` : novaReferencia(),
         };
         pedidosUpgrade.unshift(p);
+        const n = p;
+        gravar(() =>
+          supabase.from("pedidos_upgrade").insert({
+            id: n.id,
+            imobiliaria_id: n.imobiliariaId,
+            plano_atual: n.planoAtual,
+            plano_novo: n.planoNovo,
+            valor_mensal: n.valorMensal,
+            pagamento: "aguardando",
+            liberado: false,
+            referencia: n.referencia,
+            criado_por: ctxDados.userId,
+          }),
+        );
       }
       bump();
       return p.id;
+    },
+
+    /** Frankkia: confirma à mão um pagamento recebido (PIX, transferência...) enquanto a Stripe não está ligada. */
+    confirmarPagamentoManual(id: string) {
+      const p = pedidoById(id);
+      if (!p || p.liberado) return;
+      p.pagamento = "confirmado";
+      p.pagoEm = new Date().toISOString();
+      gravar(() => supabase.from("pedidos_upgrade").update({ pagamento: "confirmado", pago_em: p.pagoEm }).eq("id", id));
+      bump();
+      toast("Pagamento marcado como confirmado. Agora é só liberar o plano.");
     },
 
     /** Resultado do pagamento (na versão real, vem do webhook da Stripe). */
@@ -553,7 +631,11 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       p.liberado = true;
       p.liberadoEm = new Date().toISOString();
       const c = clientes.find((x) => x.id === p.imobiliariaId);
-      if (c) c.plano = p.planoNovo;
+      if (c) {
+        c.plano = p.planoNovo;
+        if (c.status === "teste" || c.status === "pagamento") c.status = "ativa";
+      }
+      gravar(() => supabase.rpc("liberar_upgrade", { p_pedido: id }));
       if (p.imobiliariaId === imobiliaria.id) {
         imobiliaria.plano = p.planoNovo;
         imobiliaria.limiteCorretores = PLANOS[p.planoNovo].limite;
@@ -566,6 +648,7 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       const p = pedidoById(id);
       if (!p) return;
       p.pagamento = "cancelado";
+      gravar(() => supabase.from("pedidos_upgrade").update({ pagamento: "cancelado" }).eq("id", id));
       bump();
       toast("Pedido de upgrade cancelado.");
     },
@@ -622,10 +705,11 @@ function createActions(bump: () => void, toast: (text: string) => void) {
 
     // ---------- Painel Frankkia ----------
 
-    addCliente(input: Pick<Cliente, "nome" | "cidade" | "cnpj" | "plano" | "adminNome" | "adminEmail">) {
+    /** No login real, a imobiliária já foi criada no banco (criar_imobiliaria): aqui só entra na lista. */
+    addCliente(input: Pick<Cliente, "nome" | "cidade" | "cnpj" | "plano" | "adminNome" | "adminEmail"> & { id?: string; testeDias?: number }) {
       const c: Cliente = {
         ...input,
-        id: uid("cli"),
+        id: input.id ?? uid("cli"),
         status: "aguardando",
         clienteDesde: new Date().toISOString(),
         corretores: 0,
@@ -633,14 +717,35 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       };
       clientes.push(c);
       bump();
-      toast(`Acesso de administrador enviado para ${input.adminEmail}.`);
+      toast(ehReal() ? "Imobiliária criada. Envie o link de primeiro acesso ao administrador." : `Acesso de administrador enviado para ${input.adminEmail}.`);
       return c;
+    },
+
+    /** Frankkia: mais dias de teste grátis (a partir de hoje ou do fim atual, o que for depois). */
+    estenderTeste(id: string, dias: number) {
+      const c = clientes.find((x) => x.id === id);
+      if (!c) return;
+      if (c.status === "aguardando") {
+        // Ainda não começou: aumenta a duração que vale a partir do 1º acesso
+        const total = (c.testeDias ?? 0) + dias;
+        c.testeDias = total;
+        gravar(() => supabase.from("imobiliarias").update({ teste_dias: total }).eq("id", id));
+      } else {
+        const base = Math.max(Date.now(), c.testeAte ? new Date(c.testeAte).getTime() : 0);
+        const fim = new Date(base + dias * 864e5).toISOString();
+        c.testeAte = fim;
+        c.status = "teste";
+        gravar(() => supabase.from("imobiliarias").update({ teste_ate: fim, status: "teste" }).eq("id", id));
+      }
+      bump();
+      toast(`Teste grátis da ${c.nome} estendido em ${dias} dias.`);
     },
 
     setClientePlano(id: string, plano: PlanoNome) {
       const c = clientes.find((x) => x.id === id);
       if (!c) return;
       c.plano = plano;
+      gravar(() => supabase.from("imobiliarias").update({ plano, limite_corretores: PLANOS[plano].limite }).eq("id", id));
       // A Imobiliária Exemplo é a mesma da área logada: o novo limite vale lá também.
       if (id === imobiliaria.id) {
         imobiliaria.plano = plano;
@@ -654,19 +759,51 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       const c = clientes.find((x) => x.id === id);
       if (!c) return;
       c.status = status;
+      if (status === "ativa") c.testeAte = undefined;
+      gravar(() => supabase.from("imobiliarias").update(status === "ativa" ? { status, teste_ate: null } : { status }).eq("id", id));
       bump();
       toast(status === "suspensa" ? `Acesso de ${c.nome} suspenso.` : `${c.nome} reativada.`);
     },
 
     resendAcesso(id: string) {
       const c = clientes.find((x) => x.id === id);
-      if (c) toast(`Acesso reenviado para ${c.adminEmail}.`);
+      if (!c) return;
+      if (!ehReal()) {
+        toast(`Acesso reenviado para ${c.adminEmail}.`);
+        return;
+      }
+      // Login real: copia o link de primeiro acesso do administrador (o envio por e-mail vem depois)
+      supabase
+        .from("convites")
+        .select("token")
+        .eq("imobiliaria_id", id)
+        .eq("papel", "admin")
+        .eq("status", "pendente")
+        .order("enviado_em", { ascending: false })
+        .limit(1)
+        .maybeSingle()
+        .then(async ({ data }) => {
+          if (!data) return toast("O administrador já fez o primeiro acesso. Se esqueceu a senha, ele pode usar “Esqueceu a senha?” no login.");
+          const link = `${window.location.origin}/convite/${data.token}`;
+          try {
+            await navigator.clipboard.writeText(link);
+            toast(`Link de primeiro acesso copiado. Envie para ${c.adminEmail}.`);
+          } catch {
+            toast(`Link de primeiro acesso: ${link}`);
+          }
+        });
     },
 
     updateChamado(id: string, patch: Partial<Pick<Chamado, "status" | "resposta">>) {
       const c = todosChamados().find((x) => x.id === id);
       if (!c) return;
       Object.assign(c, patch);
+      gravar(() =>
+        supabase
+          .from("chamados")
+          .update({ status: c.status, resposta: c.resposta ?? null, ...(patch.resposta ? { respondido_em: new Date().toISOString() } : {}) })
+          .eq("id", id),
+      );
       bump();
       toast(patch.status === "resolvido" ? "Chamado respondido e resolvido." : "Chamado atualizado.");
     },
@@ -675,6 +812,7 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       const e = errosSistema.find((x) => x.id === id);
       if (!e) return;
       e.status = status;
+      gravar(() => supabase.from("erros_sistema").update({ status }).eq("id", id));
       bump();
       if (status === "corrigido") toast("Erro marcado como corrigido para todas as imobiliárias.");
     },

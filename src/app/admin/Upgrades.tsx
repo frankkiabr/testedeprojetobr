@@ -22,7 +22,7 @@ const METODO = { cartao: { label: "Cartão", icon: CreditCard }, pix: { label: "
 
 /** Pedidos de upgrade de todas as imobiliárias. Pagamento confirmado → botão para liberar o plano. */
 export default function Upgrades() {
-  const { liberarUpgrade } = useStore();
+  const { liberarUpgrade, confirmarPagamentoManual } = useStore();
   const navigate = useNavigate();
   const [filtro, setFiltro] = useState<Filtro>("liberar");
   const [confirmar, setConfirmar] = useState<PedidoUpgrade | null>(null);
@@ -78,7 +78,7 @@ export default function Upgrades() {
                         </button>
                         <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted">
                           {p.planoAtual} <ArrowRight className="size-3.5" /> <span className="font-semibold text-ink">{p.planoNovo}</span>
-                          <span>· +{extras} vagas · {brl(p.valorMensal)}/mês</span>
+                          <span>· {extras > 0 ? `+${extras} vagas` : "contratação do plano"} · {brl(p.valorMensal)}/mês</span>
                         </p>
                         <p className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-subtle">
                           Pedido {relTime(p.criadoEm)}
@@ -107,6 +107,15 @@ export default function Upgrades() {
                             {PAGAMENTO[p.pagamento].label}
                           </Badge>
                         )}
+                        {(p.pagamento === "aguardando" || p.pagamento === "pendente") && !p.liberado && (
+                          <button
+                            onClick={() => confirmarPagamentoManual(p.id)}
+                            title="Use quando receber o pagamento por fora (PIX, transferência), enquanto a Stripe não está ligada"
+                            className={btn.outline}
+                          >
+                            <CheckCircle2 className="size-4" /> Confirmar pagamento
+                          </button>
+                        )}
                         {p.pagamento === "confirmado" && !p.liberado && (
                           <button onClick={() => setConfirmar(p)} className={btn.accent}>
                             <Rocket className="size-4" /> Liberar plano
@@ -124,7 +133,8 @@ export default function Upgrades() {
 
       <motion.p {...stagger(3)} className="flex items-start gap-2 text-sm text-muted">
         <Info className="mt-0.5 size-4 shrink-0 text-accent" />
-        Na versão com Stripe, o status do pagamento chega sozinho (webhook). Se preferir, a liberação também pode ser automática assim que o pagamento confirmar.
+        Enquanto a Stripe não está ligada, combine o pagamento com a imobiliária (PIX ou transferência) e use “Confirmar pagamento”. Com a Stripe, o status chega
+        sozinho; a liberação do plano continua sendo sua.
       </motion.p>
 
       <Modal

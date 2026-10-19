@@ -12,6 +12,7 @@ import type { PlanoNome } from "@/data/types";
 import { brl, relTime } from "@/lib/format";
 import { btn, Modal } from "./forms";
 import { ProgressBar } from "./kit";
+import { useSession } from "./session";
 
 const ORDEM: PlanoNome[] = ["Equipe 15", "Equipe 30", "Equipe 60"];
 export const proximoPlano = (): PlanoNome | null => ORDEM[ORDEM.indexOf(imobiliaria.plano) + 1] ?? null;
@@ -25,7 +26,10 @@ export function useIrParaPagamento() {
 
 export function UpgradeModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const irParaPagamento = useIrParaPagamento();
-  const opcoes = ORDEM.filter((p) => PLANOS[p].limite > imobiliaria.limiteCorretores);
+  const { modo, conta } = useSession();
+  // No teste grátis, dá para contratar o próprio plano do teste (ou um maior)
+  const emTeste = modo === "real" && conta?.imobiliaria?.status === "teste";
+  const opcoes = ORDEM.filter((p) => (emTeste ? PLANOS[p].limite >= imobiliaria.limiteCorretores : PLANOS[p].limite > imobiliaria.limiteCorretores));
   const [plano, setPlano] = useState<PlanoNome | null>(opcoes[0] ?? null);
   useEffect(() => {
     if (open) setPlano(opcoes[0] ?? null);
@@ -36,7 +40,7 @@ export function UpgradeModal({ open, onClose }: { open: boolean; onClose: () => 
     <Modal
       open={open}
       onClose={onClose}
-      title="Fazer upgrade do plano"
+      title={emTeste ? "Contratar um plano" : "Fazer upgrade do plano"}
       subtitle={`Hoje: ${imobiliaria.plano} · ${vagasUsadas()} de ${imobiliaria.limiteCorretores} vagas em uso.`}
       footer={
         opcoes.length ? (
@@ -75,7 +79,10 @@ export function UpgradeModal({ open, onClose }: { open: boolean; onClose: () => 
                 <div className="flex-1">
                   <p className="font-display text-lg font-semibold">{p}</p>
                   <p className="text-sm text-muted">
-                    {info.seats} · <span className="font-semibold text-verified">+{PLANOS[p].limite - imobiliaria.limiteCorretores} vagas</span>
+                    {info.seats} ·{" "}
+                    <span className="font-semibold text-verified">
+                      {PLANOS[p].limite > imobiliaria.limiteCorretores ? `+${PLANOS[p].limite - imobiliaria.limiteCorretores} vagas` : "o mesmo do seu teste"}
+                    </span>
                   </p>
                 </div>
                 <p className="font-display text-xl font-semibold">

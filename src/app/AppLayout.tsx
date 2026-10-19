@@ -15,6 +15,7 @@ import {
   Megaphone,
   Menu,
   Settings2,
+  Sparkles,
   Users,
   X,
 } from "lucide-react";
@@ -28,7 +29,7 @@ import { Logo } from "@/components/ui";
 import { useSession } from "./session";
 import { Avatar, ProgressBar } from "./kit";
 import { Toaster } from "./forms";
-import { UpgradeNudge } from "./upgrade";
+import { UpgradeModal, UpgradeNudge } from "./upgrade";
 
 const MENU = [
   { to: "visao-geral", label: "Visão geral", icon: LayoutGrid },
@@ -226,6 +227,9 @@ export function AppLayout() {
   // No login real, nome e situação vêm da imobiliária do usuário; na demonstração, da imobiliária de exemplo.
   const nomeImob = (modo === "real" && conta?.imobiliaria?.nome) || imobiliaria.nome;
   const suspensa = modo === "real" ? conta?.imobiliaria?.status === "suspensa" : clienteById(imobiliaria.id)?.status === "suspensa";
+  const [planos, setPlanos] = useState(false);
+  const fimTeste = modo === "real" && conta?.imobiliaria?.status === "teste" && conta.imobiliaria.testeAte ? new Date(conta.imobiliaria.testeAte).getTime() : null;
+  const diasDeTeste = fimTeste ? Math.max(1, Math.ceil((fimTeste - Date.now()) / 864e5)) : null;
 
   return (
     <div className="min-h-screen bg-canvas/50">
@@ -281,6 +285,19 @@ export function AppLayout() {
             <UserMenu />
           </div>
         </header>
+
+        {diasDeTeste !== null && (
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 bg-accent px-4 py-2.5 text-center text-sm font-medium text-white">
+            <Sparkles className="size-4 shrink-0" />
+            Teste grátis: {diasDeTeste <= 1 ? "termina hoje" : `faltam ${diasDeTeste} dias`}.
+            {role === "admin" && (
+              <button onClick={() => setPlanos(true)} className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-accent-deep transition hover:bg-white/90">
+                Contratar plano
+              </button>
+            )}
+          </div>
+        )}
+        {role === "admin" && <UpgradeModal open={planos} onClose={() => setPlanos(false)} />}
 
         {suspensa && (
           <div className="flex items-center justify-center gap-2 bg-rose-600 px-4 py-2.5 text-center text-sm font-medium text-white">

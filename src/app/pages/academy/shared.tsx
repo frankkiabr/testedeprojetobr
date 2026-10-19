@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { FileText, GraduationCap, Upload, Video } from "lucide-react";
 import { useStore } from "@/data/store";
 import type { Trilha } from "@/data/types";
-import { ACCEPT_AULA, classifyAula, fmtBytes } from "@/lib/files";
+import { ACCEPT_AULA, classifyAula, fmtBytes, linkDeVideo, MAX_DOCUMENTO } from "@/lib/files";
 import { btn, Field, inputCls, Modal } from "../../forms";
+import { Segmented } from "../../kit";
 
 export function TrilhaCover({ trilha, className = "", children }: { trilha: Trilha; className?: string; children?: React.ReactNode }) {
   const h = trilha.capaHue;
@@ -82,20 +83,24 @@ export function TrilhaFormModal({
   );
 }
 
-/** Adicionar aula: vídeo (MP4/MOV) ou documento (PDF/DOC/DOCX). */
+/** Adicionar aula: vídeo (link do YouTube ou Vimeo) ou documento (PDF/DOC/DOCX). */
 export function AulaFormModal({ open, onClose, trilhaId }: { open: boolean; onClose: () => void; trilhaId: string }) {
   const { addAula } = useStore();
   const input = useRef<HTMLInputElement>(null);
+  const [tipo, setTipo] = useState<"video" | "documento">("video");
   const [titulo, setTitulo] = useState("");
   const [duracao, setDuracao] = useState("");
+  const [link, setLink] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [erro, setErro] = useState("");
   const [drag, setDrag] = useState(false);
 
   useEffect(() => {
     if (open) {
+      setTipo("video");
       setTitulo("");
       setDuracao("");
+      setLink("");
       setFile(null);
       setErro("");
     }
@@ -104,7 +109,12 @@ export function AulaFormModal({ open, onClose, trilhaId }: { open: boolean; onCl
   const pick = (f?: File | null) => {
     if (!f) return;
     if (!classifyAula(f.name)) {
-      setErro("Formato não aceito. Envie MP4, MOV, PDF, DOC ou DOCX.");
+      setErro("Formato não aceito. Envie PDF, DOC ou DOCX.");
+      setFile(null);
+      return;
+    }
+    if (f.size > MAX_DOCUMENTO) {
+      setErro(`Arquivo grande demais (${fmtBytes(f.size)}). O limite é ${fmtBytes(MAX_DOCUMENTO)}.`);
       setFile(null);
       return;
     }
@@ -113,8 +123,9 @@ export function AulaFormModal({ open, onClose, trilhaId }: { open: boolean; onCl
     if (!titulo) setTitulo(f.name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " "));
   };
 
-  const kind = file ? classifyAula(file.name) : null;
-  const ok = file && kind && titulo.trim();
+  const video = tipo === "video" ? linkDeVideo(link) : null;
+  const kind = tipo === "documento" && file ? classifyAula(file.name) : null;
+  const ok = titulo.trim() && (tipo === "video" ? !!video : !!(file && kind));
 
   return (
     <Modal
@@ -131,15 +142,22 @@ export function AulaFormModal({ open, onClose, trilhaId }: { open: boolean; onCl
             disabled={!ok}
             className={btn.primary}
             onClick={() => {
-              addAula(trilhaId, {
-                titulo: titulo.trim(),
-                tipo: kind!.tipo,
-                formato: kind!.formato,
-                arquivoNome: file!.name,
-                tamanhoBytes: file!.size,
-                duracaoMin: kind!.tipo === "video" && Number(duracao) > 0 ? Number(duracao) : undefined,
-                url: URL.createObjectURL(file!),
-              });
+              if (video)
+                addAula(trilhaId, {
+                  titulo: titulo.trim(),
+                  tipo: "video",
+                  formato: video.formato,
+                  arquivoNome: link.trim(),
+                  tamanhoBytes: 0,
+                  duracaoMin: Number(duracao) > 0 ? Number(duracao) : undefined,
+                  videoUrl: video.embed,
+                });
+              else if (file && kind)
+                addAula(
+                  trilhaId,
+                  { titulo: titulo.trim(), tipo: "documento", formato: kind.formato, arquivoNome: file.name, tamanhoBytes: file.size, url: URL.createObjectURL(file) },
+                  file,
+                );
               onClose();
             }}
           >
@@ -149,6 +167,43 @@ export function AulaFormModal({ open, onClose, trilhaId }: { open: boolean; onCl
       }
     >
       <div className="grid gap-4">
+        <Segmented
+          id="tipo-aula"
+          value={tipo}
+          onChange={(v) => {
+            setTipo(v);
+            setErro("");
+          }}
+          options={[
+            { value: "video", label: "Vídeo (YouTube ou Vimeo)" },
+            { value: "documento", label: "Documento (PDF ou Word)" },
+          ]}
+        />
+
+        {tipo === "video" ? (
+          <>
+            <Field
+              label="Link do vídeo"
+              hint={
+                link.trim() && !video
+                  ? "Link não reconhecido. Cole o endereço do vídeo no YouTube ou no Vimeo."
+                  : "Envie o vídeo no YouTube como “Não listado” (ou no Vimeo) e cole o link aqui. Ele toca dentro da Frankkia."
+              }
+            >
+              <input autoFocus className={inputCls} value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://youtu.be/..." />
+            </Field>
+            {video && (
+              <iframe
+                title="Prévia do vídeo"
+                src={video.embed}
+                className="aspect-video w-full rounded-2xl bg-ink"
+                allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                allowFullScreen
+              />
+            )}
+          </>
+        ) : (
+          <>
         <button
           type="button"
           onClick={() => input.current?.click()}
@@ -182,17 +237,19 @@ export function AulaFormModal({ open, onClose, trilhaId }: { open: boolean; onCl
                 <Upload className="size-5" />
               </span>
               <span className="text-sm font-semibold">Arraste o arquivo aqui ou clique para escolher</span>
-              <span className="text-xs text-muted">MP4 ou MOV (vídeo) · PDF, DOC ou DOCX (documento)</span>
+              <span className="text-xs text-muted">PDF, DOC ou DOCX · até {fmtBytes(MAX_DOCUMENTO)}</span>
             </>
           )}
         </button>
         <input ref={input} type="file" accept={ACCEPT_AULA} className="hidden" onChange={(e) => pick(e.target.files?.[0])} />
         {erro && <p className="-mt-2 text-sm font-medium text-rose-600">{erro}</p>}
+          </>
+        )}
 
         <Field label="Título da aula">
           <input className={inputCls} value={titulo} onChange={(e) => setTitulo(e.target.value)} placeholder="Ex.: Abordagem ao proprietário" />
         </Field>
-        {kind?.tipo === "video" && (
+        {tipo === "video" && (
           <Field label="Duração em minutos (opcional)">
             <input className={inputCls} inputMode="numeric" value={duracao} onChange={(e) => setDuracao(e.target.value.replace(/\D/g, ""))} placeholder="Ex.: 15" />
           </Field>

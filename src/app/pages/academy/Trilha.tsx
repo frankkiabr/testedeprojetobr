@@ -7,6 +7,7 @@ import { aulaConcluida, corretoresAtivos, duracaoTrilha, progressoEquipe, progre
 import { useStore } from "@/data/store";
 import type { Aula, Trilha as TrilhaT } from "@/data/types";
 import { fmtBytes, samplePdfUrl } from "@/lib/files";
+import { supabase } from "@/integrations/supabase/client";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { useScope } from "../../session";
 import { Avatar, Card, CardHeader, ProgressBar, stagger } from "../../kit";
@@ -17,6 +18,19 @@ import { AulaFormModal, AulaIcon, TrilhaCover, TrilhaFormModal } from "./shared"
 function VideoPlayer({ aula, trilha }: { aula: Aula; trilha: TrilhaT }) {
   const [clicked, setClicked] = useState(false);
   useEffect(() => setClicked(false), [aula.id]);
+
+  // Vídeo do YouTube ou Vimeo, tocando dentro da Frankkia
+  if (aula.videoUrl)
+    return (
+      <iframe
+        key={aula.id}
+        title={aula.titulo}
+        src={aula.videoUrl}
+        className="aspect-video w-full rounded-2xl bg-ink"
+        allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+        allowFullScreen
+      />
+    );
 
   if (aula.url)
     return (
@@ -59,10 +73,20 @@ function VideoPlayer({ aula, trilha }: { aula: Aula; trilha: TrilhaT }) {
 }
 
 function DocumentoViewer({ aula }: { aula: Aula }) {
-  const download = () => {
-    const url = aula.url ?? samplePdfUrl(aula.titulo);
+  const { toast } = useStore();
+  const download = async () => {
+    let url = aula.url;
+    // Documento guardado no banco: link temporário (1 minuto), só para quem é da imobiliária
+    if (!url && aula.arquivoPath) {
+      const { data, error } = await supabase.storage.from("academy").createSignedUrl(aula.arquivoPath, 60, { download: aula.arquivoNome });
+      if (error || !data) {
+        toast("Não foi possível baixar o arquivo. Tente de novo.");
+        return;
+      }
+      url = data.signedUrl;
+    }
     const a = document.createElement("a");
-    a.href = url;
+    a.href = url ?? samplePdfUrl(aula.titulo);
     a.download = aula.arquivoNome;
     a.click();
   };
@@ -266,7 +290,7 @@ export default function Trilha() {
                           <span className={`block truncate text-sm ${active ? "font-semibold text-accent-deep" : "font-medium"}`}>{a.titulo}</span>
                           <span className="mt-0.5 flex items-center gap-1.5 text-xs text-muted">
                             <AulaIcon tipo={a.tipo} className="size-3.5" />
-                            {a.formato} · {a.duracaoMin ? `${a.duracaoMin} min` : fmtBytes(a.tamanhoBytes)}
+                            {a.formato} · {a.duracaoMin ? `${a.duracaoMin} min` : a.tipo === "video" ? "vídeo" : fmtBytes(a.tamanhoBytes)}
                           </span>
                         </span>
                       </button>

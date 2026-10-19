@@ -80,7 +80,8 @@ export type ConexaoGoogle = { email: string; conectadoEm: string };
 
 // ---------- Academy ----------
 
-export type FormatoAula = "MP4" | "MOV" | "PDF" | "DOC" | "DOCX";
+/** Vídeo: link do YouTube/Vimeo ("não listado"); MP4/MOV só nos exemplos antigos. Documento: PDF/DOC/DOCX. */
+export type FormatoAula = "MP4" | "MOV" | "YOUTUBE" | "VIMEO" | "PDF" | "DOC" | "DOCX";
 
 export type Aula = {
   id: string;
@@ -92,6 +93,10 @@ export type Aula = {
   duracaoMin?: number;
   /** Endereço do arquivo. Na demonstração, só existe para arquivos enviados nesta sessão. */
   url?: string;
+  /** Vídeo hospedado no YouTube ou Vimeo: endereço do player (embed). */
+  videoUrl?: string;
+  /** Documento guardado no banco (caminho no armazenamento "academy"). */
+  arquivoPath?: string;
 };
 
 export type Trilha = {
@@ -117,6 +122,8 @@ export type ArquivoMarca = {
   enviadoEm: string;
   /** null = não foi possível verificar */
   transparente: boolean | null;
+  /** Caminho no armazenamento "marca" (login real). */
+  path?: string;
 };
 
 // ---------- Ajuda ----------
@@ -157,6 +164,9 @@ export type Cliente = {
   ultimoAcesso?: string;
   adminNome: string;
   adminEmail: string;
+  /** Teste grátis: fim do período (conta a partir do 1º acesso do administrador) e duração combinada. */
+  testeAte?: string;
+  testeDias?: number;
   /** Vagas em uso (corretores ativos + convites). */
   corretores: number;
   /** Quantidade de ações por módulo nos últimos 30 dias. */
