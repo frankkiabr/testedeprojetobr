@@ -3,7 +3,10 @@
 ## E-mails do login (convites, confirmação, nova senha)
 
 **Feito:** login real, convite por link, primeiro acesso, "Esqueceu a senha?".
+Função `enviar-convite` (Resend) publicada: envia o convite sozinho quando os segredos `RESEND_API_KEY` e
+`EMAIL_REMETENTE` estiverem no Supabase (Edge Functions → Secrets). Sem eles, o app mostra o link para copiar.
 **Falta:**
+- Um domínio próprio verificado no Resend (sem ele, o Resend só entrega para o e-mail do dono da conta).
 - Configurar um serviço de e-mail próprio no Supabase (ex.: Resend — Authentication → Emails → SMTP).
   O e-mail padrão do Supabase é só para testes: poucos envios por hora e apenas para e-mails da equipe do projeto.
 - Envio automático do convite por e-mail (hoje o administrador copia o link e envia por WhatsApp/e-mail).
@@ -14,11 +17,15 @@
 **Feito:** escolher plano (ou contratar ao fim do teste grátis) → pedido gravado no banco → no painel Frankkia,
 "Confirmar pagamento" (à mão, para PIX/transferência) → "Liberar plano" (vagas extras na hora).
 
-**Falta (Stripe real) — precisa de uma conta Stripe sua (grátis para criar; cobra só uma taxa por venda):**
-- Conectar a Stripe pelo Lovable e criar os 3 planos como produtos/preços de assinatura.
-- "Ir para pagamento" cria uma sessão do Stripe Checkout (página segura da Stripe; a Frankkia nunca vê o cartão).
-- Webhook da Stripe (`checkout.session.completed` / pagamentos de boleto) atualiza o status do pedido sozinho.
+**Feito (Stripe, modo de teste):** funções `criar-checkout` (abre a página da Stripe, assinatura mensal em reais)
+e `stripe-webhook` (pagamento aprovado → "Pagamento confirmado" no painel). Segredos no Supabase:
+`STRIPE_SECRET_KEY` (sk_test_...) e `STRIPE_WEBHOOK_SECRET` (whsec_...). Webhook na Stripe apontando para
+`https://yvbbktrufoyhtiotholf.supabase.co/functions/v1/stripe-webhook`.
+
+**Ideias para depois:**
+- Passar para o modo real (chaves sk_live) quando a conta Stripe estiver ativada.
 - Decidir: liberar manualmente (como hoje) ou automaticamente ao confirmar o pagamento.
+- PIX/boleto para assinaturas e trocar de plano direto na assinatura da Stripe.
 - Cobrança proporcional (proration) da diferença no mês do upgrade, se desejado.
 
 ## Agenda

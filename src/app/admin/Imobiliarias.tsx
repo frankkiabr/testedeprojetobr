@@ -10,7 +10,7 @@ import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { Avatar, Badge, Card, PageHeader, ProgressBar, Select, stagger } from "../kit";
 import { btn, Drawer, EmptyState, Field, inputCls, Modal, SearchInput, SelectField } from "../forms";
 import { useSession } from "../session";
-import { mensagemErro, supabase } from "@/integrations/supabase/client";
+import { enviarConvitePorEmail, mensagemErro, supabase } from "@/integrations/supabase/client";
 
 const PLANO_OPTS = (Object.keys(PLANOS) as PlanoNome[]).map((p) => ({ value: p, label: `${p} · ${brl(PLANOS[p].preco)}/mês` }));
 const iniciais = (s: string) =>
@@ -226,7 +226,7 @@ function NovaImobiliariaModal({ open, onClose, onCreated }: { open: boolean; onC
   const { modo } = useSession();
   const empty = { nome: "", cidade: "", cnpj: "", plano: "Equipe 15" as PlanoNome, adminNome: "", adminEmail: "", teste: true, testeDias: "7" };
   const [f, setF] = useState(empty);
-  const [criada, setCriada] = useState<{ id: string; link: string } | null>(null);
+  const [criada, setCriada] = useState<{ id: string; link: string; enviado: boolean } | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
   const [copiado, setCopiado] = useState(false);
@@ -272,7 +272,8 @@ function NovaImobiliariaModal({ open, onClose, onCreated }: { open: boolean; onC
       return;
     }
     const c = addCliente({ ...dados, id: r.imobiliaria_id });
-    setCriada({ id: c.id, link: `${window.location.origin}/convite/${r.token}` });
+    const enviado = await enviarConvitePorEmail(r.token);
+    setCriada({ id: c.id, link: `${window.location.origin}/convite/${r.token}`, enviado });
   };
 
   if (criada)
@@ -284,7 +285,11 @@ function NovaImobiliariaModal({ open, onClose, onCreated }: { open: boolean; onC
           onCreated(criada.id);
         }}
         title="Imobiliária criada"
-        subtitle={`Envie este link para ${f.adminEmail.trim().toLowerCase()}: é o primeiro acesso do administrador.`}
+        subtitle={
+          criada.enviado
+            ? `Enviamos o link de primeiro acesso para ${f.adminEmail.trim().toLowerCase()}. Se quiser, mande também por WhatsApp.`
+            : `Envie este link para ${f.adminEmail.trim().toLowerCase()}: é o primeiro acesso do administrador.`
+        }
         footer={
           <button
             className={btn.accent}
@@ -309,7 +314,7 @@ function NovaImobiliariaModal({ open, onClose, onCreated }: { open: boolean; onC
               {copiado ? "Copiado" : "Copiar"}
             </button>
           </div>
-          <p className="text-xs text-muted">O envio automático por e-mail entra numa próxima etapa. O link vale até o convite ser usado.</p>
+          <p className="text-xs text-muted">O link vale até o convite ser usado.</p>
         </div>
       </Modal>
     );

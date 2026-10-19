@@ -47,8 +47,10 @@ export default function Equipe() {
   const inativos = eq.inativos;
   const souEu = (u: Usuario) => modo !== "real" || u.id === conta?.usuarioId;
 
-  const mostrarLink = (l: string | null) => {
+  const [porEmail, setPorEmail] = useState(false);
+  const mostrarLink = (l: string | null, enviado = false) => {
     setCopiado(false);
+    setPorEmail(enviado);
     setLink(l);
   };
 
@@ -60,7 +62,7 @@ export default function Equipe() {
     setErro(r.erro ?? "");
     if (!r.erro) {
       setEmail("");
-      if (r.link) mostrarLink(r.link);
+      if (r.link) mostrarLink(r.link, r.enviado);
     }
   };
 
@@ -193,7 +195,7 @@ export default function Equipe() {
                       <button
                         onClick={async () => {
                           const l = await eq.reenviar(c.id);
-                          if (l) mostrarLink(l);
+                          if (l) mostrarLink(l.link, l.enviado);
                         }}
                         title={modo === "real" ? "Copiar link do convite" : "Reenviar convite"}
                         className="grid size-8 place-items-center rounded-full text-muted hover:bg-canvas hover:text-ink"
@@ -297,8 +299,8 @@ export default function Equipe() {
       <Modal
         open={!!link}
         onClose={() => setLink(null)}
-        title="Link do convite"
-        subtitle="Envie este link para o corretor (por WhatsApp ou e-mail). É por ele que ele cria o acesso."
+        title={porEmail ? "Convite enviado" : "Link do convite"}
+        subtitle={porEmail ? "Convite enviado por e-mail. Se quiser, mande também o link por WhatsApp." : "Envie este link para o corretor (por WhatsApp ou e-mail). É por ele que ele cria o acesso."}
         footer={
           <button onClick={() => setLink(null)} className={btn.accent}>
             Concluir
@@ -312,7 +314,7 @@ export default function Equipe() {
               {copiado ? "Copiado" : "Copiar"}
             </button>
           </div>
-          <p className="text-xs text-muted">O envio automático por e-mail entra numa próxima etapa. O convite ocupa uma vaga até ser aceito ou cancelado.</p>
+          <p className="text-xs text-muted">O convite ocupa uma vaga até ser aceito ou cancelado.</p>
         </div>
       </Modal>
     </div>

@@ -1,0 +1,43 @@
+// Aviso automático da Stripe: quando o pagamento é aprovado, o pedido fica "Pagamento confirmado"
+// no painel Frankkia. A liberação do plano continua sendo feita pela Frankkia ("Liberar plano").
+import Stripe from "npm:stripe@17.7.0";
+import { admin } from "../_shared/comum.ts";
+
+const cripto = Stripe.createSubtleCryptoProvider();
+
+Deno.serve(async (req) => {
+  const chave = Deno.env.get("STRIPE_SECRET_KEY");
+  const segredo = Deno.env.get("STRIPE_WEBHOOK_SECRET");
+  if (!chave || !segredo) return new Response("Stripe não configurada", { status: 503 });
+
+  const stripe = new Stripe(chave);
+  const corpo = await req.text();
+  let evento: Stripe.Event;
+  try {
+    // Confere a assinatura: só a Stripe consegue mandar este aviso
+    evento = await stripe.webhooks.constructEventAsync(corpo, req.headers.get("stripe-signature") ?? "", segredo, undefined, cripto);
+  } catch {
+    return new Response("Assinatura inválida", { status: 400 });
+  }
+
+  const db = admin();
+  if (evento.type.startsWith("checkout.session.")) {
+    const s = evento.data.object as Stripe.Checkout.Session;
+    const pedidoId = s.metadata?.pedido_id ?? s.client_reference_id;
+    if (pedidoId) {
+      const pago =
+        evento.type === "checkout.session.async_payment_succeeded" || (evento.type === "checkout.session.completed" && s.payment_status === "paid");
+      const recusado = evento.type === "checkout.session.async_payment_failed" || evento.type === "checkout.session.expired";
+      const pendente = evento.type === "checkout.session.completed" && s.payment_status === "unpaid";
+      const pagamento = pago ? "confirmado" : recusado ? "cancelado" : pendente ? "pendente" : null;
+      if (pagamento)
+        await db
+          .from("pedidos_upgrade")
+          .update({ pagamento, metodo: "cartao", ...(pago ? { pago_em: new Date().toISOString() } : {}), referencia: s.id })
+          .eq("id", pedidoId)
+          .eq("liberado", false)
+          .neq("pagamento", "confirmado");
+    }
+  }
+  return new Response(JSON.stringify({ recebido: true }), { headers: { "Content-Type": "application/json" } });
+});

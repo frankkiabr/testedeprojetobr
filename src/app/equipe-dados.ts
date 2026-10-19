@@ -3,7 +3,7 @@ import { admin, convites as convitesDemo, imobiliaria } from "@/data/demo";
 import { corretoresAtivos, corretoresInativos } from "@/data/queries";
 import { useStore } from "@/data/store";
 import type { Usuario } from "@/data/types";
-import { mensagemErro, supabase } from "@/integrations/supabase/client";
+import { enviarConvitePorEmail, mensagemErro, supabase } from "@/integrations/supabase/client";
 import { recarregarDados } from "@/data/sync";
 import { useSession } from "./session";
 
@@ -17,8 +17,8 @@ export type Equipe = {
   ativos: Usuario[];
   inativos: Usuario[];
   /** Convida um corretor. Devolve o erro (texto) ou o link do convite. */
-  convidar: (email: string) => Promise<{ erro?: string; link?: string }>;
-  reenviar: (id: string) => Promise<string | null>;
+  convidar: (email: string) => Promise<{ erro?: string; link?: string; enviado?: boolean }>;
+  reenviar: (id: string) => Promise<{ link: string; enviado: boolean } | null>;
   cancelar: (id: string) => Promise<void>;
   setAtivo: (usuarioId: string, ativo: boolean) => Promise<string | null>;
 };
@@ -122,11 +122,16 @@ export function useEquipe(): Equipe {
         .select("token")
         .single();
       if (error) return { erro: error.code === "23505" ? "Já existe um convite pendente para este e-mail." : mensagemErro(error) };
+      const enviado = await enviarConvitePorEmail(data.token);
       await carregar();
       recarregarDados();
-      return { link: linkDe(data.token) };
+      return { link: linkDe(data.token), enviado };
     },
-    reenviar: async (id) => dados?.convites.find((c) => c.id === id)?.link ?? null,
+    reenviar: async (id) => {
+      const c = dados?.convites.find((x) => x.id === id);
+      if (!c) return null;
+      return { link: c.link, enviado: await enviarConvitePorEmail(c.link.split("/convite/")[1]) };
+    },
     cancelar: async (id) => {
       await supabase.from("convites").update({ status: "cancelado" }).eq("id", id);
       await carregar();

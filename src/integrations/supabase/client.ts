@@ -52,6 +52,29 @@ export const supabase = createClient<Database>(url, key, {
   auth: { storage, persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
 });
 
+/** Envia o convite por e-mail (Resend). Se o e-mail ainda não estiver configurado, devolve enviado: false. */
+export async function enviarConvitePorEmail(token: string): Promise<boolean> {
+  const { data, error } = await supabase.functions.invoke("enviar-convite", { body: { token, origem: window.location.origin } });
+  return !error && !!(data as { enviado?: boolean } | null)?.enviado;
+}
+
+/** Abre a página de pagamento da Stripe. Devolve o endereço, ou o motivo de não ter conseguido. */
+export async function abrirPagamentoStripe(pedidoId: string): Promise<{ url?: string; erro?: string }> {
+  const { data, error } = await supabase.functions.invoke("criar-checkout", { body: { pedidoId, origem: window.location.origin } });
+  const d = data as { url?: string; erro?: string } | null;
+  if (d?.url) return { url: d.url };
+  // Erro devolvido pela função (ex.: Stripe ainda não configurada)
+  let motivo = d?.erro;
+  if (!motivo && error && "context" in error) {
+    try {
+      motivo = ((await (error as { context: Response }).context.json()) as { erro?: string }).erro;
+    } catch {
+      /* sem detalhes */
+    }
+  }
+  return { erro: motivo ?? "FALHA_STRIPE" };
+}
+
 /** Traduz os erros do banco e do login para mensagens em português. */
 export function mensagemErro(e: unknown): string {
   const msg = typeof e === "object" && e && "message" in e ? String((e as { message: unknown }).message) : String(e);

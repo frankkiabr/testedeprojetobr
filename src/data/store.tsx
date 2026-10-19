@@ -27,6 +27,7 @@ import {
   trilhas,
 } from "./demo";
 import { captacaoTitulo, captacaoById, vagasLivres } from "./queries";
+import { enviarConvitePorEmail } from "@/integrations/supabase/client";
 import { aoMudar, compromissoParaBanco, configurarGravacao, contexto as ctxDados, ehReal, enfileirar, falhou, gravar, leadParaBanco, novoId, supabase } from "./sync";
 import { clientes, errosSistema, nomeDaTela, novaReferencia, pedidoAberto, pedidoById, pedidosUpgrade, PLANOS, todosChamados } from "./platform";
 import type {
@@ -784,6 +785,7 @@ function createActions(bump: () => void, toast: (text: string) => void) {
         .maybeSingle()
         .then(async ({ data }) => {
           if (!data) return toast("O administrador já fez o primeiro acesso. Se esqueceu a senha, ele pode usar “Esqueceu a senha?” no login.");
+          if (await enviarConvitePorEmail(data.token)) return toast(`Link de primeiro acesso reenviado para ${c.adminEmail}.`);
           const link = `${window.location.origin}/convite/${data.token}`;
           try {
             await navigator.clipboard.writeText(link);

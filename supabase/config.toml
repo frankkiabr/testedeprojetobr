@@ -1,1 +1,11 @@
 project_id = "yvbbktrufoyhtiotholf"
+
+# Funções do servidor. Elas mesmas conferem quem está chamando (login) ou a assinatura da Stripe.
+[functions.criar-checkout]
+verify_jwt = false
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.enviar-convite]
+verify_jwt = false

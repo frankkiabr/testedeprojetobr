@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Barcode, CheckCircle2, Clock, CreditCard, Lock, QrCode, ShieldCheck, XCircle } from "lucide-react";
 import { imobiliaria } from "@/data/demo";
@@ -12,6 +12,8 @@ import { Logo } from "@/components/ui";
 import { Segmented } from "@/app/kit";
 import { btn } from "@/app/forms";
 import { useSession } from "@/app/session";
+import { abrirPagamentoStripe } from "@/integrations/supabase/client";
+import { recarregarDados } from "@/data/sync";
 
 type Metodo = NonNullable<PedidoUpgrade["metodo"]>;
 
@@ -28,6 +30,42 @@ export default function Checkout() {
   const pedido = id ? pedidoById(id) : undefined;
   const [metodo, setMetodo] = useState<Metodo>("cartao");
   const [processando, setProcessando] = useState(false);
+  const [semStripe, setSemStripe] = useState(false);
+  const [erroPagamento, setErroPagamento] = useState<string | null>(null);
+  const [params] = useSearchParams();
+  const voltouDaStripe = params.get("pagamento") === "ok";
+  const [esperou, setEsperou] = useState(false);
+
+  // Voltou da Stripe: o aviso de pagamento chega ao banco em segundos; recarrega até aparecer
+  const aguardando = pedido?.pagamento === "aguardando";
+  useEffect(() => {
+    if (modo !== "real" || !voltouDaStripe || !aguardando) return;
+    let n = 0;
+    const t = setInterval(() => {
+      n += 1;
+      recarregarDados();
+      if (n >= 10) {
+        setEsperou(true);
+        clearInterval(t);
+      }
+    }, 3000);
+    return () => clearInterval(t);
+  }, [modo, voltouDaStripe, aguardando]);
+
+  const pagarComStripe = async () => {
+    if (!pedido) return;
+    setErroPagamento(null);
+    setProcessando(true);
+    const r = await abrirPagamentoStripe(pedido.id);
+    if (r.url) {
+      window.location.href = r.url;
+      return;
+    }
+    setProcessando(false);
+    if (r.erro === "STRIPE_NAO_CONFIGURADA") setSemStripe(true);
+    else if (r.erro === "PEDIDO_JA_PAGO") recarregarDados();
+    else setErroPagamento("Não foi possível abrir o pagamento agora. Tente de novo em instantes.");
+  };
 
   if (carregando) return <Shell>{null}</Shell>;
   if (!pedido) {
@@ -97,6 +135,45 @@ export default function Checkout() {
           {/* Sem esperar animação de saída: a tela de resultado entra direto. */}
           {finalizado ? (
               <Resultado key="fim" pedido={pedido} />
+            ) : modo === "real" && voltouDaStripe ? (
+              <motion.div key="confirmando" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-6 text-center">
+                <span className="mx-auto grid size-16 place-items-center rounded-2xl bg-accent-soft text-accent">
+                  <Clock className="size-7 animate-pulse" />
+                </span>
+                <h2 className="type-subtitle mt-5">Confirmando seu pagamento...</h2>
+                <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted">
+                  {esperou
+                    ? "A Stripe recebeu o pagamento e a confirmação pode levar alguns minutos. Você pode voltar para a plataforma: o status atualiza sozinho."
+                    : "Só um instante: estamos recebendo a confirmação da Stripe."}
+                </p>
+                <Link to="/app/configuracoes?aba=plano" className={`${btn.primary} mt-7`}>
+                  Voltar para a plataforma
+                </Link>
+              </motion.div>
+            ) : modo === "real" && !semStripe ? (
+              <motion.div key="stripe" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <div className="flex items-center justify-between">
+                  <h1 className="font-display text-xl font-semibold">Pagamento</h1>
+                  <span className="flex items-center gap-1.5 text-xs text-muted">
+                    <Lock className="size-3.5" /> Processado pela Stripe
+                  </span>
+                </div>
+                <p className="mt-5 flex items-start gap-3 rounded-2xl border border-dashed border-line-strong bg-canvas/60 p-5 text-sm">
+                  <CreditCard className="mt-0.5 size-5 shrink-0 text-accent" />
+                  <span>
+                    Você vai para a <span className="font-semibold">página segura da Stripe</span> para digitar o cartão. A Frankkia nunca vê nem guarda o número do
+                    cartão. A cobrança é mensal e pode ser cancelada quando quiser.
+                  </span>
+                </p>
+                {erroPagamento && <p className="mt-4 rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700">{erroPagamento}</p>}
+                <button disabled={processando} onClick={pagarComStripe} className={`${btn.accent} mt-6 h-12 w-full`}>
+                  {processando ? "Abrindo a Stripe..." : `Pagar ${brl(pedido.valorMensal)}/mês com cartão`}
+                  {!processando && <ArrowRight className="size-4" />}
+                </button>
+                <button onClick={() => store.cancelarPedidoUpgrade(pedido.id)} className={`${btn.outline} mt-2 w-full`}>
+                  Cancelar pedido
+                </button>
+              </motion.div>
             ) : modo === "real" ? (
               <motion.div key="combinar" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-4 text-center">
                 <span className="mx-auto grid size-16 place-items-center rounded-2xl bg-accent-soft text-accent">
@@ -104,8 +181,8 @@ export default function Checkout() {
                 </span>
                 <h1 className="type-subtitle mt-5">Pedido recebido</h1>
                 <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted">
-                  O pagamento online (cartão, PIX e boleto pela Stripe) está chegando. Por enquanto, a equipe Frankkia entra em contato para combinar o pagamento e
-                  libera o plano {pedido.planoNovo} assim que ele for confirmado.
+                  O pagamento online ainda está sendo configurado. A equipe Frankkia entra em contato para combinar o pagamento e libera o plano {pedido.planoNovo}{" "}
+                  assim que ele for confirmado.
                 </p>
                 <p className="mt-4 font-mono text-xs text-subtle">Ref.: {pedido.referencia}</p>
                 <div className="mt-7 flex flex-wrap justify-center gap-2">
