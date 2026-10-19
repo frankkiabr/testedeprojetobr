@@ -35,3 +35,7 @@ dist-ssr
 .claude/
 componentes-avulsos/
 .wrangler/
+
+# Supabase CLI (dados locais do link)
+supabase/.temp/
+supabase/.branches/
