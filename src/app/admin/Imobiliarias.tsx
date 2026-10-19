@@ -10,7 +10,7 @@ import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { Avatar, Badge, Card, PageHeader, ProgressBar, Select, stagger } from "../kit";
 import { btn, Drawer, EmptyState, Field, inputCls, Modal, SearchInput, SelectField } from "../forms";
 import { useSession } from "../session";
-import { enviarConvitePorEmail, mensagemErro, supabase } from "@/integrations/supabase/client";
+import { enviarConvitePorEmail, legado as supabase, mensagemErro } from "@/integrations/supabase/client";
 
 const PLANO_OPTS = (Object.keys(PLANOS) as PlanoNome[]).map((p) => ({ value: p, label: `${p} · ${brl(PLANOS[p].preco)}/mês` }));
 const iniciais = (s: string) =>
