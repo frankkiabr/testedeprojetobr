@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Barcode, CheckCircle2, Clock, CreditCard, Lock, QrCode, ShieldCheck, XCircle } from "lucide-react";
@@ -26,7 +26,7 @@ type Metodo = NonNullable<PedidoUpgrade["metodo"]>;
 export default function Checkout() {
   const { id } = useParams();
   const store = useStore();
-  const { modo, carregando } = useSession();
+  const { modo, carregando, recarregar } = useSession();
   const pedido = id ? pedidoById(id) : undefined;
   const [metodo, setMetodo] = useState<Metodo>("cartao");
   const [processando, setProcessando] = useState(false);
@@ -38,6 +38,16 @@ export default function Checkout() {
 
   // Voltou da Stripe: o aviso de pagamento chega ao banco em segundos; recarrega até aparecer
   const aguardando = pedido?.pagamento === "aguardando";
+
+  // Plano liberado: atualiza a conta (fim do teste grátis, novo limite de vagas) uma única vez
+  const liberado = !!pedido?.liberado;
+  const contaAtualizada = useRef(false);
+  useEffect(() => {
+    if (modo === "real" && voltouDaStripe && liberado && !contaAtualizada.current) {
+      contaAtualizada.current = true;
+      recarregar();
+    }
+  }, [modo, voltouDaStripe, liberado]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (modo !== "real" || !voltouDaStripe || !aguardando) return;
     let n = 0;
@@ -266,8 +276,10 @@ function Resultado({ pedido }: { pedido: PedidoUpgrade }) {
     confirmado: {
       icon: <CheckCircle2 className="size-7" />,
       cor: "bg-verified-soft text-verified",
-      titulo: "Pagamento confirmado!",
-      texto: `A equipe Frankkia já recebeu o seu pedido e vai liberar o plano ${pedido.planoNovo} em instantes. Você será avisado assim que as novas vagas estiverem disponíveis.`,
+      titulo: pedido.liberado ? `Plano ${pedido.planoNovo} liberado!` : "Pagamento confirmado!",
+      texto: pedido.liberado
+        ? `Tudo certo: as vagas do plano ${pedido.planoNovo} já estão disponíveis. Você já pode convidar novos corretores.`
+        : `A equipe Frankkia já recebeu o seu pedido e vai liberar o plano ${pedido.planoNovo} em instantes. Você será avisado assim que as novas vagas estiverem disponíveis.`,
     },
     pendente: {
       icon: <Clock className="size-7" />,

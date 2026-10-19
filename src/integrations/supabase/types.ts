@@ -1076,6 +1076,7 @@ export type Database = {
         }
         Returns: string
       }
+      aplicar_upgrade: { Args: { p_pedido: string }; Returns: undefined }
       compartilha_imobiliaria: { Args: { p_usuario: string }; Returns: boolean }
       criar_imobiliaria: {
         Args: {

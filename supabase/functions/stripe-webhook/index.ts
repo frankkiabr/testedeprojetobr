@@ -1,5 +1,5 @@
 // Aviso automático da Stripe: quando o pagamento é aprovado, o pedido fica "Pagamento confirmado"
-// no painel Frankkia. A liberação do plano continua sendo feita pela Frankkia ("Liberar plano").
+// e o novo plano é liberado na hora (mais vagas; fim do teste grátis).
 import Stripe from "npm:stripe@17.7.0";
 import { admin } from "../_shared/comum.ts";
 
@@ -30,13 +30,20 @@ Deno.serve(async (req) => {
       const recusado = evento.type === "checkout.session.async_payment_failed" || evento.type === "checkout.session.expired";
       const pendente = evento.type === "checkout.session.completed" && s.payment_status === "unpaid";
       const pagamento = pago ? "confirmado" : recusado ? "cancelado" : pendente ? "pendente" : null;
-      if (pagamento)
-        await db
+      if (pagamento) {
+        const { data: atualizado } = await db
           .from("pedidos_upgrade")
           .update({ pagamento, metodo: "cartao", ...(pago ? { pago_em: new Date().toISOString() } : {}), referencia: s.id })
           .eq("id", pedidoId)
           .eq("liberado", false)
-          .neq("pagamento", "confirmado");
+          .neq("pagamento", "confirmado")
+          .select("id");
+        // Pagou: o novo plano é liberado na hora, sem esperar a equipe Frankkia
+        if (pago && atualizado?.length) {
+          const { error } = await db.rpc("aplicar_upgrade", { p_pedido: pedidoId });
+          if (error) console.error("Liberação automática falhou", error);
+        }
+      }
     }
   }
   return new Response(JSON.stringify({ recebido: true }), { headers: { "Content-Type": "application/json" } });

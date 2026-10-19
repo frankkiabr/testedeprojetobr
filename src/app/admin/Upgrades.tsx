@@ -133,8 +133,8 @@ export default function Upgrades() {
 
       <motion.p {...stagger(3)} className="flex items-start gap-2 text-sm text-muted">
         <Info className="mt-0.5 size-4 shrink-0 text-accent" />
-        Enquanto a Stripe não está ligada, combine o pagamento com a imobiliária (PIX ou transferência) e use “Confirmar pagamento”. Com a Stripe, o status chega
-        sozinho; a liberação do plano continua sendo sua.
+        Pagamentos pela Stripe liberam o plano sozinhos, na hora. Para pagamentos combinados por fora (PIX ou transferência), use “Confirmar pagamento” e
+        depois “Liberar plano”.
       </motion.p>
 
       <Modal
