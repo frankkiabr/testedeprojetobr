@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Link2 } from "lucide-react";
-import { userById } from "@/data/queries";
+import { pessoa, userById } from "@/data/queries";
 import type { Compromisso } from "@/data/types";
 import { Avatar } from "../kit";
 import {
@@ -260,7 +260,7 @@ export function GradeMes({
                     <span className="truncate font-medium">{c.titulo}</span>
                     {mostrarDono && userById(c.donoId) && (
                       <span className="ml-auto shrink-0">
-                        <Avatar user={userById(c.donoId)!} className="size-4 text-[0.4375rem]" />
+                        <Avatar user={pessoa(c.donoId)} className="size-4 text-[0.4375rem]" />
                       </span>
                     )}
                   </button>

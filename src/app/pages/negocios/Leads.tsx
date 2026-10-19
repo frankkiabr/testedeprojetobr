@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { BadgeDollarSign, CalendarClock, Columns3, List, MessageCircle, Phone, Plus, Users } from "lucide-react";
 import { CHECKLIST_LEAD, ETAPAS } from "@/data/demo";
-import { atendido, corretoresAtivos, leadById, leadsOf, userById } from "@/data/queries";
+import { atendido, corretoresAtivos, leadById, leadsOf, pessoa, userById } from "@/data/queries";
 import { useStore } from "@/data/store";
 import type { EtapaLead, Lead } from "@/data/types";
 import { dateTime, relTime } from "@/lib/format";
@@ -20,7 +20,7 @@ const PERIODOS = [
 
 function LeadCard({ lead, showCorretor, onOpen }: { lead: Lead; showCorretor: boolean; onOpen: () => void }) {
   const passos = lead.checklist.filter(Boolean).length;
-  const c = userById(lead.corretorId)!;
+  const c = pessoa(lead.corretorId);
   return (
     <motion.div layout="position" layoutId={`lead-${lead.id}`} transition={{ duration: 0.35 }}>
     <button
@@ -121,7 +121,7 @@ function ListView({ leads, showCorretor, onOpen }: { leads: Lead[]; showCorretor
           <tbody>
             {leads.slice(0, 120).map((l) => {
               const passos = l.checklist.filter(Boolean).length;
-              const c = userById(l.corretorId)!;
+              const c = pessoa(l.corretorId);
               return (
                 <tr key={l.id} onClick={() => onOpen(l.id)} className="cursor-pointer border-b border-line last:border-0 hover:bg-canvas/70">
                   <td className="px-5 py-3">
@@ -229,7 +229,7 @@ function LeadDrawer({ id, onClose }: { id: string | null; onClose: () => void })
             </div>
             {isAdmin && (
               <div className="col-span-2 flex items-center gap-3 rounded-2xl bg-canvas p-3.5">
-                <Avatar user={userById(lead.corretorId)!} className="size-8 text-[0.625rem]" />
+                <Avatar user={pessoa(lead.corretorId)} className="size-8 text-[0.625rem]" />
                 <div>
                   <dt className="text-xs text-muted">Corretor responsável</dt>
                   <dd className="font-semibold">{userById(lead.corretorId)?.nome}</dd>

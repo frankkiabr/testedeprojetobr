@@ -17,6 +17,7 @@ import {
   participanteNome,
   proprietarioById,
   userById,
+  pessoa,
 } from "@/data/queries";
 import { transacoes } from "@/data/demo";
 import { useStore } from "@/data/store";
@@ -58,7 +59,7 @@ function CaptacaoCard({ c, showCorretor, onOpen, i }: { c: Captacao; showCorreto
         </span>
         {showCorretor && (
           <span className="absolute right-3 top-3 rounded-full ring-2 ring-white/80">
-            <Avatar user={userById(c.corretorId)!} className="size-7 text-[0.5625rem]" />
+            <Avatar user={pessoa(c.corretorId)} className="size-7 text-[0.5625rem]" />
           </span>
         )}
       </div>
@@ -165,7 +166,7 @@ function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: () => voi
               )}
               {isAdmin && (
                 <div className="col-span-2 flex items-center gap-3 rounded-2xl bg-canvas p-3.5">
-                  <Avatar user={userById(c.corretorId)!} className="size-8 text-[0.625rem]" />
+                  <Avatar user={pessoa(c.corretorId)} className="size-8 text-[0.625rem]" />
                   <div>
                     <p className="text-xs text-muted">Corretor captador</p>
                     <p className="font-semibold">{userById(c.corretorId)?.nome}</p>

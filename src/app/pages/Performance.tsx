@@ -9,9 +9,9 @@ import {
   ranking,
   RANKING_LABELS,
   series,
-  userById,
   type RankingKind,
   type Scope,
+  pessoa,
 } from "@/data/queries";
 import { useStore } from "@/data/store";
 import { brlCompact, int, pct } from "@/lib/format";
@@ -131,7 +131,7 @@ export default function Performance() {
   const m = metrics(scope, month);
   const p = metrics(scope, previousMonth(month));
   const s = series(scope);
-  const who = scope.corretorId ? userById(scope.corretorId)! : null;
+  const who = scope.corretorId ? pessoa(scope.corretorId) : null;
   const monthLabel = months.find((x) => x.key === month)!.long;
 
   return (

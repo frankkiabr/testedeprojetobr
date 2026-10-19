@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ChevronRight, MessageCircle, Plus, UserRound, Users } from "lucide-react";
 import { CHECKLIST_MARKETING, proprietarios } from "@/data/demo";
-import { captacaoCategoria, captacaoTitulo, captacoesDoProprietario, corretoresAtivos, done, proprietariosOf, userById } from "@/data/queries";
+import { captacaoCategoria, captacaoTitulo, captacoesDoProprietario, corretoresAtivos, done, proprietariosOf, pessoa, userById } from "@/data/queries";
 import { useStore } from "@/data/store";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { useScope } from "../../session";
@@ -28,7 +28,7 @@ function ProprietarioDrawer({ id, onClose }: { id: string | null; onClose: () =>
           </div>
           {isAdmin && (
             <div className="flex items-center gap-3 rounded-2xl bg-canvas p-3.5 text-sm">
-              <Avatar user={userById(p.corretorId)!} className="size-8 text-[0.625rem]" />
+              <Avatar user={pessoa(p.corretorId)} className="size-8 text-[0.625rem]" />
               <div>
                 <p className="text-xs text-muted">Cadastrado por</p>
                 <p className="font-semibold">{userById(p.corretorId)?.nome}</p>
@@ -125,7 +125,7 @@ export default function Proprietarios() {
               <tbody>
                 {list.slice(0, 150).map((p, i) => {
                   const ims = captacoesDoProprietario(p.id);
-                  const c = userById(p.corretorId)!;
+                  const c = pessoa(p.corretorId);
                   return (
                     <motion.tr
                       key={p.id}

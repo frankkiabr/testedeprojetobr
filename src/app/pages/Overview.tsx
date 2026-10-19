@@ -32,8 +32,8 @@ import {
   position,
   proximasVisitas,
   ranking,
-  userById,
   type Scope,
+  pessoa,
 } from "@/data/queries";
 import { useStore } from "@/data/store";
 import { brlCompact, dateTime, greeting, int, pct, relTime } from "@/lib/format";
@@ -172,7 +172,7 @@ export default function Overview() {
               {semAtendimento.length ? (
                 <ul className="mt-3 divide-y divide-line px-2 pb-3">
                   {semAtendimento.slice(0, 5).map((l) => {
-                    const c = userById(l.corretorId)!;
+                    const c = pessoa(l.corretorId);
                     return (
                       <li
                         key={l.id}
@@ -325,15 +325,24 @@ export default function Overview() {
                     <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-bg/60">
                       <Trophy className="size-4 text-amber-300" /> Destaque do mês
                     </p>
-                    <div className="mt-5 flex items-center gap-4">
-                      <Avatar user={top.user} className="size-14 text-base" />
-                      <div>
-                        <p className="font-display text-xl font-semibold">{top.user.nome}</p>
-                        <p className="text-sm text-bg/60">
-                          <AnimatedNumber value={top.value} format={brlCompact} /> em VGV
-                        </p>
+                    {top ? (
+                      <div className="mt-5 flex items-center gap-4">
+                        <Avatar user={top.user} className="size-14 text-base" />
+                        <div>
+                          <p className="font-display text-xl font-semibold">{top.user.nome}</p>
+                          <p className="text-sm text-bg/60">
+                            <AnimatedNumber value={top.value} format={brlCompact} /> em VGV
+                          </p>
+                        </div>
                       </div>
-                    </div>
+                    ) : (
+                      <p className="mt-5 text-sm text-bg/70">
+                        Assim que a equipe tiver corretores, o destaque do mês aparece aqui.{" "}
+                        <Link to="/app/equipe" className="font-semibold text-white underline-offset-2 hover:underline">
+                          Convidar corretores
+                        </Link>
+                      </p>
+                    )}
                   </div>
                 </div>
               </motion.div>
@@ -402,7 +411,7 @@ export default function Overview() {
               <ul className="relative mt-4 space-y-4 px-5 pb-6 sm:px-6">
                 <span className="absolute bottom-8 left-[2.15rem] top-2 w-px bg-line sm:left-[2.4rem]" />
                 {feed.map((a) => {
-                  const c = userById(a.corretorId)!;
+                  const c = pessoa(a.corretorId);
                   const icon =
                     a.tipo === "venda" ? (
                       <BadgeDollarSign className="size-3.5" />

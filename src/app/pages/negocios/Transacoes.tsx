@@ -14,7 +14,7 @@ import {
   parteImobiliaria,
   participanteNome,
   transacoesOf,
-  userById,
+  pessoa,
 } from "@/data/queries";
 import { useStore } from "@/data/store";
 import type { FechamentoInformado, Finalidade } from "@/data/types";
@@ -136,7 +136,7 @@ export default function Transacoes() {
           <ul className="mt-3 space-y-2 px-4 pb-4">
             {pendentes.map((f) => {
               const c = captacaoById(f.captacaoId);
-              const u = userById(f.corretorId)!;
+              const u = pessoa(f.corretorId);
               return (
                 <li key={f.id} className="flex flex-wrap items-center gap-3 rounded-2xl bg-bg p-3 sm:flex-nowrap">
                   <Avatar user={u} className="size-9 text-xs" />

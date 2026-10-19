@@ -354,3 +354,7 @@ export function progressoEquipe(t: Trilha) {
 
 export const aulaConcluida = (userId: string, aulaId: string) => (progresso[userId] ?? []).includes(aulaId);
 export const duracaoTrilha = (t: Trilha) => t.aulas.reduce((s, a) => s + (a.duracaoMin ?? 0), 0);
+
+/** Pessoa para exibir (nunca vazia): quem saiu da equipe ou não está visível aparece como "Usuário removido". */
+export const pessoa = (id: string): Usuario =>
+  userById(id) ?? { id: id || "?", imobiliariaId: "", nome: "Usuário removido", email: "", papel: "corretor", iniciais: "?" };
