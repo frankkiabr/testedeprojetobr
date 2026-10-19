@@ -52,7 +52,9 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
 - Painel Frankkia no login real: `painel_imobiliarias()` traz só dados de conta e volumes de uso.
 - Teste grátis: `imobiliarias.teste_dias` (definido pela Frankkia) vira `teste_ate` no 1º acesso do administrador;
   vencido, o banco bloqueia os dados (`imob_liberada`) e o app mostra a tela de contratar plano.
-- Pagamento: ainda sem Stripe. O administrador cria o pedido; a Frankkia confirma o pagamento à mão e libera o plano.
+- Pagamento: Stripe em modo de teste (funções `criar-checkout` e `stripe-webhook` em `supabase/functions/`). O webhook marca
+  o pedido como pago; a Frankkia libera o plano. Sem Stripe configurada, a Frankkia pode confirmar o pagamento à mão.
+- E-mail: função `enviar-convite` (Resend). Segredos ficam no Supabase (Edge Functions → Secrets), nunca no código.
 - Nunca coloque a chave secreta (service_role) no app ou no repositório; só a chave publicável vai no `.env`.
 
 ## Próxima fase
