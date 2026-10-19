@@ -64,6 +64,9 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
 - Pagamento: Stripe em modo de teste (funções `criar-checkout` e `stripe-webhook` em `supabase/functions/`). O webhook marca
   o pedido como pago; a Frankkia libera o plano. Sem Stripe configurada, a Frankkia pode confirmar o pagamento à mão.
 - E-mail: função `enviar-convite` (Resend). Segredos ficam no Supabase (Edge Functions → Secrets), nunca no código.
+- Interessados: `/apresentacao` e o formulário do site gravam em `interessados` (visitante só envia; só a Frankkia lê).
+- Demonstração: NÃO é pública. Só abre por `/demo/<código>` liberado pela Frankkia (`acessos_demo`, com validade;
+  `validar_demo`). Não recoloque botões de demonstração na tela de login.
 - Nunca coloque a chave secreta (service_role) no app ou no repositório; só a chave publicável vai no `.env`.
 
 ## Próxima fase
