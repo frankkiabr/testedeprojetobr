@@ -1,10 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
-import { CalendarCheck } from "lucide-react";
 import { ecosystem, hero } from "@/content";
-import { useNavigate } from "react-router-dom";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
-import { Asterisk, Button, Scaled } from "./ui";
+import { Asterisk, Scaled } from "./ui";
 import { Dashboard, DASHBOARD_SIZE } from "./mockups/Dashboard";
 
 /** Máquina de escrever: digita, pausa, apaga e passa para a próxima frase. */
@@ -76,7 +74,6 @@ function Underline() {
 }
 
 export function Hero() {
-  const navigate = useNavigate();
   const [ready, setReady] = useState(false);
   const typed = useTypewriter(hero.typed, ready);
   const frame = useRef<HTMLDivElement>(null);
@@ -124,23 +121,6 @@ export function Hero() {
           </span>
         </motion.p>
 
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.85, ease: EASE_OUT_EXPO }}
-          className="mt-9 flex flex-wrap justify-center gap-3"
-        >
-          <Button
-            href="/apresentacao"
-            onClick={(e) => {
-              e.preventDefault();
-              navigate("/apresentacao");
-            }}
-            icon={<CalendarCheck className="size-[1em]" />}
-          >
-            {hero.primary}
-          </Button>
-        </motion.div>
       </div>
 
       {/* Painel demonstrativo */}

@@ -114,14 +114,15 @@ export function Navbar() {
                   </li>
                 ))}
               </ul>
-              <div className="flex items-center gap-1">
-                {/* Busca de imóveis do portal (página fora da plataforma: abre com recarga) */}
-                <a href="/imoveis" className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium text-bg/70 transition-colors hover:bg-bg/15 hover:text-bg">
-                  <Search className="size-4" /> Imóveis
+              <div className="flex items-center gap-2">
+                {/* Imóveis (para clientes) e demonstração (para corretores e imobiliárias). Entrar fica no rodapé: "Acessar plataforma". */}
+                <a
+                  href="/imoveis"
+                  className="group/button inline-flex h-10 items-center gap-2 rounded-full bg-accent px-4 text-sm font-semibold text-white transition-[background-color,transform] hover:bg-accent-deep active:scale-[0.98]"
+                >
+                  Imóveis
+                  <ArrowRight className="size-4 transition-transform duration-200 group-hover/button:translate-x-0.5" />
                 </a>
-                <Link to="/login" className="rounded-full px-3.5 py-2 text-sm font-medium text-bg/70 transition-colors hover:bg-bg/15 hover:text-bg">
-                  Entrar
-                </Link>
                 <Link
                   to="/apresentacao"
                   className="group/button inline-flex h-10 items-center gap-2 rounded-full bg-bg px-4 text-sm font-semibold text-ink transition-transform active:scale-[0.98]"
