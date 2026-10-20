@@ -68,6 +68,9 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
   o administrador não ocupa vaga). `planos.anuncios` = limite de imóveis publicados no portal (em breve), compartilhado pela
   equipe; o CRM é ilimitado. Solo não faz upgrade de vagas: vira plano de equipe com a Frankkia. Use `ehSolo()` no app.
 - Uso do Supabase no painel Frankkia: `uso_supabase()` (banco, arquivos e contas contra os limites do plano gratuito).
+- Portal (fase 1): aba "Anúncio" na captação (`anuncios`, `anuncio_fotos`). Fotos vão direto do navegador para o
+  Cloudflare R2 por um endereço assinado da função `fotos-r2` (segredos R2_* no Supabase). Publicar só por `publicar_anuncio`
+  (confere limite do plano, CRECI, foto e título). Vendido/alugado sai do portal sozinho. Endereço completo e preço sempre visíveis.
 - Interessados: `/apresentacao` e o formulário do site gravam em `interessados` (visitante só envia; só a Frankkia lê).
 - Demonstração: NÃO é pública. Só abre por `/demo/<código>` liberado pela Frankkia (`acessos_demo`, com validade;
   `validar_demo`). Não recoloque botões de demonstração na tela de login.
