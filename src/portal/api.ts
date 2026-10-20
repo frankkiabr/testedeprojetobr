@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "@/integrations/frankkia/client";
+import type { Redes } from "@/data/types";
 
 /**
  * Portal público (fase 2): páginas que qualquer visitante — e o Google — abre sem login.
@@ -75,6 +76,7 @@ export type AnuncioPublico = {
 
 export type CorretorPublico = CorretorResumo & {
   telefone: string | null;
+  redes: Redes | null;
   imobiliaria: ImobResumo;
   anuncios: CartaoAnuncio[];
 };

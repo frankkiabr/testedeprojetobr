@@ -410,6 +410,7 @@ export async function carregarReal(conta: ContaDados) {
       creciUF: u(p?.creci_uf ?? null),
       estagiario: p?.estagiario ?? false,
       fotoUrl: u(p?.foto_url ?? null),
+      redes: (p?.redes ?? {}) as Usuario["redes"],
     };
   });
   const admins = pessoas.filter((p) => p.papel === "admin");

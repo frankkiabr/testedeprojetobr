@@ -38,7 +38,12 @@ export type Usuario = {
   estagiario?: boolean;
   /** Foto de perfil (sem foto: mostra as iniciais). */
   fotoUrl?: string;
+  /** Redes sociais (links completos), mostradas na página pública do corretor no portal. */
+  redes?: Redes;
 };
+
+export type RedeChave = "instagram" | "facebook" | "linkedin" | "tiktok" | "youtube" | "site";
+export type Redes = Partial<Record<RedeChave, string>>;
 
 /** Corretor de fora da imobiliária, usado só para registrar parcerias (não tem acesso). */
 export type Parceiro = {

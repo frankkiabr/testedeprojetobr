@@ -1,19 +1,10 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import {
-  ArrowRight,
-  Bath,
-  BedDouble,
-  Building2,
-  Car,
-  Check,
-  MapPin,
-  Ruler,
-  Sparkles,
-} from "lucide-react";
+import { ArrowRight, Bath, BedDouble, Car, Check, ExternalLink, MapPin, Ruler } from "lucide-react";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 import { enviarContato, type AnuncioPublico } from "./api";
 import { Galeria } from "./Galeria";
+import { BotaoCompartilhar } from "./Filtros";
 import { Surge } from "./anim";
 import {
   area,
@@ -105,9 +96,7 @@ export default function PaginaAnuncio({ a, url }: { a: AnuncioPublico; url: stri
 
           {a.caracteristicas.length > 0 && (
             <Surge>
-              <h2 className="flex items-center gap-2 font-display text-lg font-semibold">
-                <Sparkles className="size-4 text-accent" /> Características
-              </h2>
+              <h2 className="font-display text-lg font-semibold">Características</h2>
               <ul className="mt-3 grid gap-2 sm:grid-cols-2">
                 {a.caracteristicas.map((c) => (
                   <li key={c} className="flex items-center gap-2 text-sm">
@@ -120,9 +109,7 @@ export default function PaginaAnuncio({ a, url }: { a: AnuncioPublico; url: stri
           )}
 
           <Surge>
-            <h2 className="flex items-center gap-2 font-display text-lg font-semibold">
-              <Building2 className="size-4 text-accent" /> Localização
-            </h2>
+            <h2 className="font-display text-lg font-semibold">Localização</h2>
             {a.lat != null && a.lng != null ? (
               <iframe
                 title="Mapa do imóvel"
@@ -135,9 +122,9 @@ export default function PaginaAnuncio({ a, url }: { a: AnuncioPublico; url: stri
               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(enderecoAnuncio(a))}`}
               target="_blank"
               rel="noreferrer"
-              className="mt-3 inline-block text-sm font-semibold text-accent"
+              className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-accent"
             >
-              Abrir no Google Maps
+              <ExternalLink className="size-4" /> Abrir no Google Maps
             </a>
           </Surge>
         </div>
@@ -217,6 +204,12 @@ export default function PaginaAnuncio({ a, url }: { a: AnuncioPublico; url: stri
                 {telefoneBonito(a.corretor.telefone)}
               </p>
             )}
+
+            <BotaoCompartilhar
+              titulo={a.titulo}
+              texto={`${a.titulo} · ${preco(a.finalidade, a.valor)} (Cód. ${a.codigo})`}
+              className="w-full"
+            />
 
             <FormContato slug={a.slug} codigo={a.codigo} />
           </Surge>

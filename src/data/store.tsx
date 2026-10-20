@@ -882,7 +882,7 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       toast("Pedido de upgrade cancelado.");
     },
 
-    updateUsuario(id: string, patch: Partial<Pick<Usuario, "nome" | "email" | "telefone" | "aniversario" | "creci" | "creciUF" | "estagiario">>) {
+    updateUsuario(id: string, patch: Partial<Pick<Usuario, "nome" | "email" | "telefone" | "aniversario" | "creci" | "creciUF" | "estagiario" | "redes">>) {
       const u = id === admin.id ? admin : corretores.find((x) => x.id === id);
       if (!u) return;
       const emailNovo = patch.email && patch.email.toLowerCase() !== u.email.toLowerCase() ? patch.email.trim().toLowerCase() : null;
@@ -900,6 +900,7 @@ function createActions(bump: () => void, toast: (text: string) => void) {
             creci: u.creci ?? null,
             creci_uf: u.creciUF ?? null,
             estagiario: !!u.estagiario,
+            redes: u.redes ?? {},
           })
           .eq("id", id),
       );

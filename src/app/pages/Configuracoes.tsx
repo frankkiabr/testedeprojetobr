@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { BadgeCheck, Bell, Building2, Camera, Check, CreditCard, GraduationCap, Mail, Rocket, UserRound } from "lucide-react";
+import { AtSign, BadgeCheck, Bell, Building2, Camera, Check, CreditCard, GraduationCap, Mail, Rocket, UserRound } from "lucide-react";
 import { pricing, site } from "@/content";
 import { imobiliaria, UFS } from "@/data/demo";
 import { ehSolo, PLANOS } from "@/data/platform";
@@ -14,6 +14,7 @@ import { Avatar, Card, PageHeader, ProgressBar, Segmented, stagger } from "../ki
 import { btn, DateInput, Field, formatPhone, inputCls, normalizePhone, SelectField } from "../forms";
 import { PedidoUpgradeStatus, useIrParaPagamento } from "../upgrade";
 import { useSearchParams } from "react-router-dom";
+import { linkDaRede, REDES, redesLimpas, textoDaRede } from "@/lib/redes";
 
 type Aba = "imobiliaria" | "plano" | "perfil" | "notificacoes";
 
@@ -183,6 +184,7 @@ function Perfil() {
     creci: user.creci ?? "",
     creciUF: user.creciUF ?? "SP",
     estagiario: !!user.estagiario,
+    redes: Object.fromEntries(REDES.map((r) => [r.chave, textoDaRede(r.chave, user.redes?.[r.chave])])) as Record<string, string>,
   });
   const [f, setF] = useState(init);
   const [senha, setSenha] = useState({ atual: "", nova: "", confirma: "" });
@@ -209,6 +211,7 @@ function Perfil() {
                 estagiario: f.estagiario,
                 creci: f.creci.trim() || undefined,
                 creciUF: f.creci.trim() ? f.creciUF : undefined,
+                redes: redesLimpas(f.redes),
               })
             }
           >
@@ -288,6 +291,28 @@ function Perfil() {
             <Field label="Estado">
               <SelectField value={f.creciUF} onChange={(v) => setF({ ...f, creciUF: v })} options={UFS.map((u) => ({ value: u, label: u }))} />
             </Field>
+          </div>
+        </div>
+
+        <div className="mt-6 rounded-2xl bg-canvas p-4">
+          <p className="flex items-center gap-2 text-sm font-semibold">
+            <AtSign className="size-4 text-accent" /> Redes sociais
+          </p>
+          <p className="mt-1 text-xs text-muted">Aparecem na sua página pública no portal. Preencha só as que você usa.</p>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            {REDES.map(({ chave, nome, exemplo, Icone }) => (
+              <Field key={chave} label={nome} hint={f.redes[chave]?.trim() ? linkDaRede(chave, f.redes[chave]) : undefined}>
+                <div className="relative">
+                  <Icone className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted" />
+                  <input
+                    className={`${inputCls} pl-10`}
+                    value={f.redes[chave] ?? ""}
+                    onChange={(e) => setF({ ...f, redes: { ...f.redes, [chave]: e.target.value } })}
+                    placeholder={exemplo}
+                  />
+                </div>
+              </Field>
+            ))}
           </div>
         </div>
       </Section>

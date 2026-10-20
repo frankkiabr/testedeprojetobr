@@ -2,7 +2,9 @@ import { Link } from "@tanstack/react-router";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 import type { CorretorPublico, ImobiliariaPublica } from "./api";
 import { Surge } from "./anim";
-import { creciTexto, FotoPessoa, GradeImoveis, linkWhats, numeroWhats, PortalShell } from "./ui";
+import { BotaoCompartilhar, ImoveisComFiltro } from "./Filtros";
+import { REDES } from "@/lib/redes";
+import { creciTexto, FotoPessoa, linkWhats, numeroWhats, PortalShell } from "./ui";
 
 const contagem = (n: number) => `${n} ${n === 1 ? "imóvel anunciado" : "imóveis anunciados"}`;
 
@@ -23,6 +25,7 @@ function BotaoWhats({ tel, texto }: { tel: string | null; texto: string }) {
 
 /** Página pública do corretor: quem é e os imóveis que ele anuncia. */
 export function PaginaCorretor({ c }: { c: CorretorPublico }) {
+  const redes = REDES.filter((r) => c.redes?.[r.chave]);
   return (
     <PortalShell imob={c.imobiliaria}>
       <Surge
@@ -43,16 +46,36 @@ export function PaginaCorretor({ c }: { c: CorretorPublico }) {
               .filter(Boolean)
               .join(" · ")}
           </p>
+          {redes.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {redes.map(({ chave, nome, Icone }) => (
+                <a
+                  key={chave}
+                  href={c.redes![chave]}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={nome}
+                  title={nome}
+                  className="grid size-9 place-items-center rounded-full border border-line bg-bg text-ink transition hover:-translate-y-0.5 hover:border-line-strong"
+                >
+                  <Icone className="size-4" />
+                </a>
+              ))}
+            </div>
+          )}
         </div>
-        <BotaoWhats
-          tel={c.telefone}
-          texto={`Olá, ${c.nome.split(" ")[0]}! Vi seus imóveis no portal.`}
-        />
+        <div className="flex flex-wrap gap-2">
+          <BotaoWhats
+            tel={c.telefone}
+            texto={`Olá, ${c.nome.split(" ")[0]}! Vi seus imóveis no portal.`}
+          />
+          <BotaoCompartilhar titulo={c.nome} texto={`Imóveis de ${c.nome}`} />
+        </div>
       </Surge>
       <Surge delay={0.1}>
         <h2 className="mb-4 mt-10 font-display text-xl font-semibold">Imóveis</h2>
       </Surge>
-      <GradeImoveis anuncios={c.anuncios} />
+      <ImoveisComFiltro anuncios={c.anuncios} />
     </PortalShell>
   );
 }
@@ -76,13 +99,16 @@ export function PaginaImobiliaria({ i }: { i: ImobiliariaPublica }) {
             {[i.cidade, contagem(i.anuncios.length)].filter(Boolean).join(" · ")}
           </p>
         </div>
-        <BotaoWhats tel={i.telefone} texto={`Olá! Vi os imóveis da ${i.nome} no portal.`} />
+        <div className="flex flex-wrap gap-2">
+          <BotaoWhats tel={i.telefone} texto={`Olá! Vi os imóveis da ${i.nome} no portal.`} />
+          <BotaoCompartilhar titulo={i.nome} texto={`Imóveis da ${i.nome}`} />
+        </div>
       </Surge>
 
       <Surge delay={0.1}>
         <h2 className="mb-4 mt-10 font-display text-xl font-semibold">Imóveis</h2>
       </Surge>
-      <GradeImoveis anuncios={i.anuncios} />
+      <ImoveisComFiltro anuncios={i.anuncios} />
 
       {!i.solo && i.corretores.length > 0 && (
         <>

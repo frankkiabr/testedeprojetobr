@@ -610,6 +610,7 @@ export type Database = {
           meta_mensal_vgv: number
           nome: string
           plano: string
+          slug: string | null
           status: string
           telefone: string | null
           teste_ate: string | null
@@ -627,6 +628,7 @@ export type Database = {
           meta_mensal_vgv?: number
           nome: string
           plano?: string
+          slug?: string | null
           status?: string
           telefone?: string | null
           teste_ate?: string | null
@@ -644,6 +646,7 @@ export type Database = {
           meta_mensal_vgv?: number
           nome?: string
           plano?: string
+          slug?: string | null
           status?: string
           telefone?: string | null
           teste_ate?: string | null
@@ -1019,6 +1022,8 @@ export type Database = {
           id: string
           iniciais: string
           nome: string
+          redes: Json
+          slug: string | null
           telefone: string | null
         }
         Insert: {
@@ -1032,6 +1037,8 @@ export type Database = {
           id: string
           iniciais?: string
           nome?: string
+          redes?: Json
+          slug?: string | null
           telefone?: string | null
         }
         Update: {
@@ -1045,6 +1052,8 @@ export type Database = {
           id?: string
           iniciais?: string
           nome?: string
+          redes?: Json
+          slug?: string | null
           telefone?: string | null
         }
         Relationships: []
@@ -1415,6 +1424,26 @@ export type Database = {
       pertence: { Args: { p_imob: string }; Returns: boolean }
       pode_editar_captacao: { Args: { p_captacao: string }; Returns: boolean }
       pode_mexer_avatar: { Args: { p_nome: string }; Returns: boolean }
+      portal_anuncio: { Args: { p_slug: string }; Returns: Json }
+      portal_cartoes: {
+        Args: { p_corretor: string; p_imob: string }
+        Returns: Json
+      }
+      portal_contato: {
+        Args: {
+          p_email: string
+          p_mensagem: string
+          p_nome: string
+          p_slug: string
+          p_telefone: string
+        }
+        Returns: boolean
+      }
+      portal_corretor: { Args: { p_slug: string }; Returns: Json }
+      portal_imobiliaria: { Args: { p_slug: string }; Returns: Json }
+      portal_logo: { Args: { p_imob: string }; Returns: string }
+      portal_relacionados: { Args: { p_slug: string }; Returns: Json }
+      portal_vitrine: { Args: never; Returns: Json }
       publicar_anuncio: {
         Args: { p_captacao: string; p_publicar: boolean }
         Returns: string
@@ -1432,6 +1461,7 @@ export type Database = {
           vgv: number
         }[]
       }
+      redes_validas: { Args: { r: Json }; Returns: boolean }
       registrar_erro: {
         Args: { p_local: string; p_mensagem: string }
         Returns: undefined
