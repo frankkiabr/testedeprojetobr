@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, Check, CheckCircle2, Clock, CreditCard, Rocket, Sparkles } from "lucide-react";
 import { pricing } from "@/content";
 import { imobiliaria } from "@/data/demo";
-import { pedidoAberto, PLANOS } from "@/data/platform";
+import { pedidoAberto, PLANOS, PLANOS_EQUIPE } from "@/data/platform";
 import { usoDoPlano, vagasUsadas } from "@/data/queries";
 import { useStore } from "@/data/store";
 import type { PlanoNome } from "@/data/types";
@@ -14,7 +14,7 @@ import { btn, Modal } from "./forms";
 import { ProgressBar } from "./kit";
 import { useSession } from "./session";
 
-const ORDEM: PlanoNome[] = ["Equipe 15", "Equipe 30", "Equipe 60"];
+const ORDEM: PlanoNome[] = PLANOS_EQUIPE;
 export const proximoPlano = (): PlanoNome | null => ORDEM[ORDEM.indexOf(imobiliaria.plano) + 1] ?? null;
 
 /** Leva direto ao pagamento do plano escolhido. */

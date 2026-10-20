@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowRight, Users } from "lucide-react";
+import { ArrowRight, Check, Megaphone, UserRound, Users } from "lucide-react";
 import { pricing } from "@/content";
 import { useNavigate } from "react-router-dom";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
@@ -7,9 +7,16 @@ import { Button } from "./ui";
 
 export function Pricing() {
   const navigate = useNavigate();
+  // Já chega na página de captura com o tamanho de equipe do plano escolhido
+  const irPara = (equipe: string) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    navigate(`/apresentacao?equipe=${encodeURIComponent(equipe)}`);
+  };
+  const solo = pricing.solo;
+
   return (
     <section id="planos" className="pt-28 sm:pt-40">
-      <div className="mx-auto w-full max-w-[70rem] px-5 sm:px-8">
+      <div className="mx-auto w-full max-w-[76rem] px-5 sm:px-8">
         <motion.header
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -22,7 +29,7 @@ export function Pricing() {
           <p className="mx-auto mt-4 max-w-[34rem] text-muted sm:text-lg">{pricing.text}</p>
         </motion.header>
 
-        <ul className="mt-12 grid gap-4 sm:mt-16 md:grid-cols-3">
+        <ul className="mt-12 grid gap-4 sm:mt-16 sm:grid-cols-2 lg:grid-cols-4">
           {pricing.plans.map((p, i) => {
             const dark = !!p.highlight;
             return (
@@ -33,34 +40,38 @@ export function Pricing() {
                 viewport={{ once: true, margin: "-10%" }}
                 transition={{ duration: 0.9, delay: i * 0.1, ease: EASE_OUT_EXPO }}
                 whileHover={{ y: -6 }}
-                className={`relative flex flex-col overflow-hidden rounded-[2rem] p-7 sm:p-8 ${
-                  dark ? "bg-ink text-bg shadow-lift" : "border border-line bg-bg"
-                }`}
+                className={`relative flex flex-col overflow-hidden rounded-[2rem] p-7 ${dark ? "bg-ink text-bg shadow-lift" : "border border-line bg-bg"}`}
               >
                 {dark && (
                   <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(80%_60%_at_100%_0%,rgb(47_91_234/0.45),transparent_70%)]" />
                 )}
-                <div className="relative">
+                <div className="relative flex h-full flex-col">
                   <p className="type-subtitle">{p.name}</p>
-                  <p className={`mt-2 flex items-center gap-2 text-sm ${dark ? "text-bg/65" : "text-muted"}`}>
-                    <Users className="size-4" />
-                    {p.seats}
-                  </p>
                   <p className="mt-8 flex items-start gap-1.5">
                     <span className={`mt-2 text-lg font-medium ${dark ? "text-bg/70" : "text-muted"}`}>R$</span>
-                    <span className="font-display text-[3.5rem] font-medium leading-none tracking-[-0.04em]">{p.price}</span>
+                    <span className="font-display text-[3rem] font-medium leading-none tracking-[-0.04em]">{p.price}</span>
                     <span className={`mt-auto pb-1.5 text-sm ${dark ? "text-bg/60" : "text-muted"}`}>/mês</span>
                   </p>
-                  <div className={`my-8 h-px ${dark ? "bg-white/10" : "bg-line"}`} />
+                  <ul className={`mt-6 space-y-2.5 text-sm ${dark ? "text-bg/75" : "text-muted"}`}>
+                    <li className="flex items-start gap-2">
+                      <Users className="mt-0.5 size-4 shrink-0" />
+                      {p.seats}
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Megaphone className="mt-0.5 size-4 shrink-0" />
+                      {p.anuncios}
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="mt-0.5 size-4 shrink-0" />
+                      Gestão da equipe, ranking e Academy
+                    </li>
+                  </ul>
+                  <div className={`my-7 h-px ${dark ? "bg-white/10" : "bg-line"}`} />
                   <Button
-                    href={`/apresentacao?equipe=${encodeURIComponent(p.seats)}`}
+                    href={`/apresentacao?equipe=${encodeURIComponent(p.equipe)}`}
                     variant={dark ? "accent" : "outline"}
-                    className="w-full"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      // Já chega na página de captura com o tamanho de equipe deste plano escolhido
-                      navigate(`/apresentacao?equipe=${encodeURIComponent(p.seats)}`);
-                    }}
+                    className="mt-auto w-full"
+                    onClick={irPara(p.equipe)}
                     trailing={<ArrowRight className="size-[1em] group-hover/button:translate-x-0.5" />}
                   >
                     {pricing.cta}
@@ -70,7 +81,46 @@ export function Pricing() {
             );
           })}
         </ul>
-        <p className="mt-6 text-center text-xs text-subtle">{pricing.note}</p>
+
+        {/* Corretor autônomo: plano separado, sem equipe */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-10%" }}
+          transition={{ duration: 0.9, ease: EASE_OUT_EXPO }}
+          className="mt-4 grid items-center gap-6 rounded-[2rem] border border-dashed border-line-strong bg-canvas/60 p-7 md:grid-cols-[minmax(0,1.4fr)_auto_auto] md:gap-10"
+        >
+          <div>
+            <p className="type-eyebrow flex items-center gap-2 text-accent">
+              <UserRound className="size-4" /> {solo.eyebrow}
+            </p>
+            <p className="type-subtitle mt-2">{solo.title}</p>
+            <p className="mt-2 max-w-[34rem] text-sm text-muted">{solo.text}</p>
+            <p className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted">
+              <span className="flex items-center gap-1.5">
+                <UserRound className="size-4" /> {solo.seats}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Megaphone className="size-4" /> {solo.anuncios}
+              </span>
+            </p>
+          </div>
+          <p className="flex items-start gap-1.5">
+            <span className="mt-2 text-lg font-medium text-muted">R$</span>
+            <span className="font-display text-[3rem] font-medium leading-none tracking-[-0.04em]">{solo.price}</span>
+            <span className="mt-auto pb-1.5 text-sm text-muted">/mês</span>
+          </p>
+          <Button
+            href={`/apresentacao?equipe=${encodeURIComponent(solo.equipe)}`}
+            variant="outline"
+            onClick={irPara(solo.equipe)}
+            trailing={<ArrowRight className="size-[1em] group-hover/button:translate-x-0.5" />}
+          >
+            {pricing.cta}
+          </Button>
+        </motion.div>
+
+        <p className="mx-auto mt-6 max-w-[48rem] text-center text-xs text-subtle">{pricing.note}</p>
       </div>
     </section>
   );

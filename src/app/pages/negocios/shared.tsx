@@ -13,6 +13,11 @@ import {
   parceiros,
   UFS,
 } from "@/data/demo";
+import { ehSolo } from "@/data/platform";
+import { admin as administrador } from "@/data/demo";
+
+/** Quem pode participar de uma venda: os corretores; no plano Solo, o próprio dono da conta. */
+const corretoresParaVenda = () => (ehSolo(imobiliaria.plano) ? [administrador, ...corretoresAtivos()] : corretoresAtivos());
 import {
   bairrosCadastrados,
   captacaoById,
@@ -119,9 +124,10 @@ function CorretorField({ value, onChange, label = "Corretor responsável" }: { v
   );
 }
 
-/** Para o administrador, escolhe o corretor; para o corretor, é sempre ele mesmo. */
+/** Para o administrador, escolhe o corretor; para o corretor (e no plano Solo), é sempre ele mesmo. */
 function useTargetCorretor(open: boolean) {
-  const { isAdmin, user } = useScope();
+  const { isAdmin: admin, user } = useScope();
+  const isAdmin = admin && !ehSolo(imobiliaria.plano);
   const [corretorId, setCorretorId] = useState(isAdmin ? "" : user.id);
   useEffect(() => {
     if (open) setCorretorId(isAdmin ? "" : user.id);
@@ -709,7 +715,7 @@ export function TransacaoFormModal({
                     <option value="" disabled>
                       Selecione
                     </option>
-                    {(p.tipo === "corretor" ? corretoresAtivos() : parceiros).map((x) => (
+                    {(p.tipo === "corretor" ? corretoresParaVenda() : parceiros).map((x) => (
                       <option key={x.id} value={x.id}>
                         {x.nome}
                       </option>

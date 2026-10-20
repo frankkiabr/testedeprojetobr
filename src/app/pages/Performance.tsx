@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { BadgeDollarSign, Calendar, Coins, Home, KeyRound, Lock, UserCheck, Users, UserRound } from "lucide-react";
-import { corretores } from "@/data/demo";
+import { corretores, imobiliaria } from "@/data/demo";
+import { ehSolo } from "@/data/platform";
 import {
   lastMonths,
   metrics,
@@ -148,7 +149,7 @@ export default function Performance() {
           }
           actions={
             <>
-              {isAdmin && (
+              {isAdmin && !ehSolo(imobiliaria.plano) && (
                 <Select
                   label="Corretor"
                   icon={filter ? <UserRound className="size-4" /> : <Users className="size-4" />}
@@ -237,6 +238,7 @@ export default function Performance() {
           </Card>
         </motion.div>
 
+        {!ehSolo(imobiliaria.plano) && (
         <motion.div {...stagger(10)}>
           <Rankings
             month={month}
@@ -244,6 +246,7 @@ export default function Performance() {
             kinds={isAdmin ? ["vgv", "alugados", "captados", "atendidos", "vgc"] : ["vgv", "alugados", "captados", "atendidos"]}
           />
         </motion.div>
+        )}
       </div>
     </div>
   );

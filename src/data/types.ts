@@ -13,7 +13,7 @@ export type Imobiliaria = {
   email: string;
   telefone: string;
   cidade: string;
-  plano: "Equipe 15" | "Equipe 30" | "Equipe 60";
+  plano: "Solo" | "Equipe 5" | "Equipe 10" | "Equipe 30" | "Equipe 60";
   limiteCorretores: number;
   metaMensalVGV: number;
 };

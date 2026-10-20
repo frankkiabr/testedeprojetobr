@@ -104,11 +104,11 @@ export function Dashboard({ active }: { active: boolean }) {
           <div className="mt-auto space-y-2">
             <div className="rounded-2xl bg-canvas p-3">
               <div className="flex justify-between text-[10.5px]">
-                <span className="font-semibold">Plano Equipe 15</span>
-                <span className="text-muted">9 de 15</span>
+                <span className="font-semibold">Plano Equipe 10</span>
+                <span className="text-muted">9 de 10</span>
               </div>
               <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-canvas-deep">
-                <motion.div className="h-full rounded-full bg-accent" initial={{ width: 0 }} animate={active ? { width: "60%" } : {}} transition={{ duration: 1.2, delay: 0.5 }} />
+                <motion.div className="h-full rounded-full bg-accent" initial={{ width: 0 }} animate={active ? { width: "90%" } : {}} transition={{ duration: 1.2, delay: 0.5 }} />
               </div>
               <span className="mt-2.5 flex h-7 items-center justify-center rounded-full bg-accent text-[10.5px] font-semibold text-white">Fazer upgrade</span>
             </div>

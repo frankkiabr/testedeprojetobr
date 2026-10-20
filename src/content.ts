@@ -109,14 +109,26 @@ export const features = {
 export const pricing = {
   eyebrow: "Planos",
   title: "Planos para o tamanho da sua equipe.",
-  text: "Contratação por imobiliária, com planos mensais dimensionados pela quantidade de corretores.",
-  note: "Planos e condições sujeitos à disponibilidade comercial.",
+  text: "Planos mensais pela quantidade de corretores. O administrador da imobiliária não ocupa vaga.",
+  note: "Leads, captações, vendas, agenda, Academy e Marketing sem limite em todos os planos. O limite de anúncios vale só para imóveis publicados no portal, que chega em breve. Planos e condições sujeitos à disponibilidade comercial.",
   cta: "Solicitar demonstração",
   plans: [
-    { name: "Equipe 15", seats: "Até 15 corretores", price: "999" },
-    { name: "Equipe 30", seats: "Até 30 corretores", price: "1.699", highlight: true },
-    { name: "Equipe 60", seats: "Até 60 corretores", price: "2.999" },
-  ],
+    { name: "Equipe 5", seats: "1 administrador + até 5 corretores", equipe: "Até 5 corretores", price: "390", anuncios: "50 anúncios no portal (em breve), compartilhados pela equipe" },
+    { name: "Equipe 10", seats: "1 administrador + até 10 corretores", equipe: "Até 10 corretores", price: "650", anuncios: "100 anúncios no portal (em breve), compartilhados pela equipe", highlight: true },
+    { name: "Equipe 30", seats: "1 administrador + até 30 corretores", equipe: "Até 30 corretores", price: "1.800", anuncios: "300 anúncios no portal (em breve), compartilhados pela equipe" },
+    { name: "Equipe 60", seats: "1 administrador + até 60 corretores", equipe: "Até 60 corretores", price: "3.300", anuncios: "600 anúncios no portal (em breve), compartilhados pela equipe" },
+  ] as { name: string; seats: string; equipe: string; price: string; anuncios: string; highlight?: boolean }[],
+  /** Plano para corretor autônomo: produto separado, sem equipe (não é um degrau dos planos de equipe). */
+  solo: {
+    name: "Solo",
+    eyebrow: "É corretor autônomo?",
+    title: "Plano Solo, só para você.",
+    text: "Todas as ferramentas da Frankkia para quem trabalha sozinho: leads, captações, vendas, agenda e Academy, sem equipe para gerenciar.",
+    seats: "1 corretor (sem equipe)",
+    equipe: "Corretor autônomo (Solo)",
+    price: "99",
+    anuncios: "15 anúncios no portal (em breve)",
+  },
 };
 
 export const faq = {
@@ -162,6 +174,6 @@ export const demo = {
   notice: "Respondemos pelo WhatsApp em até 24 horas. Sem compromisso.",
   submitted: "Recebemos seu pedido! Vamos falar com você pelo WhatsApp em até 24 horas.",
   fields: { name: "Seu nome", company: "Imobiliária", email: "E-mail", phone: "Telefone" },
-  teamSize: ["Até 15 corretores", "Até 30 corretores", "Até 60 corretores", "Mais de 60 corretores"],
+  teamSize: ["Corretor autônomo (Solo)", "Até 5 corretores", "Até 10 corretores", "Até 30 corretores", "Até 60 corretores", "Mais de 60 corretores"],
   submit: "Solicitar demonstração",
 };

@@ -904,22 +904,28 @@ export type Database = {
       }
       planos: {
         Row: {
+          anuncios: number
           limite: number
           nome: string
           ordem: number
           preco: number
+          solo: boolean
         }
         Insert: {
+          anuncios?: number
           limite: number
           nome: string
           ordem: number
           preco: number
+          solo?: boolean
         }
         Update: {
+          anuncios?: number
           limite?: number
           nome?: string
           ordem?: number
           preco?: number
+          solo?: boolean
         }
         Relationships: []
       }
@@ -1287,6 +1293,15 @@ export type Database = {
           p_valor: number
         }
         Returns: string
+      }
+      uso_supabase: {
+        Args: never
+        Returns: {
+          arquivos_bytes: number
+          arquivos_qtd: number
+          banco_bytes: number
+          contas: number
+        }[]
       }
       vagas_em_uso: { Args: { p_imob: string }; Returns: number }
       validar_demo: { Args: { p_token: string }; Returns: string }

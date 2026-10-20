@@ -20,6 +20,7 @@ import { brl, int, pct, relTime } from "@/lib/format";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { AnimatedNumber, Badge, Card, CardHeader, Delta, PageHeader, stagger } from "../kit";
 import { LineArea } from "../charts";
+import { UsoSupabase } from "./UsoSupabase";
 
 function Kpi({ label, icon: Icon, value, format, children }: { label: string; icon: typeof Users; value: number; format: (n: number) => string; children?: React.ReactNode }) {
   return (
@@ -99,7 +100,7 @@ export default function AdminOverview() {
 
   const pagamento = cs.filter((c) => c.status === "pagamento");
   const inativas = cs.filter((c) => c.status === "ativa" && (diasSemAcesso(c) ?? 0) >= 14);
-  const cheias = cs.filter((c) => pagante(c) && c.corretores / PLANOS[c.plano].limite >= 0.9);
+  const cheias = cs.filter((c) => pagante(c) && !PLANOS[c.plano].solo && c.corretores / PLANOS[c.plano].limite >= 0.9);
   const aguardando = cs.filter((c) => c.status === "aguardando");
   const chamadosAbertos = todosChamados().filter((c) => c.status !== "resolvido");
   const errosNovos = errosSistema.filter((e) => e.status !== "corrigido");
@@ -297,6 +298,10 @@ export default function AdminOverview() {
           </Card>
         </motion.div>
       </div>
+
+      <motion.div {...stagger(10)}>
+        <UsoSupabase />
+      </motion.div>
     </div>
   );
 }

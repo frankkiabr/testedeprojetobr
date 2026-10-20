@@ -16,6 +16,7 @@ import {
   Users,
 } from "lucide-react";
 import { CHECKLIST_MARKETING, imobiliaria } from "@/data/demo";
+import { ehSolo } from "@/data/platform";
 import {
   aniversariantes,
   atividades,
@@ -72,6 +73,7 @@ export default function Overview() {
   const pendentes = marketingPendente(scope);
   const feed = atividades(scope, 7);
   const top = ranking("vgv", month.key)[0];
+  const solo = ehSolo(imobiliaria.plano);
   const firstName = user.nome.split(" ")[0];
   const niver = aniversariantes(1);
 
@@ -114,7 +116,7 @@ export default function Overview() {
           <div className="flex items-center justify-between">
             <h3 className="font-display text-[1.0625rem] font-semibold tracking-tight">
               Resumo de {month.long.toLowerCase()}
-              <span className="ml-2 text-sm font-normal text-muted">{isAdmin ? "· toda a equipe" : "· seus números"}</span>
+              <span className="ml-2 text-sm font-normal text-muted">{isAdmin && !solo ? "· toda a equipe" : "· seus números"}</span>
             </h3>
             <Link to="/app/performance" className="group inline-flex items-center gap-1.5 text-sm font-semibold text-accent">
               Ver performance <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
@@ -313,9 +315,9 @@ export default function Overview() {
             </motion.div>
           )}
 
-          {isAdmin && <UpgradeNudge aPartirDe={0.75} />}
+          {isAdmin && !solo && <UpgradeNudge aPartirDe={0.75} />}
 
-          {isAdmin ? (
+          {solo ? null : isAdmin ? (
             <>
               {/* Destaque do mês */}
               <motion.div {...stagger(2)}>
@@ -407,7 +409,7 @@ export default function Overview() {
           {/* Atividade recente */}
           <motion.div {...stagger(4)}>
             <Card>
-              <CardHeader title="Atividade recente" subtitle={isAdmin ? "Toda a equipe." : "Suas últimas ações."} />
+              <CardHeader title="Atividade recente" subtitle={isAdmin && !solo ? "Toda a equipe." : "Suas últimas ações."} />
               <ul className="relative mt-4 space-y-4 px-5 pb-6 sm:px-6">
                 <span className="absolute bottom-8 left-[2.15rem] top-2 w-px bg-line sm:left-[2.4rem]" />
                 {feed.map((a) => {

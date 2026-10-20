@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
+import { ehSolo } from "@/data/platform";
 import { Cake, ChevronDown, Clock, Mail, RotateCcw, Send, ShieldCheck, UserMinus, UserPlus, X } from "lucide-react";
 import { creciLabel, diasAteAniversario } from "@/data/queries";
 import { UpgradeNudge } from "../upgrade";
@@ -65,6 +66,9 @@ export default function Equipe() {
       if (r.link) mostrarLink(r.link, r.enviado);
     }
   };
+
+  // Plano Solo não tem equipe
+  if (ehSolo(eq.plano)) return <Navigate to="/app/visao-geral" replace />;
 
   return (
     <div className="space-y-6">

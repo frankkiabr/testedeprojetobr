@@ -64,6 +64,10 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
 - Pagamento: Stripe em modo de teste (funções `criar-checkout` e `stripe-webhook` em `supabase/functions/`). O webhook marca
   o pedido como pago; a Frankkia libera o plano. Sem Stripe configurada, a Frankkia pode confirmar o pagamento à mão.
 - E-mail: função `enviar-convite` (Resend). Segredos ficam no Supabase (Edge Functions → Secrets), nunca no código.
+- Planos: Solo (R$ 99, 1 corretor dono da conta, sem equipe, limite 0) e Equipe 5/10/30/60 (1 administrador + N corretores;
+  o administrador não ocupa vaga). `planos.anuncios` = limite de imóveis publicados no portal (em breve), compartilhado pela
+  equipe; o CRM é ilimitado. Solo não faz upgrade de vagas: vira plano de equipe com a Frankkia. Use `ehSolo()` no app.
+- Uso do Supabase no painel Frankkia: `uso_supabase()` (banco, arquivos e contas contra os limites do plano gratuito).
 - Interessados: `/apresentacao` e o formulário do site gravam em `interessados` (visitante só envia; só a Frankkia lê).
 - Demonstração: NÃO é pública. Só abre por `/demo/<código>` liberado pela Frankkia (`acessos_demo`, com validade;
   `validar_demo`). Não recoloque botões de demonstração na tela de login.

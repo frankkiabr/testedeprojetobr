@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { BadgeCheck, Bell, Building2, Check, CreditCard, GraduationCap, Mail, Rocket, UserRound } from "lucide-react";
 import { pricing, site } from "@/content";
 import { imobiliaria, UFS } from "@/data/demo";
-import { PLANOS } from "@/data/platform";
+import { ehSolo, PLANOS } from "@/data/platform";
 import { vagasUsadas } from "@/data/queries";
 import { useStore } from "@/data/store";
 import type { PlanoNome } from "@/data/types";
@@ -72,7 +72,8 @@ function ImobiliariaForm() {
 function Plano() {
   const irParaPagamento = useIrParaPagamento();
   const usadas = vagasUsadas();
-  const atual = pricing.plans.find((p) => p.name === imobiliaria.plano)!;
+  const solo = ehSolo(imobiliaria.plano);
+  const atual = pricing.plans.find((p) => p.name === imobiliaria.plano) ?? pricing.solo;
   const proxima = new Date();
   proxima.setMonth(proxima.getMonth() + 1, 10);
   return (
@@ -84,6 +85,7 @@ function Plano() {
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-bg/60">Plano atual</p>
             <p className="mt-2 font-display text-3xl font-semibold tracking-tight">{atual.name}</p>
             <p className="mt-1 text-bg/70">{atual.seats}</p>
+            {!solo && (
             <div className="mt-5 max-w-sm">
               <div className="mb-1.5 flex justify-between text-sm">
                 <span className="text-bg/70">Vagas em uso</span>
@@ -93,6 +95,7 @@ function Plano() {
               </div>
               <ProgressBar value={usadas / imobiliaria.limiteCorretores} className="bg-white/15" />
             </div>
+            )}
           </div>
           <div className="sm:text-right">
             <p className="font-display text-4xl font-semibold tracking-tight">
@@ -107,8 +110,20 @@ function Plano() {
 
       <PedidoUpgradeStatus />
 
+      {solo ? (
+        <Section title="Sua operação cresceu?" subtitle="O plano Solo é para quem trabalha sozinho. Se você abriu uma imobiliária e vai ter corretores, a Frankkia muda sua conta para um plano de equipe e mantém todos os seus dados.">
+          <a
+            href={`mailto:${site.email}?subject=${encodeURIComponent(`Virar imobiliária - ${imobiliaria.nome}`)}&body=${encodeURIComponent(
+              `Olá! Sou ${imobiliaria.nome}, do plano Solo, e gostaria de mudar para um plano de equipe.`,
+            )}`}
+            className={btn.accent}
+          >
+            <Mail className="size-4" /> Falar com a Frankkia
+          </a>
+        </Section>
+      ) : (
       <Section title="Mudar de plano" subtitle="Escolha o plano e pague por cartão, PIX ou boleto. As vagas extras são liberadas após a confirmação do pagamento.">
-        <div className="grid gap-3 md:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {pricing.plans.map((p) => {
             const current = p.name === imobiliaria.plano;
             return (
@@ -143,6 +158,7 @@ function Plano() {
         </div>
         <p className="mt-4 text-xs text-subtle">{pricing.note}</p>
       </Section>
+      )}
     </div>
   );
 }

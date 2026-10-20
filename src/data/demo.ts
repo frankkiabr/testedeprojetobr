@@ -101,8 +101,8 @@ export const imobiliaria: Imobiliaria = {
   email: "contato@imobiliariaexemplo.com.br",
   telefone: "5511940001234",
   cidade: "São Paulo, SP",
-  plano: "Equipe 15",
-  limiteCorretores: 15,
+  plano: "Equipe 10",
+  limiteCorretores: 10,
   metaMensalVGV: 8_000_000,
 };
 

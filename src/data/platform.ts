@@ -9,11 +9,25 @@ import { chamados, imobiliaria } from "./demo";
 import { monthKey, vagasUsadas } from "./queries";
 import type { AcessoDemo, Chamado, Cliente, ClienteStatus, ErroSistema, Interessado, PedidoUpgrade, PlanoNome, StatusInteressado, Usuario } from "./types";
 
-export const PLANOS: Record<PlanoNome, { limite: number; preco: number }> = {
-  "Equipe 15": { limite: 15, preco: 999 },
-  "Equipe 30": { limite: 30, preco: 1699 },
-  "Equipe 60": { limite: 60, preco: 2999 },
+/**
+ * Planos. `limite` = corretores além do administrador ("1 administrador + até N corretores").
+ * Solo: o próprio corretor é o dono da conta e não convida ninguém (limite 0).
+ * `anuncios` = imóveis publicados no portal (em breve), compartilhados pela equipe. O CRM é ilimitado.
+ */
+export const PLANOS: Record<PlanoNome, { limite: number; preco: number; anuncios: number; solo?: boolean }> = {
+  Solo: { limite: 0, preco: 99, anuncios: 15, solo: true },
+  "Equipe 5": { limite: 5, preco: 390, anuncios: 50 },
+  "Equipe 10": { limite: 10, preco: 650, anuncios: 100 },
+  "Equipe 30": { limite: 30, preco: 1800, anuncios: 300 },
+  "Equipe 60": { limite: 60, preco: 3300, anuncios: 600 },
 };
+
+/** Planos de equipe, do menor ao maior (o Solo não faz upgrade de vagas: vira imobiliária com a Frankkia). */
+export const PLANOS_EQUIPE: PlanoNome[] = ["Equipe 5", "Equipe 10", "Equipe 30", "Equipe 60"];
+
+/** Para dividir sem erro quando o plano é Solo (limite 0). */
+export const capacidade = (p: PlanoNome) => Math.max(1, PLANOS[p].limite);
+export const ehSolo = (p: string) => p === "Solo";
 
 export const STATUS_CLIENTE: Record<ClienteStatus, { label: string; tone: "verified" | "accent" | "warn" | "neutral" | "danger" }> = {
   ativa: { label: "Ativa", tone: "verified" },
@@ -95,12 +109,12 @@ export const clientes: Cliente[] = [
     uso: usoPor(9),
   },
   ...NOMES.map((nome, i): Cliente => {
-    const plano: PlanoNome = pick(["Equipe 15", "Equipe 15", "Equipe 15", "Equipe 30", "Equipe 30", "Equipe 60"]);
+    const plano: PlanoNome = pick(["Solo", "Equipe 5", "Equipe 10", "Equipe 10", "Equipe 30", "Equipe 60"]);
     const status = statusAleatorio();
     const limite = PLANOS[plano].limite;
     // Em teste, a equipe ainda é pequena; aguardando = ninguém entrou ainda.
     const corretores =
-      status === "aguardando" ? 0 : status === "teste" ? int(1, Math.round(limite * 0.35)) : Math.max(1, Math.round(limite * (0.45 + rand() * 0.57)));
+      PLANOS[plano].solo || status === "aguardando" ? 0 : status === "teste" ? int(1, Math.round(limite * 0.35)) : Math.max(1, Math.round(limite * (0.45 + rand() * 0.57)));
     const admin = `${pick(PRIMEIROS)} ${pick(SOBRENOMES)}`;
     const desde = status === "teste" ? int(1, 13) : status === "aguardando" ? int(0, 6) : int(20, 420);
     // O último acesso nunca é anterior à data em que virou cliente.
@@ -151,7 +165,7 @@ export function metricasPlataforma() {
   const pagantes = cs.filter(pagante);
   const mrr = pagantes.reduce((s, c) => s + PLANOS[c.plano].preco, 0);
   const usuarios = cs.filter((c) => c.status !== "aguardando").reduce((s, c) => s + c.corretores + 1, 0);
-  const ocupacao = pagantes.length ? pagantes.reduce((s, c) => s + c.corretores / PLANOS[c.plano].limite, 0) / pagantes.length : 0;
+  const ocupacao = pagantes.length ? pagantes.reduce((s, c) => s + c.corretores / capacidade(c.plano), 0) / pagantes.length : 0;
   return {
     mrr,
     clientes: cs.length,
@@ -181,7 +195,7 @@ export function mrrSerie(months: { key: string; short: string }[]) {
 
 // ---------- Pedidos de upgrade ----------
 
-const ORDEM_PLANOS: PlanoNome[] = ["Equipe 15", "Equipe 30", "Equipe 60"];
+const ORDEM_PLANOS: PlanoNome[] = PLANOS_EQUIPE;
 export const planoSeguinte = (p: PlanoNome): PlanoNome | null => ORDEM_PLANOS[ORDEM_PLANOS.indexOf(p) + 1] ?? null;
 const ref = () => `cs_demo_${Math.random().toString(36).slice(2, 12)}`;
 

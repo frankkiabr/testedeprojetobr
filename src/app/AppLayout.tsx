@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { imobiliaria } from "@/data/demo";
 import { vagasUsadas } from "@/data/queries";
-import { clienteById } from "@/data/platform";
+import { clienteById, ehSolo } from "@/data/platform";
 import { useStore } from "@/data/store";
 import type { Role } from "@/data/types";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
@@ -78,6 +78,7 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { role } = useSession();
   useStore();
   const used = vagasUsadas();
+  const solo = ehSolo(imobiliaria.plano);
   return (
     <div className="flex h-full flex-col px-4 pb-5">
       <Link to="/" className="flex h-16 items-center px-2">
@@ -85,13 +86,19 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       </Link>
       <p className="mt-4 px-3 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-subtle">Seu universo</p>
       <nav className="mt-3 space-y-1">
-        {MENU.filter((m) => !m.adminOnly || role === "admin").map((m) => (
+        {MENU.filter((m) => (!m.adminOnly || role === "admin") && !(solo && m.to === "equipe")).map((m) => (
           <NavItem key={m.to} {...m} onClick={onNavigate} />
         ))}
       </nav>
 
       <div className="mt-auto space-y-4">
-        {role === "admin" && (
+        {role === "admin" && solo && (
+          <div className="rounded-2xl bg-canvas p-4 text-xs">
+            <span className="font-semibold">Plano Solo</span>
+            <p className="mt-1 text-[0.6875rem] text-muted">Corretor autônomo · sem equipe</p>
+          </div>
+        )}
+        {role === "admin" && !solo && (
           <div className="rounded-2xl bg-canvas p-4">
             <div className="flex items-center justify-between text-xs">
               <span className="font-semibold">Plano {imobiliaria.plano}</span>

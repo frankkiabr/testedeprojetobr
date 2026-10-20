@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Building2, ChevronRight, Lock, Mail, Pause, Play, Plus, RotateCcw, ShieldCheck, Trash2 } from "lucide-react";
-import { clienteById, diasSemAcesso, listaClientes, mrrDe, PLANOS, STATUS_CLIENTE, statusDe } from "@/data/platform";
+import { clienteById, diasSemAcesso, ehSolo, listaClientes, mrrDe, PLANOS, STATUS_CLIENTE, statusDe } from "@/data/platform";
 import { useStore } from "@/data/store";
 import type { ClienteStatus, PlanoNome } from "@/data/types";
 import { brl, int, relTime } from "@/lib/format";
@@ -12,7 +12,10 @@ import { btn, Drawer, EmptyState, Field, inputCls, Modal, SearchInput, SelectFie
 import { useSession } from "../session";
 import { enviarConvitePorEmail, mensagemErro, supabase } from "@/integrations/frankkia/client";
 
-const PLANO_OPTS = (Object.keys(PLANOS) as PlanoNome[]).map((p) => ({ value: p, label: `${p} · ${brl(PLANOS[p].preco)}/mês` }));
+const PLANO_OPTS = (Object.keys(PLANOS) as PlanoNome[]).map((p) => ({
+  value: p,
+  label: `${ehSolo(p) ? "Solo (corretor autônomo)" : `${p} (1 adm. + ${PLANOS[p].limite} corretores)`} · ${brl(PLANOS[p].preco)}/mês`,
+}));
 const iniciais = (s: string) =>
   s
     .split(/\s+/)
@@ -34,7 +37,7 @@ function textoTeste(c: { status: ClienteStatus; testeAte?: string; testeDias?: n
 function ClienteDrawer({ id, onClose }: { id: string | null; onClose: () => void }) {
   const store = useStore();
   const c = id ? clienteById(id) : undefined;
-  const [plano, setPlano] = useState<PlanoNome>("Equipe 15");
+  const [plano, setPlano] = useState<PlanoNome>("Equipe 10");
   const [confirm, setConfirm] = useState(false);
   const [excluir, setExcluir] = useState(false);
   const [nomeConfirma, setNomeConfirma] = useState("");
@@ -115,10 +118,10 @@ function ClienteDrawer({ id, onClose }: { id: string | null; onClose: () => void
               <div className="mb-2 flex justify-between">
                 <p className="text-xs text-muted">Vagas em uso · {c.plano}</p>
                 <p className="text-xs font-semibold">
-                  {c.corretores} de {limite}
+                  {ehSolo(c.plano) ? "Corretor autônomo" : `${c.corretores} de ${limite}`}
                 </p>
               </div>
-              <ProgressBar value={c.corretores / limite} />
+              <ProgressBar value={c.corretores / Math.max(1, limite)} />
             </div>
             {(c.status === "teste" || (c.status === "aguardando" && c.testeDias)) && (
               <div className="col-span-2 flex flex-wrap items-center gap-3 rounded-2xl bg-accent-soft p-3.5">
@@ -282,7 +285,7 @@ function ClienteDrawer({ id, onClose }: { id: string | null; onClose: () => void
 function NovaImobiliariaModal({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: (id: string) => void }) {
   const { addCliente } = useStore();
   const { modo } = useSession();
-  const empty = { nome: "", cidade: "", cnpj: "", plano: "Equipe 15" as PlanoNome, adminNome: "", adminEmail: "", teste: true, testeDias: "7" };
+  const empty = { nome: "", cidade: "", cnpj: "", plano: "Equipe 10" as PlanoNome, adminNome: "", adminEmail: "", teste: true, testeDias: "7" };
   const [f, setF] = useState(empty);
   const [criada, setCriada] = useState<{ id: string; link: string; enviado: boolean } | null>(null);
   const [erro, setErro] = useState<string | null>(null);
@@ -407,7 +410,7 @@ function NovaImobiliariaModal({ open, onClose, onCreated }: { open: boolean; onC
       }
     >
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Nome da imobiliária" className="sm:col-span-2">
+        <Field label={ehSolo(f.plano) ? "Nome do corretor ou da marca" : "Nome da imobiliária"} className="sm:col-span-2">
           <input autoFocus className={inputCls} value={f.nome} onChange={(e) => setF({ ...f, nome: e.target.value })} placeholder="Ex.: Horizonte Imóveis" />
         </Field>
         <Field label="Cidade">
@@ -441,8 +444,10 @@ function NovaImobiliariaModal({ open, onClose, onCreated }: { open: boolean; onC
           </p>
         </div>
         <div className="sm:col-span-2 mt-1 border-t border-line pt-4">
-          <p className="text-sm font-semibold">Administrador da imobiliária</p>
-          <p className="text-xs text-muted">Recebe o acesso por e-mail e depois convida os corretores.</p>
+          <p className="text-sm font-semibold">{ehSolo(f.plano) ? "Corretor (dono da conta)" : "Administrador da imobiliária"}</p>
+          <p className="text-xs text-muted">
+            {ehSolo(f.plano) ? "Recebe o acesso e usa a plataforma sozinho, sem equipe." : "Recebe o acesso por e-mail e depois convida os corretores."}
+          </p>
         </div>
         <Field label="Nome">
           <input className={inputCls} value={f.adminNome} onChange={(e) => setF({ ...f, adminNome: e.target.value })} />
@@ -546,9 +551,9 @@ export default function Imobiliarias() {
                         <td className="px-3 py-3 text-muted">{c.plano}</td>
                         <td className="px-3 py-3">
                           <div className="flex w-32 items-center gap-2">
-                            <ProgressBar value={c.corretores / limite} className="h-1.5 flex-1" />
+                            <ProgressBar value={c.corretores / Math.max(1, limite)} className="h-1.5 flex-1" />
                             <span className="text-xs text-muted">
-                              {c.corretores}/{limite}
+                              {ehSolo(c.plano) ? "Solo" : `${c.corretores}/${limite}`}
                             </span>
                           </div>
                         </td>
