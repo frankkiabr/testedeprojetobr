@@ -1,0 +1,80 @@
+import { WhatsAppIcon } from "@/components/WhatsAppIcon";
+import type { CorretorPublico, ImobiliariaPublica } from "./api";
+import { creciTexto, FotoPessoa, GradeImoveis, linkWhats, numeroWhats, PortalShell } from "./ui";
+
+const contagem = (n: number) => `${n} ${n === 1 ? "imóvel anunciado" : "imóveis anunciados"}`;
+
+function BotaoWhats({ tel, texto }: { tel: string | null; texto: string }) {
+  const n = numeroWhats(tel);
+  if (!n) return null;
+  return (
+    <a
+      href={linkWhats(n, texto)}
+      target="_blank"
+      rel="noreferrer"
+      className="inline-flex h-11 items-center gap-2 rounded-full bg-[#25d366] px-5 text-sm font-semibold text-white transition hover:brightness-95"
+    >
+      <WhatsAppIcon className="size-4" /> WhatsApp
+    </a>
+  );
+}
+
+/** Página pública do corretor: quem é e os imóveis que ele anuncia. */
+export function PaginaCorretor({ c }: { c: CorretorPublico }) {
+  return (
+    <PortalShell imob={c.imobiliaria}>
+      <section className="flex flex-col gap-5 rounded-3xl bg-canvas p-6 sm:flex-row sm:items-center sm:p-8">
+        <FotoPessoa p={c} className="size-20 text-2xl" />
+        <div className="min-w-0 flex-1">
+          <h1 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">{c.nome}</h1>
+          <p className="mt-1 text-sm text-muted">
+            {[creciTexto(c), c.imobiliaria.solo ? "" : c.imobiliaria.nome, contagem(c.anuncios.length)].filter(Boolean).join(" · ")}
+          </p>
+        </div>
+        <BotaoWhats tel={c.telefone} texto={`Olá, ${c.nome.split(" ")[0]}! Vi seus imóveis no portal.`} />
+      </section>
+      <h2 className="mb-4 mt-10 font-display text-xl font-semibold">Imóveis</h2>
+      <GradeImoveis anuncios={c.anuncios} />
+    </PortalShell>
+  );
+}
+
+/** Página pública da imobiliária: imóveis anunciados e a equipe. */
+export function PaginaImobiliaria({ i }: { i: ImobiliariaPublica }) {
+  return (
+    <PortalShell imob={i}>
+      <section className="flex flex-col gap-5 rounded-3xl bg-canvas p-6 sm:flex-row sm:items-center sm:p-8">
+        {i.logo && <img src={i.logo} alt={i.nome} className="h-16 w-auto max-w-[12rem] object-contain" />}
+        <div className="min-w-0 flex-1">
+          <h1 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">{i.nome}</h1>
+          <p className="mt-1 text-sm text-muted">{[i.cidade, contagem(i.anuncios.length)].filter(Boolean).join(" · ")}</p>
+        </div>
+        <BotaoWhats tel={i.telefone} texto={`Olá! Vi os imóveis da ${i.nome} no portal.`} />
+      </section>
+
+      <h2 className="mb-4 mt-10 font-display text-xl font-semibold">Imóveis</h2>
+      <GradeImoveis anuncios={i.anuncios} />
+
+      {!i.solo && i.corretores.length > 0 && (
+        <>
+          <h2 className="mb-4 mt-12 font-display text-xl font-semibold">Corretores</h2>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {i.corretores.map((p) => (
+              <a
+                key={p.slug}
+                href={`/corretor/${p.slug}`}
+                className="flex items-center gap-3 rounded-2xl border border-line p-4 transition hover:border-line-strong hover:bg-canvas"
+              >
+                <FotoPessoa p={p} className="size-12" />
+                <div className="min-w-0">
+                  <p className="truncate font-semibold">{p.nome}</p>
+                  <p className="text-xs text-muted">{creciTexto(p)}</p>
+                </div>
+              </a>
+            ))}
+          </div>
+        </>
+      )}
+    </PortalShell>
+  );
+}

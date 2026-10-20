@@ -73,6 +73,10 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
 - Portal (fase 1): aba "Anúncio" na captação (`anuncios`, `anuncio_fotos`). Fotos vão direto do navegador para o
   Cloudflare R2 por um endereço assinado da função `fotos-r2` (segredos R2_* no Supabase). Publicar só por `publicar_anuncio`
   (confere limite do plano, CRECI, foto e título). Vendido/alugado sai do portal sozinho. Endereço completo e preço sempre visíveis.
+- Portal (fase 2): páginas públicas `/imovel/<slug ou código>`, `/corretor/<slug>`, `/imobiliaria/<slug>` são rotas do
+  TanStack (`src/routes/imovel.$slug.tsx` etc., código em `src/portal/`), renderizadas no servidor para o Google e a prévia
+  do WhatsApp; nelas o `<App />` não é montado. Dados só pelas funções `portal_anuncio`, `portal_corretor`,
+  `portal_imobiliaria`; o formulário usa `portal_contato`, que cria o lead (origem "Portal") do corretor do imóvel.
 - Interessados: `/apresentacao` e o formulário do site gravam em `interessados` (visitante só envia; só a Frankkia lê).
 - Demonstração: NÃO é pública. Só abre por `/demo/<código>` liberado pela Frankkia (`acessos_demo`, com validade;
   `validar_demo`). Não recoloque botões de demonstração na tela de login.

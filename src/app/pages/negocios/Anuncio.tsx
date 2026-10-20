@@ -91,9 +91,14 @@ export function AnuncioEditor({ captacao, onPublicado }: { captacao: Captacao; o
         <div className="min-w-0 flex-1 text-sm">
           <p className="font-semibold">{a.publicado ? "Publicado no portal" : "Rascunho (não publicado)"}</p>
           <p className="text-xs text-muted">
-            {publicados} de {limite} anúncios publicados no plano {imobiliaria.plano}. A página pública do imóvel chega na próxima fase do portal.
+            {publicados} de {limite} anúncios publicados no plano {imobiliaria.plano}.
           </p>
         </div>
+        {a.publicado && a.slug && !a.slug.startsWith("exemplo-") && (
+          <a href={`/imovel/${a.slug}`} target="_blank" rel="noreferrer" className="text-sm font-semibold text-accent">
+            Ver página pública
+          </a>
+        )}
       </div>
 
       {/* Fotos */}

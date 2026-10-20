@@ -11,6 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SplatRouteImport } from './routes/$'
+import { Route as CorretorSlugRouteImport } from './routes/corretor.$slug'
+import { Route as ImobiliariaSlugRouteImport } from './routes/imobiliaria.$slug'
+import { Route as ImovelSlugRouteImport } from './routes/imovel.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,31 +25,65 @@ const SplatRoute = SplatRouteImport.update({
   path: '/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CorretorSlugRoute = CorretorSlugRouteImport.update({
+  id: '/corretor/$slug',
+  path: '/corretor/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ImobiliariaSlugRoute = ImobiliariaSlugRouteImport.update({
+  id: '/imobiliaria/$slug',
+  path: '/imobiliaria/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ImovelSlugRoute = ImovelSlugRouteImport.update({
+  id: '/imovel/$slug',
+  path: '/imovel/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/corretor/$slug': typeof CorretorSlugRoute
+  '/imobiliaria/$slug': typeof ImobiliariaSlugRoute
+  '/imovel/$slug': typeof ImovelSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/corretor/$slug': typeof CorretorSlugRoute
+  '/imobiliaria/$slug': typeof ImobiliariaSlugRoute
+  '/imovel/$slug': typeof ImovelSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/corretor/$slug': typeof CorretorSlugRoute
+  '/imobiliaria/$slug': typeof ImobiliariaSlugRoute
+  '/imovel/$slug': typeof ImovelSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/$'
+  fullPaths:
+    '/' | '/$' | '/corretor/$slug' | '/imobiliaria/$slug' | '/imovel/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/$'
-  id: '__root__' | '/' | '/$'
+  to: '/' | '/$' | '/corretor/$slug' | '/imobiliaria/$slug' | '/imovel/$slug'
+  id:
+    | '__root__'
+    | '/'
+    | '/$'
+    | '/corretor/$slug'
+    | '/imobiliaria/$slug'
+    | '/imovel/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SplatRoute: typeof SplatRoute
+  CorretorSlugRoute: typeof CorretorSlugRoute
+  ImobiliariaSlugRoute: typeof ImobiliariaSlugRoute
+  ImovelSlugRoute: typeof ImovelSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +102,36 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/corretor/$slug': {
+      id: '/corretor/$slug'
+      path: '/corretor/$slug'
+      fullPath: '/corretor/$slug'
+      preLoaderRoute: typeof CorretorSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/imobiliaria/$slug': {
+      id: '/imobiliaria/$slug'
+      path: '/imobiliaria/$slug'
+      fullPath: '/imobiliaria/$slug'
+      preLoaderRoute: typeof ImobiliariaSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/imovel/$slug': {
+      id: '/imovel/$slug'
+      path: '/imovel/$slug'
+      fullPath: '/imovel/$slug'
+      preLoaderRoute: typeof ImovelSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
+  CorretorSlugRoute: CorretorSlugRoute,
+  ImobiliariaSlugRoute: ImobiliariaSlugRoute,
+  ImovelSlugRoute: ImovelSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

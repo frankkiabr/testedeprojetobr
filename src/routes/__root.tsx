@@ -1,5 +1,5 @@
 import { lazy, Suspense, type ReactNode } from "react";
-import { ClientOnly, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { ClientOnly, createRootRoute, HeadContent, Outlet, Scripts, useRouterState } from "@tanstack/react-router";
 import appCss from "../index.css?url";
 
 /**
@@ -8,6 +8,12 @@ import appCss from "../index.css?url";
  * O TanStack Start só entrega o HTML base, as fontes e o CSS.
  */
 const App = lazy(() => import("../App"));
+
+/**
+ * Exceção: as páginas públicas do portal (/imovel, /corretor, /imobiliaria) vêm prontas do servidor
+ * (src/routes/imovel.$slug.tsx etc.), para o Google e a prévia de links do WhatsApp.
+ */
+const PORTAL = /^\/(imovel|corretor|imobiliaria)\//;
 
 const TITULO = "Frankkia — Seu universo imobiliário, em um só lugar.";
 const DESCRICAO =
@@ -56,6 +62,8 @@ function RootShell({ children }: { children: ReactNode }) {
 }
 
 function RootComponent() {
+  const portal = useRouterState({ select: (s) => PORTAL.test(s.location.pathname) });
+  if (portal) return <Outlet />;
   return (
     <ClientOnly fallback={<div className="min-h-screen bg-bg" />}>
       <Suspense fallback={<div className="min-h-screen bg-bg" />}>
