@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Handshake, Plus } from "lucide-react";
+import { Camera, Handshake, Plus } from "lucide-react";
 import { parceiros, transacoes } from "@/data/demo";
 import { parteDe } from "@/data/queries";
 import { useStore } from "@/data/store";
+import type { Parceiro } from "@/data/types";
 import { brl } from "@/lib/format";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { Avatar, Card } from "../../kit";
@@ -12,6 +13,43 @@ import { ParceiroFormModal } from "./shared";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 
 /** Corretores externos (sem acesso), usados para registrar parcerias. Só o administrador vê. */
+/** Foto do parceiro: clique para enviar ou trocar (sem foto, as iniciais). */
+function FotoParceiro({ parceiro }: { parceiro: Parceiro }) {
+  const { setFotoParceiro, toast } = useStore();
+  const entrada = useRef<HTMLInputElement>(null);
+  const [enviando, setEnviando] = useState(false);
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => entrada.current?.click()}
+        title={parceiro.fotoUrl ? "Trocar foto" : "Adicionar foto"}
+        className={`relative shrink-0 rounded-full transition hover:ring-2 hover:ring-accent/40 ${enviando ? "opacity-50" : ""}`}
+      >
+        <Avatar user={{ id: parceiro.id, nome: parceiro.nome, fotoUrl: parceiro.fotoUrl, iniciais: parceiro.nome.split(" ").map((x) => x[0]).slice(0, 2).join("") }} className="size-9 text-xs" />
+        <span className="absolute -bottom-0.5 -right-0.5 grid size-4 place-items-center rounded-full border-2 border-bg bg-ink text-bg">
+          <Camera className="size-2" />
+        </span>
+      </button>
+      <input
+        ref={entrada}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={async (e) => {
+          const arq = e.target.files?.[0];
+          e.target.value = "";
+          if (!arq) return;
+          setEnviando(true);
+          const erro = await setFotoParceiro(parceiro.id, arq);
+          setEnviando(false);
+          toast(erro ?? "Foto do parceiro atualizada.");
+        }}
+      />
+    </>
+  );
+}
+
 export default function Parceiros() {
   useStore();
   const [novo, setNovo] = useState(false);
@@ -57,7 +95,7 @@ export default function Parceiros() {
                     >
                       <td className="px-5 py-3">
                         <span className="flex items-center gap-3">
-                          <Avatar user={{ id: p.id, iniciais: p.nome.split(" ").map((x) => x[0]).slice(0, 2).join("") }} className="size-9 text-xs" />
+                          <FotoParceiro parceiro={p} />
                           <span>
                             <span className="block font-semibold">{p.nome}</span>
                             <span className="block text-xs text-muted">{p.empresa ?? "—"}</span>

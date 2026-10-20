@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { Link, NavLink, useLocation, useNavigate, useOutlet } from "react-router-dom";
 import { AlertOctagon, Building2, CalendarDays, ExternalLink, Inbox, LayoutGrid, LifeBuoy, LogOut, Menu, Rocket, X } from "lucide-react";
 import { errosSistema, interessados, pedidosUpgrade, todosChamados } from "@/data/platform";
@@ -102,15 +102,14 @@ export function AdminLayout() {
         <Sidebar />
       </aside>
 
-      <AnimatePresence>
+      <>
         {drawer && (
           <>
-            <motion.div className="fixed inset-0 z-40 bg-ink/40 backdrop-blur-xs lg:hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setDrawer(false)} />
+            <motion.div className="fixed inset-0 z-40 bg-ink/40 backdrop-blur-xs lg:hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} onClick={() => setDrawer(false)} />
             <motion.aside
               className="fixed inset-y-0 left-0 z-50 w-72 bg-ink shadow-float lg:hidden"
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
               transition={{ duration: 0.4, ease: EASE_OUT_EXPO }}
             >
               <button onClick={() => setDrawer(false)} aria-label="Fechar menu" className="absolute right-4 top-4 grid size-9 place-items-center rounded-full text-bg hover:bg-white/10">
@@ -120,7 +119,7 @@ export function AdminLayout() {
             </motion.aside>
           </>
         )}
-      </AnimatePresence>
+      </>
 
       <div className="lg:pl-64">
         <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-line bg-bg/85 px-4 backdrop-blur-md sm:px-8">

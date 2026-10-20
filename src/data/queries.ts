@@ -11,6 +11,7 @@ import {
   fechamentos,
   imobiliaria,
   imoveis,
+  anuncios,
   leads,
   outrosMembros,
   parceiros,
@@ -82,6 +83,11 @@ export function captacaoTitulo(c: Captacao) {
 }
 export const captacaoBairro = (c: Captacao) => imovelById(c.imovelId)?.endereco.bairro ?? "";
 export const captacaoCategoria = (c: Captacao) => imovelById(c.imovelId)?.categoria ?? "Apartamento";
+
+/** Foto de capa do anúncio da captação (ou do imóvel, pela primeira captação com foto). */
+export const fotoCapa = (captacaoId: string) => anuncios.find((a) => a.captacaoId === captacaoId)?.fotos[0]?.url;
+export const fotoDoImovel = (imovelId: string) =>
+  captacoes.filter((c) => c.imovelId === imovelId).map((c) => fotoCapa(c.id)).find(Boolean);
 
 export const captacoesOf = (s: Scope) => captacoes.filter((c) => inScope(c.corretorId, s));
 export const captacoesDoProprietario = (pid: string) => captacoes.filter((c) => c.proprietarioId === pid);

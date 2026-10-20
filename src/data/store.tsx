@@ -116,6 +116,51 @@ function mensagemPortal(e: { message?: string } | unknown) {
   return mapa.find(([re]) => re.test(m))?.[1] ?? mensagemErro(e);
 }
 
+/**
+ * Envia a foto (reduzida a 400 px) para o armazenamento "avatares" e grava o endereço dela.
+ * `pasta`: <id do usuário> ou parceiros/<id da imobiliária>. Na demonstração, a foto fica só na memória.
+ */
+async function trocarAvatar(
+  arquivo: File | null,
+  dono: { fotoUrl?: string } | null,
+  pasta: string,
+  salvar: (url: string | null) => Promise<unknown>,
+): Promise<string | null> {
+  if (!dono) return "Não encontrado.";
+  try {
+    const antiga = dono.fotoUrl;
+    if (!arquivo) {
+      dono.fotoUrl = undefined;
+      if (ehReal()) {
+        const erro = await salvar(null);
+        if (erro) return mensagemErro(erro);
+        removerAvatarAntigo(antiga);
+      }
+      return null;
+    }
+    const f = await comprimirFoto(arquivo, 400);
+    if (!ehReal()) {
+      dono.fotoUrl = URL.createObjectURL(f.blob);
+      return null;
+    }
+    const caminho = `${pasta}/foto-${Date.now()}.${f.tipo === "image/jpeg" ? "jpg" : "webp"}`;
+    const up = await supabase.storage.from("avatares").upload(caminho, f.blob, { contentType: f.tipo });
+    if (up.error) return "Não foi possível enviar a foto. Tente de novo.";
+    const url = supabase.storage.from("avatares").getPublicUrl(caminho).data.publicUrl;
+    const erro = await salvar(url);
+    if (erro) return mensagemErro(erro);
+    dono.fotoUrl = url;
+    removerAvatarAntigo(antiga);
+    return null;
+  } catch {
+    return "Não foi possível ler esta imagem.";
+  }
+}
+function removerAvatarAntigo(url?: string) {
+  const marca = "/storage/v1/object/public/avatares/";
+  if (url?.includes(marca)) supabase.storage.from("avatares").remove([url.split(marca)[1]]);
+}
+
 const salvarChecklists = (c: Captacao) =>
   gravar(() => supabase.from("captacoes").update({ checklist_captacao: c.checklistCaptacao, checklist_marketing: c.checklistMarketing }).eq("id", c.id));
 
@@ -234,7 +279,7 @@ function createActions(bump: () => void, toast: (text: string) => void) {
     },
 
     /** Imóvel = lugar físico (edifício, casa, galpão...). */
-    addImovel(input: Pick<Imovel, "categoria" | "nome" | "endereco">) {
+    addImovel(input: Pick<Imovel, "categoria" | "nome" | "endereco" | "cep" | "lat" | "lng">) {
       const im: Imovel = { ...input, id: uid("im"), criadoEm: new Date().toISOString() };
       imoveis.unshift(im);
       const e = im.endereco;
@@ -249,6 +294,9 @@ function createActions(bump: () => void, toast: (text: string) => void) {
           bairro: e.bairro,
           cidade: e.cidade,
           uf: e.uf,
+          cep: im.cep ?? null,
+          lat: im.lat ?? null,
+          lng: im.lng ?? null,
           criado_por: ctxDados.userId,
         }),
       );
@@ -355,7 +403,7 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       a.publicado = publicar;
       if (publicar) a.publicadoEm ??= new Date().toISOString();
       bump();
-      toast(publicar ? "Anúncio publicado no portal." : "Anúncio retirado do portal.");
+      toast(publicar ? "Anúncio publicado no portal! Ele já conta no limite de anúncios do seu plano." : "Anúncio retirado do portal.");
       return null;
     },
 
@@ -840,6 +888,41 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       toast("Perfil atualizado.");
     },
 
+    // ---------- Fotos de perfil ----------
+
+    /** Troca (ou remove, com null) a foto de perfil de quem está usando o sistema. Devolve um aviso, se falhar. */
+    async setFotoPerfil(userId: string, arquivo: File | null): Promise<string | null> {
+      const u = userId === admin.id ? admin : (corretores.find((x) => x.id === userId) ?? null);
+      const r = await trocarAvatar(arquivo, u, `${userId}`, async (url) => {
+        const { error } = await supabase.from("perfis").update({ foto_url: url }).eq("id", userId);
+        return error;
+      });
+      bump();
+      return r;
+    },
+
+    /** Foto do corretor parceiro (externo). Só o administrador. */
+    async setFotoParceiro(parceiroId: string, arquivo: File | null): Promise<string | null> {
+      const p = parceiros.find((x) => x.id === parceiroId) ?? null;
+      const r = await trocarAvatar(arquivo, p, `parceiros/${ctxDados.imobId}`, async (url) => {
+        const { error } = await supabase.from("parceiros").update({ foto_url: url }).eq("id", parceiroId);
+        return error;
+      });
+      bump();
+      return r;
+    },
+
+    // ---------- Mapa ----------
+
+    /** Guarda a posição do imóvel no mapa (depois de localizar o endereço ou arrastar o marcador). */
+    setLocalImovel(imovelId: string, lat: number, lng: number) {
+      const im = imoveis.find((x) => x.id === imovelId);
+      if (!im) return;
+      Object.assign(im, { lat, lng });
+      gravar(() => supabase.from("imoveis").update({ lat, lng }).eq("id", imovelId));
+      bump();
+    },
+
     // ---------- Ajuda ----------
 
     addChamado(input: Pick<Chamado, "autorId" | "assunto" | "categoria" | "mensagem">) {
@@ -1078,7 +1161,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const toast = useCallback((text: string) => {
     const id = Date.now() + Math.random();
     setToasts((t) => [...t, { id, text }]);
-    setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 3200);
+    // Avisos ficam 5 segundos na tela (tempo de ler com calma)
+    setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 5000);
   }, []);
   const actions = useMemo(() => createActions(bump, toast), [bump, toast]);
 

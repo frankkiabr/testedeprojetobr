@@ -15,7 +15,7 @@ const dinheiro = (s: string) => {
 };
 
 /** Aba "Anúncio" da captação: fotos, textos e características; publicar no portal da Frankkia. */
-export function AnuncioEditor({ captacao }: { captacao: Captacao }) {
+export function AnuncioEditor({ captacao, onPublicado }: { captacao: Captacao; onPublicado?: () => void }) {
   const store = useStore();
   const a = anuncioDe(captacao.id);
   const input = useRef<HTMLInputElement>(null);
@@ -74,6 +74,7 @@ export function AnuncioEditor({ captacao }: { captacao: Captacao }) {
     const r = await store.publicarAnuncio(captacao.id, sim);
     setPublicando(false);
     if (r) setAviso(r);
+    else if (sim) onPublicado?.(); // publicado: fecha a janela e o aviso de confirmação fica na tela
   };
 
   const campo = (k: "quartos" | "suites" | "banheiros" | "vagas", label: string) => (

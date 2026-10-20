@@ -1,5 +1,6 @@
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 import { AnuncioEditor } from "./Anuncio";
+import { LocalImovel } from "./LocalImovel";
 import { anuncios } from "@/data/demo";
 import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -21,6 +22,7 @@ import {
   proprietarioById,
   userById,
   pessoa,
+  fotoCapa,
 } from "@/data/queries";
 import { transacoes } from "@/data/demo";
 import { useStore } from "@/data/store";
@@ -55,7 +57,7 @@ function CaptacaoCard({ c, showCorretor, onOpen, i }: { c: Captacao; showCorreto
       className="group overflow-hidden rounded-3xl border border-line bg-bg text-left transition-shadow hover:shadow-lift"
     >
       <div className="relative">
-        <ImovelCover categoria={captacaoCategoria(c)} className="aspect-[16/10] transition-transform duration-700 ease-out-expo group-hover:scale-[1.04]" />
+        <ImovelCover categoria={captacaoCategoria(c)} foto={fotoCapa(c.id)} className="aspect-[16/10] transition-transform duration-700 ease-out-expo group-hover:scale-[1.04]" />
         <span className="absolute left-3 top-3 flex gap-1.5">
           <StatusBadge status={c.status} />
           <FinalidadeBadge finalidade={c.finalidade} />
@@ -133,7 +135,7 @@ function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: () => voi
         {c && im && (
           <div className="space-y-7">
             <div className="relative overflow-hidden rounded-3xl">
-              <ImovelCover categoria={im.categoria} className="aspect-[16/8]" />
+              <ImovelCover categoria={im.categoria} foto={fotoCapa(c.id)} className="aspect-[16/8]" />
               <span className="absolute left-4 top-4 flex gap-1.5">
                 <StatusBadge status={c.status} />
                 <FinalidadeBadge finalidade={c.finalidade} />
@@ -147,6 +149,7 @@ function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: () => voi
                 {enderecoCompleto(im.endereco)}
               </span>
             </p>
+            <LocalImovel im={im} className="h-48" />
 
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div className="rounded-2xl bg-canvas p-3.5">
@@ -207,7 +210,7 @@ function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: () => voi
                 ]}
               />
               {aba === "anuncio" ? (
-                <AnuncioEditor captacao={c} />
+                <AnuncioEditor captacao={c} onPublicado={onClose} />
               ) : aba === "captacao" ? (
                 <div className="mt-4">
                   <p className="font-display text-lg font-semibold">Checklist de captação</p>

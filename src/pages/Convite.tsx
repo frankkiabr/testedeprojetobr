@@ -6,7 +6,7 @@ import { convites, imobiliaria, UFS } from "@/data/demo";
 import { useStore } from "@/data/store";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { Logo } from "@/components/ui";
-import { Field, inputCls, normalizePhone, SelectField, Toaster } from "@/app/forms";
+import { DateInput, Field, inputCls, normalizePhone, SelectField, Toaster } from "@/app/forms";
 import { inicioDe, useSession } from "@/app/session";
 import { mensagemErro, supabase } from "@/integrations/frankkia/client";
 
@@ -216,7 +216,7 @@ export default function Convite() {
                     <input className={inputCls} inputMode="tel" value={f.telefone} onChange={(e) => setF({ ...f, telefone: e.target.value })} placeholder="(11) 98765-4321" />
                   </Field>
                   <Field label="Data de nascimento" hint="Para a equipe comemorar com você.">
-                    <input type="date" className={inputCls} value={f.aniversario} onChange={(e) => setF({ ...f, aniversario: e.target.value })} />
+                    <DateInput value={f.aniversario} onChange={(v) => setF({ ...f, aniversario: v })} />
                   </Field>
                 </div>
 

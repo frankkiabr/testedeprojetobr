@@ -172,6 +172,9 @@ const paraImovel = (r: Row<"imoveis">): Imovel => ({
   nome: u(r.nome),
   endereco: { logradouro: r.logradouro, numero: r.numero, bairro: r.bairro, cidade: r.cidade, uf: r.uf },
   criadoEm: r.criado_em,
+  cep: u(r.cep),
+  lat: u(r.lat),
+  lng: u(r.lng),
 });
 
 const paraCaptacao = (r: Row<"captacoes">): Captacao => ({
@@ -199,6 +202,8 @@ const paraCompromisso = (r: Row<"compromissos">): Compromisso => ({
   leadId: u(r.lead_id),
   captacaoId: u(r.captacao_id),
   local: u(r.local),
+  localLat: u(r.local_lat),
+  localLng: u(r.local_lng),
   observacoes: u(r.observacoes),
 });
 
@@ -403,6 +408,7 @@ export async function carregarReal(conta: ContaDados) {
       creci: u(p?.creci ?? null),
       creciUF: u(p?.creci_uf ?? null),
       estagiario: p?.estagiario ?? false,
+      fotoUrl: u(p?.foto_url ?? null),
     };
   });
   const admins = pessoas.filter((p) => p.papel === "admin");
@@ -482,7 +488,7 @@ export async function carregarReal(conta: ContaDados) {
   );
   trocarLista(
     D.parceiros,
-    (parceiros?.data ?? []).map((p): Parceiro => ({ id: p.id, nome: p.nome, creci: u(p.creci), empresa: u(p.empresa), telefone: u(p.telefone) })),
+    (parceiros?.data ?? []).map((p): Parceiro => ({ id: p.id, nome: p.nome, creci: u(p.creci), empresa: u(p.empresa), telefone: u(p.telefone), fotoUrl: u(p.foto_url) })),
   );
   trocarLista(D.leads, leads.map(paraLead));
   trocarLista(
@@ -734,6 +740,8 @@ export const compromissoParaBanco = (c: Compromisso) => ({
   lead_id: c.leadId ?? null,
   captacao_id: c.captacaoId ?? null,
   local: c.local ?? null,
+  local_lat: c.localLat ?? null,
+  local_lng: c.localLng ?? null,
   observacoes: c.observacoes ?? null,
 });
 

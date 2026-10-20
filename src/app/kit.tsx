@@ -76,8 +76,11 @@ const AVATAR_COLORS = [
   "bg-sky-100 text-sky-800",
 ];
 
-export function Avatar({ user, className = "size-9 text-xs" }: { user: Pick<Usuario, "id" | "iniciais">; className?: string }) {
+/** Foto da pessoa; sem foto, as iniciais num círculo colorido. */
+export function Avatar({ user, className = "size-9 text-xs" }: { user: Pick<Usuario, "id" | "iniciais"> & { fotoUrl?: string; nome?: string }; className?: string }) {
   const n = [...user.id].reduce((s, ch) => s + ch.charCodeAt(0), 0);
+  if (user.fotoUrl)
+    return <img src={user.fotoUrl} alt={user.nome ?? ""} loading="lazy" className={`shrink-0 rounded-full bg-canvas object-cover ${className}`} />;
   return (
     <span className={`grid shrink-0 place-items-center rounded-full font-semibold ${AVATAR_COLORS[n % AVATAR_COLORS.length]} ${className}`}>
       {user.iniciais}

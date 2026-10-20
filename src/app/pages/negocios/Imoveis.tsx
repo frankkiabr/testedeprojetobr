@@ -3,7 +3,8 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Building2, ChevronRight, LineChart, MapPin, Plus } from "lucide-react";
 import { CATEGORIAS, imoveis, transacoes } from "@/data/demo";
-import { captacaoById, captacaoTitulo, captacoesDoImovel, enderecoCompleto, imovelById, imovelNome } from "@/data/queries";
+import { LocalImovel } from "./LocalImovel";
+import { fotoDoImovel, captacaoById, captacaoTitulo, captacoesDoImovel, enderecoCompleto, imovelById, imovelNome } from "@/data/queries";
 import { useStore } from "@/data/store";
 import type { CategoriaImovel } from "@/data/types";
 import { brl } from "@/lib/format";
@@ -28,13 +29,17 @@ function ImovelDrawer({ id, onClose }: { id: string | null; onClose: () => void 
     <Drawer open={!!im} onClose={onClose} title={im && imovelNome(im)} subtitle={im?.categoria}>
       {im && (
         <div className="space-y-7">
-          <div className="overflow-hidden rounded-3xl">
-            <ImovelCover categoria={im.categoria} className="aspect-[16/7]" />
-          </div>
+          {/* Com posição no mapa, o mapa aparece no lugar da ilustração */}
+          {im.lat === undefined && (
+            <div className="overflow-hidden rounded-3xl">
+              <ImovelCover categoria={im.categoria} foto={fotoDoImovel(im.id)} className="aspect-[16/7]" />
+            </div>
+          )}
           <p className="flex items-start gap-2 text-sm">
             <MapPin className="mt-0.5 size-4 shrink-0 text-accent" />
             {enderecoCompleto(im.endereco)}
           </p>
+          <LocalImovel im={im} className="h-64" />
 
           <div>
             <p className="mb-3 font-display text-lg font-semibold">

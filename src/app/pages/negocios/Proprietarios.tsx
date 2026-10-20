@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ChevronRight, Plus, UserRound, Users } from "lucide-react";
 import { CHECKLIST_MARKETING, proprietarios } from "@/data/demo";
-import { captacaoCategoria, captacaoTitulo, captacoesDoProprietario, corretoresAtivos, done, proprietariosOf, pessoa, userById } from "@/data/queries";
+import { fotoCapa, captacaoCategoria, captacaoTitulo, captacoesDoProprietario, corretoresAtivos, done, proprietariosOf, pessoa, userById } from "@/data/queries";
 import { useStore } from "@/data/store";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { useScope } from "../../session";
@@ -46,7 +46,7 @@ function ProprietarioDrawer({ id, onClose }: { id: string | null; onClose: () =>
                       onClick={() => navigate(`/app/negocios/captacoes?captacao=${c.id}`)}
                       className="flex w-full items-center gap-3 rounded-2xl border border-line p-2.5 text-left transition hover:border-line-strong hover:bg-canvas"
                     >
-                      <ImovelCover categoria={captacaoCategoria(c)} className="size-14 shrink-0 rounded-xl [&_svg]:size-6" />
+                      <ImovelCover categoria={captacaoCategoria(c)} foto={fotoCapa(c.id)} className="size-14 shrink-0 rounded-xl [&_svg]:size-6" />
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-semibold">{captacaoTitulo(c)}</p>
                         <p className="text-xs text-muted">{valorLabel(c.finalidade, c.valor)}</p>

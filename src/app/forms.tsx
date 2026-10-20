@@ -1,5 +1,5 @@
 /** Janelas (modal e painel lateral), campos de formulário, checklist e avisos. */
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, ChevronDown, Search, X } from "lucide-react";
 import { useStore } from "@/data/store";
@@ -52,14 +52,14 @@ export function Modal({
   footer?: ReactNode;
 }) {
   useEsc(open, onClose);
+  // Sem animação de saída: ao fechar, a camada que cobre a tela some na hora (antes podia ficar presa e travar os cliques).
   return (
-    <AnimatePresence>
+    <>
       {open && (
         <motion.div
           className="fixed inset-0 z-[60] flex items-end justify-center bg-ink/30 backdrop-blur-xs sm:items-center sm:p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
           onMouseDown={onClose}
         >
           <motion.div
@@ -67,7 +67,6 @@ export function Modal({
             aria-modal
             initial={{ y: 40, opacity: 0, scale: 0.98 }}
             animate={{ y: 0, opacity: 1, scale: 1 }}
-            exit={{ y: 40, opacity: 0, scale: 0.98 }}
             transition={{ duration: 0.4, ease: EASE_OUT_EXPO }}
             onMouseDown={(e) => e.stopPropagation()}
             className="flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl bg-bg shadow-float sm:rounded-3xl"
@@ -84,7 +83,7 @@ export function Modal({
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </>
   );
 }
 
@@ -104,15 +103,15 @@ export function Drawer({
   footer?: ReactNode;
 }) {
   useEsc(open, onClose);
+  // Sem animação de saída: ao fechar, o fundo escurecido some na hora (antes podia ficar presa e travar os cliques).
   return (
-    <AnimatePresence>
+    <>
       {open && (
         <>
           <motion.div
             className="fixed inset-0 z-[55] bg-ink/25 backdrop-blur-[2px]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
             onClick={onClose}
           />
           <motion.aside
@@ -120,7 +119,6 @@ export function Drawer({
             aria-modal
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
-            exit={{ x: "100%" }}
             transition={{ duration: 0.45, ease: EASE_OUT_EXPO }}
             className="fixed inset-y-0 right-0 z-[56] flex w-full max-w-[36rem] flex-col bg-bg shadow-float sm:rounded-l-[2rem]"
           >
@@ -136,7 +134,7 @@ export function Drawer({
           </motion.aside>
         </>
       )}
-    </AnimatePresence>
+    </>
   );
 }
 
@@ -282,4 +280,66 @@ export function toLocalInput(iso?: string) {
   const d = new Date(iso);
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+// ---------- Data e hora no padrão brasileiro (dd/mm/aaaa e 24h) ----------
+// Os campos nativos do navegador seguem o idioma do computador (mm/dd e AM/PM em inglês). Estes não.
+
+const isoParaBr = (iso: string) => (/^\d{4}-\d{2}-\d{2}$/.test(iso) ? `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}` : "");
+function brParaIso(br: string): string | null {
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(br);
+  if (!m) return null;
+  const [, d, mes, a] = m;
+  const data = new Date(Number(a), Number(mes) - 1, Number(d));
+  if (data.getFullYear() !== Number(a) || data.getMonth() !== Number(mes) - 1 || data.getDate() !== Number(d)) return null;
+  return `${a}-${mes}-${d}`;
+}
+
+/** Campo de data dd/mm/aaaa. `value` e `onChange` usam AAAA-MM-DD (vazio = sem data). */
+export function DateInput({ value, onChange, max, className = "" }: { value: string; onChange: (iso: string) => void; max?: string; className?: string }) {
+  const [texto, setTexto] = useState(isoParaBr(value));
+  const [erro, setErro] = useState("");
+  useEffect(() => {
+    if (brParaIso(texto) !== value) setTexto(isoParaBr(value));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+  const mudar = (bruto: string) => {
+    const n = bruto.replace(/\D/g, "").slice(0, 8);
+    const t = n.length > 4 ? `${n.slice(0, 2)}/${n.slice(2, 4)}/${n.slice(4)}` : n.length > 2 ? `${n.slice(0, 2)}/${n.slice(2)}` : n;
+    setTexto(t);
+    if (!t) {
+      setErro("");
+      onChange("");
+      return;
+    }
+    if (t.length < 10) return setErro("");
+    const iso = brParaIso(t);
+    if (!iso) return setErro("Data inválida.");
+    if (max && iso > max) return setErro(`A data não pode passar de ${isoParaBr(max)}.`);
+    setErro("");
+    onChange(iso);
+  };
+  return (
+    <>
+      <input className={`${inputCls} ${className}`} inputMode="numeric" placeholder="dd/mm/aaaa" value={texto} onChange={(e) => mudar(e.target.value)} />
+      {erro && <span className="mt-1 block text-xs font-medium text-rose-600">{erro}</span>}
+    </>
+  );
+}
+
+const HORARIOS = Array.from({ length: 96 }, (_, k) => `${String(Math.floor(k / 4)).padStart(2, "0")}:${String((k % 4) * 15).padStart(2, "0")}`);
+
+/** Horário 24h (00:00 a 23:45, de 15 em 15 minutos). `value` = "HH:MM". */
+export function TimeInput({ value, onChange, className = "" }: { value: string; onChange: (hhmm: string) => void; className?: string }) {
+  const opcoes = value && !HORARIOS.includes(value) ? [value, ...HORARIOS].sort() : HORARIOS;
+  return (
+    <select className={`${inputCls} ${className}`} value={value} onChange={(e) => onChange(e.target.value)}>
+      {!value && <option value="">--:--</option>}
+      {opcoes.map((h) => (
+        <option key={h} value={h}>
+          {h}
+        </option>
+      ))}
+    </select>
+  );
 }

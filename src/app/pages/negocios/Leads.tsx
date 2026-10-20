@@ -9,7 +9,7 @@ import type { EtapaLead, Lead } from "@/data/types";
 import { dateTime, relTime } from "@/lib/format";
 import { useScope } from "../../session";
 import { Avatar, Badge, Card, ProgressBar, Segmented, Select } from "../../kit";
-import { btn, CheckItem, Drawer, EmptyState, Field, formatPhone, inputCls, SearchInput, toLocalInput, waLink } from "../../forms";
+import { btn, CheckItem, DateInput, Drawer, EmptyState, Field, formatPhone, inputCls, SearchInput, TimeInput, toLocalInput, waLink } from "../../forms";
 import { ETAPA_DOT, ETAPA_STYLE, LeadFormModal } from "./shared";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 
@@ -241,12 +241,22 @@ function LeadDrawer({ id, onClose }: { id: string | null; onClose: () => void })
 
           {lead.etapa === "visita" && (
             <Field label="Data da visita" hint={lead.visitaEm ? dateTime(lead.visitaEm) : "Defina quando será a visita."}>
-              <input
-                type="datetime-local"
-                className={inputCls}
-                value={toLocalInput(lead.visitaEm)}
-                onChange={(e) => updateLead(lead.id, { visitaEm: e.target.value ? new Date(e.target.value).toISOString() : undefined })}
-              />
+              <div className="grid grid-cols-[1fr_7rem] gap-2">
+                <DateInput
+                  value={toLocalInput(lead.visitaEm).slice(0, 10)}
+                  onChange={(d) => {
+                    const hora = toLocalInput(lead.visitaEm).slice(11, 16) || "10:00";
+                    updateLead(lead.id, { visitaEm: d ? new Date(`${d}T${hora}`).toISOString() : undefined });
+                  }}
+                />
+                <TimeInput
+                  value={toLocalInput(lead.visitaEm).slice(11, 16)}
+                  onChange={(h) => {
+                    const dia = toLocalInput(lead.visitaEm).slice(0, 10);
+                    if (dia) updateLead(lead.id, { visitaEm: new Date(`${dia}T${h}`).toISOString() });
+                  }}
+                />
+              </div>
             </Field>
           )}
 

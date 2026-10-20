@@ -375,6 +375,8 @@ export type Database = {
           inicio: string
           lead_id: string | null
           local: string | null
+          local_lat: number | null
+          local_lng: number | null
           observacoes: string | null
           tipo: string
           titulo: string
@@ -389,6 +391,8 @@ export type Database = {
           inicio: string
           lead_id?: string | null
           local?: string | null
+          local_lat?: number | null
+          local_lng?: number | null
           observacoes?: string | null
           tipo: string
           titulo: string
@@ -403,6 +407,8 @@ export type Database = {
           inicio?: string
           lead_id?: string | null
           local?: string | null
+          local_lat?: number | null
+          local_lng?: number | null
           observacoes?: string | null
           tipo?: string
           titulo?: string
@@ -655,11 +661,14 @@ export type Database = {
         Row: {
           bairro: string
           categoria: string
+          cep: string | null
           cidade: string
           criado_em: string
           criado_por: string | null
           id: string
           imobiliaria_id: string
+          lat: number | null
+          lng: number | null
           logradouro: string
           nome: string | null
           numero: string
@@ -668,11 +677,14 @@ export type Database = {
         Insert: {
           bairro: string
           categoria: string
+          cep?: string | null
           cidade: string
           criado_em?: string
           criado_por?: string | null
           id?: string
           imobiliaria_id: string
+          lat?: number | null
+          lng?: number | null
           logradouro: string
           nome?: string | null
           numero: string
@@ -681,11 +693,14 @@ export type Database = {
         Update: {
           bairro?: string
           categoria?: string
+          cep?: string | null
           cidade?: string
           criado_em?: string
           criado_por?: string | null
           id?: string
           imobiliaria_id?: string
+          lat?: number | null
+          lng?: number | null
           logradouro?: string
           nome?: string | null
           numero?: string
@@ -883,6 +898,7 @@ export type Database = {
           creci: string | null
           criado_em: string
           empresa: string | null
+          foto_url: string | null
           id: string
           imobiliaria_id: string
           nome: string
@@ -892,6 +908,7 @@ export type Database = {
           creci?: string | null
           criado_em?: string
           empresa?: string | null
+          foto_url?: string | null
           id?: string
           imobiliaria_id: string
           nome: string
@@ -901,6 +918,7 @@ export type Database = {
           creci?: string | null
           criado_em?: string
           empresa?: string | null
+          foto_url?: string | null
           id?: string
           imobiliaria_id?: string
           nome?: string
@@ -994,6 +1012,7 @@ export type Database = {
           criado_em: string
           email: string
           estagiario: boolean
+          foto_url: string | null
           id: string
           iniciais: string
           nome: string
@@ -1006,6 +1025,7 @@ export type Database = {
           criado_em?: string
           email?: string
           estagiario?: boolean
+          foto_url?: string | null
           id: string
           iniciais?: string
           nome?: string
@@ -1018,6 +1038,7 @@ export type Database = {
           criado_em?: string
           email?: string
           estagiario?: boolean
+          foto_url?: string | null
           id?: string
           iniciais?: string
           nome?: string
@@ -1389,6 +1410,7 @@ export type Database = {
       pasta_imobiliaria: { Args: { p_nome: string }; Returns: string }
       pertence: { Args: { p_imob: string }; Returns: boolean }
       pode_editar_captacao: { Args: { p_captacao: string }; Returns: boolean }
+      pode_mexer_avatar: { Args: { p_nome: string }; Returns: boolean }
       publicar_anuncio: {
         Args: { p_captacao: string; p_publicar: boolean }
         Returns: string

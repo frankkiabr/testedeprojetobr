@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { BadgeCheck, Bell, Building2, Check, CreditCard, GraduationCap, Mail, Rocket, UserRound } from "lucide-react";
+import { BadgeCheck, Bell, Building2, Camera, Check, CreditCard, GraduationCap, Mail, Rocket, UserRound } from "lucide-react";
 import { pricing, site } from "@/content";
 import { imobiliaria, UFS } from "@/data/demo";
 import { ehSolo, PLANOS } from "@/data/platform";
@@ -11,7 +11,7 @@ import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { useScope, useSession } from "../session";
 import { mensagemErro, supabase } from "@/integrations/frankkia/client";
 import { Avatar, Card, PageHeader, ProgressBar, Segmented, stagger } from "../kit";
-import { btn, Field, formatPhone, inputCls, normalizePhone, SelectField } from "../forms";
+import { btn, DateInput, Field, formatPhone, inputCls, normalizePhone, SelectField } from "../forms";
 import { PedidoUpgradeStatus, useIrParaPagamento } from "../upgrade";
 import { useSearchParams } from "react-router-dom";
 
@@ -164,7 +164,15 @@ function Plano() {
 }
 
 function Perfil() {
-  const { updateUsuario, toast } = useStore();
+  const { updateUsuario, toast, setFotoPerfil } = useStore();
+  const entradaFoto = useRef<HTMLInputElement>(null);
+  const [enviandoFoto, setEnviandoFoto] = useState(false);
+  const trocarFoto = async (arquivo: File | null) => {
+    setEnviandoFoto(true);
+    const erro = await setFotoPerfil(user.id, arquivo);
+    setEnviandoFoto(false);
+    toast(erro ?? (arquivo ? "Foto de perfil atualizada." : "Foto de perfil removida."));
+  };
   const { user } = useScope();
   const { modo, conta } = useSession();
   const init = () => ({
@@ -208,12 +216,43 @@ function Perfil() {
           </button>
         }
       >
-        <div className="mb-6 flex items-center gap-4">
-          <Avatar user={user} className="size-16 text-lg" />
-          <div>
+        <div className="mb-6 flex flex-wrap items-center gap-4">
+          <button
+            type="button"
+            onClick={() => entradaFoto.current?.click()}
+            title="Trocar foto"
+            className="group relative rounded-full ring-offset-2 transition hover:ring-2 hover:ring-accent/40"
+          >
+            <Avatar user={user} className="size-16 text-lg" />
+            <span className="absolute -bottom-1 -right-1 grid size-7 place-items-center rounded-full border-2 border-bg bg-ink text-bg">
+              <Camera className="size-3.5" />
+            </span>
+          </button>
+          <div className="min-w-0 flex-1">
             <p className="font-semibold">{user.nome}</p>
             <p className="text-sm text-muted">{user.papel === "admin" ? "Administrador" : "Corretor"} · {imobiliaria.nome}</p>
+            <div className="mt-1.5 flex gap-3 text-xs font-semibold">
+              <button type="button" onClick={() => entradaFoto.current?.click()} disabled={enviandoFoto} className="text-accent">
+                {enviandoFoto ? "Enviando..." : user.fotoUrl ? "Trocar foto" : "Adicionar foto"}
+              </button>
+              {user.fotoUrl && (
+                <button type="button" onClick={() => trocarFoto(null)} disabled={enviandoFoto} className="text-muted hover:text-rose-600">
+                  Remover
+                </button>
+              )}
+            </div>
           </div>
+          <input
+            ref={entradaFoto}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const arq = e.target.files?.[0];
+              e.target.value = "";
+              if (arq) trocarFoto(arq);
+            }}
+          />
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Nome completo" className="sm:col-span-2">
@@ -226,7 +265,7 @@ function Perfil() {
             <input className={inputCls} value={f.telefone} onChange={(e) => setF({ ...f, telefone: e.target.value })} placeholder="(11) 98765-4321" />
           </Field>
           <Field label="Data de nascimento" hint="Usada para avisar a equipe no seu aniversário.">
-            <input type="date" className={inputCls} value={f.aniversario} onChange={(e) => setF({ ...f, aniversario: e.target.value })} />
+            <DateInput value={f.aniversario} onChange={(v) => setF({ ...f, aniversario: v })} />
           </Field>
         </div>
 

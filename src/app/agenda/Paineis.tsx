@@ -1,14 +1,16 @@
 /** Formulário de compromisso, painel de detalhes e conexão (simulada) com o Google Agenda. */
 import { useEffect, useState } from "react";
+import { Mapa } from "@/components/Mapa";
+import { linkGoogleMaps, localizar } from "@/lib/mapa";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { CalendarCheck2, CalendarPlus, Check, Clock, ExternalLink, Link2, Loader2, MapPin, Pencil, ShieldCheck, Trash2, UserRound } from "lucide-react";
 import { conexoesGoogle } from "@/data/demo";
-import { captacaoById, captacaoTitulo, captacoesOf, leadById, leadsOf, userById } from "@/data/queries";
+import { captacaoById, captacaoTitulo, captacoesOf, enderecoCompleto, imovelById, leadById, leadsOf, userById } from "@/data/queries";
 import { useStore } from "@/data/store";
 import type { Compromisso, TipoCompromisso, Usuario } from "@/data/types";
 import { relTime } from "@/lib/format";
-import { btn, Drawer, Field, inputCls, Modal, SelectField } from "../forms";
+import { btn, DateInput, Drawer, Field, inputCls, Modal, SelectField, TimeInput } from "../forms";
 import { Avatar } from "../kit";
 import { dataLonga, deInputs, hhmm, linkGoogleAgenda, ORDEM_TIPOS, paraInputData, paraInputHora, TIPOS } from "./utils";
 
@@ -42,7 +44,7 @@ export function CompromissoForm({
       return d;
     })();
     const fim = new Date(ini.getTime() + 60 * 60_000);
-    return { titulo: "", tipo: "visita" as TipoCompromisso, data: paraInputData(ini), inicio: paraInputHora(ini), fim: paraInputHora(fim), donoId: donoPadrao, leadId: "", captacaoId: "", local: "", observacoes: "" };
+    return { titulo: "", tipo: "visita" as TipoCompromisso, data: paraInputData(ini), inicio: paraInputHora(ini), fim: paraInputHora(fim), donoId: donoPadrao, leadId: "", captacaoId: "", local: "", localLat: undefined as number | undefined, localLng: undefined as number | undefined, observacoes: "" };
   };
   const [f, setF] = useState(vazio);
 
@@ -61,6 +63,8 @@ export function CompromissoForm({
         leadId: editar.leadId ?? "",
         captacaoId: editar.captacaoId ?? "",
         local: editar.local ?? "",
+        localLat: editar.localLat,
+        localLng: editar.localLng,
         observacoes: editar.observacoes ?? "",
       });
     } else setF(vazio());
@@ -73,6 +77,18 @@ export function CompromissoForm({
   const leads = !semVinculos && ehCorretor ? leadsOf({ corretorId: f.donoId }).filter((l) => l.etapa !== "perdido" && l.etapa !== "fechado") : [];
   const caps = !semVinculos && ehCorretor ? captacoesOf({ corretorId: f.donoId }).filter((c) => c.status === "ativa") : [];
   const ok = f.titulo.trim() && f.data && fim > ini;
+
+  // Local no mapa (busca só ao clicar, como pede o serviço gratuito de mapas)
+  const [buscandoLocal, setBuscandoLocal] = useState(false);
+  const [avisoLocal, setAvisoLocal] = useState("");
+  const localizarLocal = async () => {
+    setAvisoLocal("");
+    setBuscandoLocal(true);
+    const p = await localizar(f.local);
+    setBuscandoLocal(false);
+    if (p) setF((x) => ({ ...x, localLat: p.lat, localLng: p.lng }));
+    else setAvisoLocal("Não encontramos este local no mapa. Tente com rua, número e cidade.");
+  };
 
   // Sugere o título a partir do lead escolhido
   const escolherLead = (id: string) => {
@@ -91,6 +107,8 @@ export function CompromissoForm({
       leadId: f.leadId || undefined,
       captacaoId: f.captacaoId || undefined,
       local: f.local.trim() || undefined,
+      localLat: f.local.trim() ? f.localLat : undefined,
+      localLng: f.local.trim() ? f.localLng : undefined,
       observacoes: f.observacoes.trim() || undefined,
     };
     if (editar) updateCompromisso(editar.id, dados);
@@ -133,13 +151,13 @@ export function CompromissoForm({
           <input autoFocus className={inputCls} value={f.titulo} onChange={(e) => setF({ ...f, titulo: e.target.value })} placeholder="Ex.: Visita com Juliana" />
         </Field>
         <Field label="Data" className="sm:col-span-2">
-          <input type="date" className={inputCls} value={f.data} onChange={(e) => setF({ ...f, data: e.target.value })} />
+          <DateInput value={f.data} onChange={(v) => setF({ ...f, data: v })} />
         </Field>
         <Field label="Início" className="sm:col-span-2">
-          <input type="time" step={900} className={inputCls} value={f.inicio} onChange={(e) => setF({ ...f, inicio: e.target.value })} />
+          <TimeInput value={f.inicio} onChange={(v) => setF({ ...f, inicio: v })} />
         </Field>
         <Field label="Fim" className="sm:col-span-2" hint={f.data && fim <= ini ? "O fim precisa ser depois do início." : undefined}>
-          <input type="time" step={900} className={inputCls} value={f.fim} onChange={(e) => setF({ ...f, fim: e.target.value })} />
+          <TimeInput value={f.fim} onChange={(v) => setF({ ...f, fim: v })} />
         </Field>
         {responsaveis && (
           <Field label="Responsável" className="sm:col-span-6">
@@ -162,15 +180,39 @@ export function CompromissoForm({
             <Field label="Captação (opcional)" className="sm:col-span-3">
               <SelectField
                 value={f.captacaoId}
-                onChange={(v) => setF({ ...f, captacaoId: v })}
+                onChange={(v) => {
+                  // Captação escolhida e local vazio: usa o endereço do imóvel (e a posição dele no mapa)
+                  const cap = v ? captacaoById(v) : undefined;
+                  const im = cap ? imovelById(cap.imovelId) : undefined;
+                  setF((x) =>
+                    im && !x.local.trim()
+                      ? { ...x, captacaoId: v, local: enderecoCompleto(im.endereco), localLat: im.lat, localLng: im.lng }
+                      : { ...x, captacaoId: v },
+                  );
+                }}
                 options={[{ value: "", label: "Nenhuma" }, ...caps.map((c) => ({ value: c.id, label: captacaoTitulo(c) }))]}
               />
             </Field>
           </>
         )}
-        <Field label="Local (opcional)" className="sm:col-span-6">
-          <input className={inputCls} value={f.local} onChange={(e) => setF({ ...f, local: e.target.value })} placeholder="Endereço, escritório ou link da reunião" />
+        <Field label="Local (opcional)" className="sm:col-span-6" hint={avisoLocal || undefined}>
+          <div className="flex gap-2">
+            <input
+              className={inputCls}
+              value={f.local}
+              onChange={(e) => setF({ ...f, local: e.target.value, localLat: undefined, localLng: undefined })}
+              placeholder="Endereço, escritório ou link da reunião"
+            />
+            <button type="button" onClick={localizarLocal} disabled={!f.local.trim() || buscandoLocal} className={`${btn.outline} shrink-0`} title="Mostrar no mapa">
+              <MapPin className="size-4" /> {buscandoLocal ? "..." : "Mapa"}
+            </button>
+          </div>
         </Field>
+        {f.localLat !== undefined && f.localLng !== undefined && (
+          <div className="sm:col-span-6">
+            <Mapa lat={f.localLat} lng={f.localLng} onMover={(p) => setF((x) => ({ ...x, localLat: p.lat, localLng: p.lng }))} className="h-44" />
+          </div>
+        )}
         <Field label="Observações (opcional)" className="sm:col-span-6">
           <textarea rows={3} className={`${inputCls} h-auto resize-none py-3`} value={f.observacoes} onChange={(e) => setF({ ...f, observacoes: e.target.value })} />
         </Field>
@@ -244,9 +286,17 @@ export function CompromissoDetalhes({ c, onClose, onEditar }: { c: Compromisso |
             {c.local && (
               <p className="flex items-center gap-2.5">
                 <MapPin className="size-4 text-muted" />
-                {c.local}
+                <a
+                  href={linkGoogleMaps(c.localLat !== undefined && c.localLng !== undefined ? { lat: c.localLat, lng: c.localLng } : null, c.local)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline-offset-2 hover:text-accent hover:underline"
+                >
+                  {c.local}
+                </a>
               </p>
             )}
+            {c.localLat !== undefined && c.localLng !== undefined && <Mapa key={c.id} lat={c.localLat} lng={c.localLng} className="h-40" />}
             {dono && (
               <p className="flex items-center gap-2.5">
                 <Avatar user={dono} className="size-5 text-[0.5rem]" />

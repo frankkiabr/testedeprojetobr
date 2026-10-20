@@ -36,6 +36,8 @@ export type Usuario = {
   creciUF?: string;
   /** Estagiário não é obrigado a informar CRECI. */
   estagiario?: boolean;
+  /** Foto de perfil (sem foto: mostra as iniciais). */
+  fotoUrl?: string;
 };
 
 /** Corretor de fora da imobiliária, usado só para registrar parcerias (não tem acesso). */
@@ -45,6 +47,7 @@ export type Parceiro = {
   creci?: string;
   empresa?: string;
   telefone?: string;
+  fotoUrl?: string;
 };
 
 /** Convite enviado por e-mail que ainda não foi aceito (ocupa uma vaga do plano). */
@@ -72,6 +75,9 @@ export type Compromisso = {
   leadId?: string;
   captacaoId?: string;
   local?: string;
+  /** Posição do local no mapa (quando encontrada). */
+  localLat?: number;
+  localLng?: number;
   observacoes?: string;
 };
 
@@ -255,6 +261,10 @@ export type Imovel = {
   nome?: string;
   endereco: Endereco;
   criadoEm: string;
+  /** CEP (só números) e posição no mapa. */
+  cep?: string;
+  lat?: number;
+  lng?: number;
 };
 
 export type Finalidade = "venda" | "locacao";

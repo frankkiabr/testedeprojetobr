@@ -1,7 +1,7 @@
 /** Peças compartilhadas pelas abas de Negócios: capas, etiquetas e formulários de cadastro. */
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 import { useEffect, useMemo, useState } from "react";
-import { Briefcase, Building2, Home, Info, Plus, Store, TreePine, Trash2, Warehouse } from "lucide-react";
+import { Briefcase, Building2, Home, Info, MapPin, Plus, Store, TreePine, Trash2, Warehouse } from "lucide-react";
 import {
   CATEGORIAS,
   CATEGORIAS_COM_UNIDADE,
@@ -14,6 +14,8 @@ import {
   UFS,
 } from "@/data/demo";
 import { ehSolo } from "@/data/platform";
+import { Mapa } from "@/components/Mapa";
+import { buscarCep, localizar, type Ponto } from "@/lib/mapa";
 import { admin as administrador } from "@/data/demo";
 
 /** Quem pode participar de uma venda: os corretores; no plano Solo, o próprio dono da conta. */
@@ -35,7 +37,7 @@ import { useStore } from "@/data/store";
 import type { Captacao, CategoriaImovel, EtapaLead, FechamentoInformado, Finalidade, Participante } from "@/data/types";
 import { brl } from "@/lib/format";
 import { useScope } from "../../session";
-import { btn, Field, inputCls, Modal, normalizePhone, SelectField, waLink } from "../../forms";
+import { btn, DateInput, Field, inputCls, Modal, normalizePhone, SelectField, waLink } from "../../forms";
 import { Segmented } from "../../kit";
 
 // ---------- Visual ----------
@@ -54,8 +56,15 @@ export const CategoriaIcon = ({ categoria, className = "size-4" }: { categoria: 
   return <Icon className={className} />;
 };
 
-export function ImovelCover({ categoria, className = "" }: { categoria: CategoriaImovel; className?: string }) {
+/** Capa do imóvel: a foto de capa do anúncio, quando houver; senão, a ilustração da categoria. */
+export function ImovelCover({ categoria, className = "", foto }: { categoria: CategoriaImovel; className?: string; foto?: string }) {
   const { hue, icon: Icon } = CATEGORIA_STYLE[categoria];
+  if (foto)
+    return (
+      <div className={`relative overflow-hidden bg-canvas ${className}`}>
+        <img src={foto} alt="" loading="lazy" className="absolute inset-0 size-full object-cover" />
+      </div>
+    );
   return (
     <div
       className={`relative grid place-items-center overflow-hidden ${className}`}
@@ -259,12 +268,42 @@ export function ImovelFormModal({
   const { addImovel } = useStore();
   const cidadePadrao = imobiliaria.cidade.split(",")[0]?.trim() ?? "";
   const ufPadrao = imobiliaria.cidade.split(",")[1]?.trim() ?? "SP";
-  const empty = () => ({ categoria: categoriaInicial ?? ("Apartamento" as CategoriaImovel), nome: "", logradouro: "", numero: "", bairro: "", cidade: cidadePadrao, uf: ufPadrao });
+  const empty = () => ({ categoria: categoriaInicial ?? ("Apartamento" as CategoriaImovel), nome: "", cep: "", logradouro: "", numero: "", bairro: "", cidade: cidadePadrao, uf: ufPadrao });
   const [f, setF] = useState(empty);
+  const [ponto, setPonto] = useState<Ponto | null>(null);
+  const [buscando, setBuscando] = useState<"" | "cep" | "mapa">("");
+  const [avisoMapa, setAvisoMapa] = useState("");
   useEffect(() => {
-    if (open) setF(empty());
+    if (open) {
+      setF(empty());
+      setPonto(null);
+      setAvisoMapa("");
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, categoriaInicial]);
+
+  // CEP completo: preenche rua, bairro, cidade e estado
+  const mudarCep = async (v: string) => {
+    const cep = v.replace(/D/g, "").slice(0, 8);
+    setF((x) => ({ ...x, cep }));
+    if (cep.length !== 8) return;
+    setBuscando("cep");
+    const r = await buscarCep(cep);
+    setBuscando("");
+    if (r) {
+      setF((x) => ({ ...x, logradouro: r.logradouro || x.logradouro, bairro: r.bairro || x.bairro, cidade: r.cidade, uf: r.uf || x.uf }));
+      setPonto(null);
+    } else setAvisoMapa("CEP não encontrado. Preencha o endereço à mão.");
+  };
+
+  const localizarNoMapa = async () => {
+    setAvisoMapa("");
+    setBuscando("mapa");
+    const p = await localizar({ ...endereco, cep: f.cep || undefined });
+    setBuscando("");
+    if (p) setPonto(p);
+    else setAvisoMapa("Não encontramos este endereço no mapa. Confira rua, número e cidade.");
+  };
 
   const comNome = CATEGORIAS_COM_UNIDADE.includes(f.categoria);
   const ok = f.logradouro.trim() && f.numero.trim() && f.bairro.trim() && f.cidade.trim() && f.uf && (!comNome || f.nome.trim());
@@ -285,7 +324,7 @@ export function ImovelFormModal({
             disabled={!ok}
             className={btn.primary}
             onClick={() => {
-              const im = addImovel({ categoria: f.categoria, nome: f.nome.trim() || undefined, endereco });
+              const im = addImovel({ categoria: f.categoria, nome: f.nome.trim() || undefined, endereco, cep: f.cep.length === 8 ? f.cep : undefined, lat: ponto?.lat, lng: ponto?.lng });
               onClose();
               onCreated?.(im.id);
             }}
@@ -306,6 +345,16 @@ export function ImovelFormModal({
         >
           <input className={inputCls} value={f.nome} onChange={(e) => setF({ ...f, nome: e.target.value })} />
         </Field>
+        <Field label="CEP" className="sm:col-span-2" hint={buscando === "cep" ? "Buscando endereço..." : "Preenche o endereço sozinho."}>
+          <input
+            className={inputCls}
+            inputMode="numeric"
+            value={f.cep.length > 5 ? `${f.cep.slice(0, 5)}-${f.cep.slice(5)}` : f.cep}
+            onChange={(e) => mudarCep(e.target.value)}
+            placeholder="00000-000"
+          />
+        </Field>
+        <div className="hidden sm:col-span-4 sm:block" />
         <Field label="Logradouro (tipo e nome)" className="sm:col-span-4">
           <input className={inputCls} value={f.logradouro} onChange={(e) => setF({ ...f, logradouro: e.target.value })} placeholder="Ex.: Av. Senador Lemos" />
         </Field>
@@ -333,6 +382,20 @@ export function ImovelFormModal({
             {enderecoCompleto(endereco)}
           </p>
         )}
+        {/* Localização no mapa (opcional): o marcador pode ser arrastado até o ponto exato */}
+        <div className="space-y-2 sm:col-span-6">
+          {ponto ? (
+            <>
+              <Mapa lat={ponto.lat} lng={ponto.lng} onMover={setPonto} className="h-52" />
+              <p className="text-xs text-muted">Se o marcador não estiver no lugar certo, arraste-o até o imóvel.</p>
+            </>
+          ) : (
+            <button type="button" disabled={!ok || buscando === "mapa"} onClick={localizarNoMapa} className={`${btn.outline} w-full`}>
+              <MapPin className="size-4" /> {buscando === "mapa" ? "Localizando..." : "Localizar no mapa"}
+            </button>
+          )}
+          {avisoMapa && <p className="text-xs font-medium text-amber-700">{avisoMapa}</p>}
+        </div>
       </div>
     </Modal>
   );
@@ -685,7 +748,7 @@ export function TransacaoFormModal({
             <input className={inputCls} value={f.cliente} onChange={(e) => setF({ ...f, cliente: e.target.value })} />
           </Field>
           <Field label="Data">
-            <input type="date" className={inputCls} value={f.data} max={today()} onChange={(e) => setF({ ...f, data: e.target.value })} />
+            <DateInput value={f.data} max={today()} onChange={(v) => setF({ ...f, data: v })} />
           </Field>
 
           {/* Divisão dos honorários */}
@@ -823,7 +886,7 @@ export function InformarFechamentoModal({ open, onClose, captacaoId }: { open: b
           <input className={inputCls} inputMode="numeric" value={f.valor} onChange={(e) => setF({ ...f, valor: e.target.value })} />
         </Field>
         <Field label="Data do fechamento">
-          <input type="date" className={inputCls} value={f.data} max={today()} onChange={(e) => setF({ ...f, data: e.target.value })} />
+          <DateInput value={f.data} max={today()} onChange={(v) => setF({ ...f, data: v })} />
         </Field>
         <Field label="Observações para o administrador" className="sm:col-span-2" hint="Ex.: parceria 50/50 com o corretor X, condições de pagamento...">
           <textarea rows={3} className={`${inputCls} h-auto resize-none py-3`} value={f.obs} onChange={(e) => setF({ ...f, obs: e.target.value })} />
