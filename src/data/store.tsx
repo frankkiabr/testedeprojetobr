@@ -6,6 +6,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   admin,
+  anuncios,
   chamados,
   CHECKLIST_CAPTACAO,
   CHECKLIST_LEAD,
@@ -27,11 +28,14 @@ import {
   trilhas,
 } from "./demo";
 import { captacaoTitulo, captacaoById, vagasLivres } from "./queries";
-import { enviarConvitePorEmail } from "@/integrations/frankkia/client";
+import { enviarConvitePorEmail, mensagemErro } from "@/integrations/frankkia/client";
+import { comprimirFoto } from "@/lib/files";
 import { aoMudar, compromissoParaBanco, configurarGravacao, contexto as ctxDados, ehReal, enfileirar, falhou, gravar, leadParaBanco, novoId, supabase } from "./sync";
 import { acessosDemo, clientes, errosSistema, interessados, linkDemo, nomeDaTela, novaReferencia, pedidoAberto, pedidoById, pedidosUpgrade, PLANOS, todosChamados } from "./platform";
 import type {
   AcessoDemo,
+  Anuncio,
+  FotoAnuncio,
   Interessado,
   ArquivoMarca,
   Aula,
@@ -83,6 +87,35 @@ function salvarCompromisso(c: Compromisso) {
   return gravar(() => supabase.from("compromissos").update(campos).eq("id", id));
 }
 const removerCompromissoBanco = (id: string) => gravar(() => supabase.from("compromissos").delete().eq("id", id));
+/** Anúncio da captação (cria um rascunho vazio na memória, se ainda não existir). */
+export function anuncioDe(captacaoId: string): Anuncio {
+  let a = anuncios.find((x) => x.captacaoId === captacaoId);
+  if (!a) {
+    a = { captacaoId, titulo: "", descricao: "", caracteristicas: [], publicado: false, fotos: [] };
+    anuncios.push(a);
+  }
+  return a;
+}
+/** Garante que a linha do anúncio existe no banco (sem mexer no que já está lá). */
+const garantirAnuncio = (captacaoId: string) =>
+  supabase.from("anuncios").upsert({ captacao_id: captacaoId, imobiliaria_id: ctxDados.imobId }, { onConflict: "captacao_id", ignoreDuplicates: true });
+async function salvarOrdem(a: Anuncio) {
+  for (const f of a.fotos) await supabase.from("anuncio_fotos").update({ ordem: f.ordem }).eq("id", f.id);
+}
+/** Mensagens do banco ao publicar, em português simples. */
+function mensagemPortal(e: { message?: string } | unknown) {
+  const m = String((e as { message?: string })?.message ?? e);
+  const mapa: [RegExp, string][] = [
+    [/SEM_CRECI/, "O corretor responsável precisa ter CRECI cadastrado (estagiário não publica sozinho). Ajuste em Configurações › Perfil."],
+    [/LIMITE_ANUNCIOS/, "O limite de anúncios publicados do seu plano foi atingido. Retire outro anúncio do portal ou mude de plano."],
+    [/SEM_FOTOS/, "Adicione pelo menos uma foto."],
+    [/TITULO_CURTO/, "Escreva um título com pelo menos 10 letras."],
+    [/CAPTACAO_FECHADA/, "Só imóveis disponíveis podem ser anunciados."],
+    [/LIMITE_FOTOS/, "O anúncio já tem 20 fotos, o máximo."],
+  ];
+  return mapa.find(([re]) => re.test(m))?.[1] ?? mensagemErro(e);
+}
+
 const salvarChecklists = (c: Captacao) =>
   gravar(() => supabase.from("captacoes").update({ checklist_captacao: c.checklistCaptacao, checklist_marketing: c.checklistMarketing }).eq("id", c.id));
 
@@ -271,6 +304,127 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       c.checklistMarketing = c.checklistMarketing.map((v, k) => (k === step ? (value ?? !v) : v));
       salvarChecklists(c);
       bump();
+    },
+
+    // ---------- Portal: anúncio da captação ----------
+
+    /** Salva os dados do anúncio (rascunho ou publicado). */
+    salvarAnuncio(captacaoId: string, patch: Partial<Omit<Anuncio, "captacaoId" | "publicado" | "slug" | "fotos">>) {
+      const a = anuncioDe(captacaoId);
+      Object.assign(a, patch);
+      gravar(
+        () => garantirAnuncio(captacaoId),
+        () =>
+          supabase
+            .from("anuncios")
+            .update({
+              titulo: a.titulo,
+              descricao: a.descricao,
+              quartos: a.quartos ?? null,
+              suites: a.suites ?? null,
+              banheiros: a.banheiros ?? null,
+              vagas: a.vagas ?? null,
+              condominio: a.condominio ?? null,
+              iptu: a.iptu ?? null,
+              caracteristicas: a.caracteristicas,
+              atualizado_em: new Date().toISOString(),
+            })
+            .eq("captacao_id", captacaoId),
+      );
+      bump();
+      toast("Anúncio salvo.");
+    },
+
+    /** Publica ou tira do portal. Devolve o motivo, se o banco recusar (sem CRECI, limite do plano...). */
+    async publicarAnuncio(captacaoId: string, publicar: boolean): Promise<string | null> {
+      const a = anuncioDe(captacaoId);
+      if (ehReal()) {
+        const r = await enfileirar(async () => {
+          const g = await garantirAnuncio(captacaoId);
+          if (g.error) return { erro: mensagemPortal(g.error) };
+          const { data, error } = await supabase.rpc("publicar_anuncio", { p_captacao: captacaoId, p_publicar: publicar });
+          return error ? { erro: mensagemPortal(error) } : { slug: data ?? undefined };
+        });
+        if (r.erro) return r.erro;
+        a.slug = r.slug ?? a.slug;
+      } else {
+        if (publicar && a.titulo.trim().length < 10) return "Escreva um título com pelo menos 10 letras.";
+        if (publicar && !a.fotos.length) return "Adicione pelo menos uma foto.";
+        a.slug ??= `exemplo-${captacaoId}`;
+      }
+      a.publicado = publicar;
+      if (publicar) a.publicadoEm ??= new Date().toISOString();
+      bump();
+      toast(publicar ? "Anúncio publicado no portal." : "Anúncio retirado do portal.");
+      return null;
+    },
+
+    /** Reduz e envia fotos (no login real, direto para o Cloudflare R2). Devolve um aviso, se algo falhar. */
+    async adicionarFotos(captacaoId: string, arquivos: File[]): Promise<string | null> {
+      const a = anuncioDe(captacaoId);
+      const vagas = 20 - a.fotos.length;
+      if (vagas <= 0) return "O anúncio já tem 20 fotos, o máximo.";
+      let aviso: string | null = arquivos.length > vagas ? `Só cabem mais ${vagas} fotos: as demais foram ignoradas.` : null;
+      for (const arquivo of arquivos.slice(0, vagas)) {
+        try {
+          const f = await comprimirFoto(arquivo);
+          const foto: FotoAnuncio = { id: uid("ft"), url: URL.createObjectURL(f.blob), chave: "", ordem: a.fotos.length };
+          if (ehReal()) {
+            const g = await enfileirar(async () => await garantirAnuncio(captacaoId));
+            if (g.error) throw new Error(mensagemPortal(g.error));
+            const { data, error } = await supabase.functions.invoke("fotos-r2", { body: { acao: "assinar", captacaoId, tipo: f.tipo } });
+            const d = data as { uploadUrl?: string; chave?: string; url?: string } | null;
+            if (error || !d?.uploadUrl) throw new Error(error ? "As fotos ainda não estão configuradas (Cloudflare R2)." : "Falha ao preparar o envio.");
+            const put = await fetch(d.uploadUrl, { method: "PUT", body: f.blob, headers: { "Content-Type": f.tipo } });
+            if (!put.ok) throw new Error("O envio da foto falhou. Tente de novo.");
+            Object.assign(foto, { chave: d.chave!, url: d.url! });
+            const ins = await supabase.from("anuncio_fotos").insert({
+              id: foto.id,
+              captacao_id: captacaoId,
+              imobiliaria_id: ctxDados.imobId,
+              chave: foto.chave,
+              url: foto.url,
+              ordem: foto.ordem,
+              largura: f.largura,
+              altura: f.altura,
+              tamanho_bytes: f.blob.size,
+            });
+            if (ins.error) throw new Error(mensagemPortal(ins.error));
+          }
+          a.fotos.push(foto);
+          bump();
+        } catch (e) {
+          aviso = e instanceof Error ? e.message : "Não foi possível enviar uma das fotos.";
+          break;
+        }
+      }
+      return aviso;
+    },
+
+    removerFoto(captacaoId: string, fotoId: string) {
+      const a = anuncioDe(captacaoId);
+      const foto = a.fotos.find((f) => f.id === fotoId);
+      if (!foto) return;
+      a.fotos = a.fotos.filter((f) => f.id !== fotoId).map((f, k) => ({ ...f, ordem: k }));
+      if (ehReal())
+        enfileirar(async () => {
+          const { error } = await supabase.from("anuncio_fotos").delete().eq("id", fotoId);
+          if (error) return falhou(error);
+          await supabase.functions.invoke("fotos-r2", { body: { acao: "remover", captacaoId, chave: foto.chave } });
+          await salvarOrdem(a);
+        });
+      bump();
+    },
+
+    /** Leva a foto para a primeira posição (capa do anúncio). */
+    definirCapa(captacaoId: string, fotoId: string) {
+      const a = anuncioDe(captacaoId);
+      const foto = a.fotos.find((f) => f.id === fotoId);
+      if (!foto) return;
+      a.fotos = [foto, ...a.fotos.filter((f) => f.id !== fotoId)].map((f, k) => ({ ...f, ordem: k }));
+      if (ehReal()) enfileirar(() => salvarOrdem(a));
+      bump();
+      toast("Foto de capa atualizada.");
     },
 
     /** Só o administrador registra vendas e locações (no banco, tudo numa operação só). */

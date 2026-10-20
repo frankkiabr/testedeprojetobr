@@ -4,6 +4,7 @@
  * Os dados são gerados de forma determinística, então são sempre os mesmos a cada visita.
  */
 import type {
+  Anuncio,
   ArquivoMarca,
   Captacao,
   CategoriaImovel,
@@ -615,3 +616,14 @@ export const chamados: Chamado[] = [
       "Olá, Gabriel! A importação de planilhas faz parte do módulo Frankkia Performance e está em desenvolvimento. Avisaremos assim que estiver disponível.",
   },
 ];
+
+// ---------- Portal (anúncios) ----------
+
+/** Características que o corretor marca no anúncio. */
+export const CARACTERISTICAS = [
+  "Piscina", "Churrasqueira", "Academia", "Salão de festas", "Playground", "Portaria 24h", "Elevador", "Varanda / sacada",
+  "Varanda gourmet", "Mobiliado", "Ar-condicionado", "Armários planejados", "Aceita pets", "Quintal", "Jardim", "Área de serviço",
+  "Lareira", "Vista para o mar", "Próximo ao metrô", "Aceita financiamento", "Aceita permuta",
+];
+
+export const anuncios: Anuncio[] = [];

@@ -9,3 +9,6 @@ verify_jwt = false
 
 [functions.enviar-convite]
 verify_jwt = false
+
+[functions.fotos-r2]
+verify_jwt = false

@@ -11,6 +11,8 @@ import { ctx, OUTROS_PARTICIPANTES, type LinhaMercado, type LinhaRanking, type O
 import { lastMonths } from "./queries";
 import type {
   AcessoDemo,
+  Anuncio,
+  FotoAnuncio,
   Interessado,
   Captacao,
   CategoriaImovel,
@@ -75,6 +77,7 @@ const ORIGINAL = structuredClone({
   errosSistema: P.errosSistema,
   interessados: P.interessados,
   acessosDemo: P.acessosDemo,
+  anuncios: D.anuncios,
 });
 
 function trocarLista<T>(alvo: T[], novos: T[]) {
@@ -112,6 +115,7 @@ function aplicarDemo() {
   trocarLista(P.errosSistema, o.errosSistema);
   trocarLista(P.interessados, o.interessados);
   trocarLista(P.acessosDemo, o.acessosDemo);
+  trocarLista(D.anuncios, o.anuncios);
   Object.assign(ctx, { modo: "demo", imobId: "", userId: "", papel: null, mercado: null, ranking: null });
 }
 
@@ -350,7 +354,7 @@ export async function carregarReal(conta: ContaDados) {
 
   const imob = conta.imobId;
 
-  const [imobRow, membros, convites, parceiros, leads, proprietarios, imoveis, captacoes, transacoes, detalhes, participantes, fechamentos, compromissos, trilhas, aulas, progresso, chamados, logo, pedidos] =
+  const [imobRow, membros, convites, parceiros, leads, proprietarios, imoveis, captacoes, transacoes, detalhes, participantes, fechamentos, compromissos, trilhas, aulas, progresso, chamados, logo, anunciosRows, fotosRows, pedidos] =
     await Promise.all([
       supabase.from("imobiliarias").select("*").eq("id", imob).single(),
       supabase.from("membros").select("*").eq("imobiliaria_id", imob),
@@ -372,6 +376,8 @@ export async function carregarReal(conta: ContaDados) {
       supabase.from("progresso_aulas").select("*").eq("imobiliaria_id", imob),
       supabase.from("chamados").select("*").eq("imobiliaria_id", imob).order("criado_em", { ascending: false }),
       supabase.from("marca_logo").select("*").eq("imobiliaria_id", imob).maybeSingle(),
+      supabase.from("anuncios").select("*").eq("imobiliaria_id", imob),
+      supabase.from("anuncio_fotos").select("*").eq("imobiliaria_id", imob).order("ordem"),
       papel === "admin" ? supabase.from("pedidos_upgrade").select("*").eq("imobiliaria_id", imob).order("criado_em", { ascending: false }) : null,
     ]);
   if (imobRow.error) throw imobRow.error;
@@ -549,6 +555,33 @@ export async function carregarReal(conta: ContaDados) {
       : null,
   });
   trocarLista(D.chamados, (chamados.data ?? []).map(paraChamado));
+  const fotosDe = new Map<string, FotoAnuncio[]>();
+  (fotosRows.data ?? []).forEach((f) => {
+    const l = fotosDe.get(f.captacao_id) ?? [];
+    l.push({ id: f.id, url: f.url, chave: f.chave, ordem: f.ordem });
+    fotosDe.set(f.captacao_id, l);
+  });
+  trocarLista(
+    D.anuncios,
+    (anunciosRows.data ?? []).map(
+      (a): Anuncio => ({
+        captacaoId: a.captacao_id,
+        titulo: a.titulo,
+        descricao: a.descricao,
+        quartos: u(a.quartos),
+        suites: u(a.suites),
+        banheiros: u(a.banheiros),
+        vagas: u(a.vagas),
+        condominio: a.condominio === null ? undefined : Number(a.condominio),
+        iptu: a.iptu === null ? undefined : Number(a.iptu),
+        caracteristicas: a.caracteristicas,
+        publicado: a.publicado,
+        publicadoEm: u(a.publicado_em),
+        slug: u(a.slug),
+        fotos: fotosDe.get(a.captacao_id) ?? [],
+      }),
+    ),
+  );
   trocarLista(P.chamadosOutras, []);
   trocarLista(P.clientes, []);
   trocarLista(P.pedidosUpgrade, (pedidos?.data ?? []).map(paraPedido));

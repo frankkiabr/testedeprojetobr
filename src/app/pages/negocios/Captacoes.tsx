@@ -1,4 +1,6 @@
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
+import { AnuncioEditor } from "./Anuncio";
+import { anuncios } from "@/data/demo";
 import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
@@ -90,7 +92,7 @@ function CaptacaoCard({ c, showCorretor, onOpen, i }: { c: Captacao; showCorreto
 
 function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: () => void }) {
   const { toggleMarketing, toggleCaptacao } = useStore();
-  const [aba, setAba] = useState<"captacao" | "marketing">("captacao");
+  const [aba, setAba] = useState<"captacao" | "marketing" | "anuncio">("captacao");
   const { isAdmin } = useScope();
   const [report, setReport] = useState(false);
   const [registrar, setRegistrar] = useState(false);
@@ -201,9 +203,12 @@ function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: () => voi
                 options={[
                   { value: "captacao", label: `Captação · ${doneCaptacao(c)}/${CHECKLIST_CAPTACAO.length}` },
                   { value: "marketing", label: `Marketing · ${feitos}/${CHECKLIST_MARKETING.length}` },
+                  { value: "anuncio", label: anuncios.find((x) => x.captacaoId === c.id)?.publicado ? "Anúncio · no ar" : "Anúncio" },
                 ]}
               />
-              {aba === "captacao" ? (
+              {aba === "anuncio" ? (
+                <AnuncioEditor captacao={c} />
+              ) : aba === "captacao" ? (
                 <div className="mt-4">
                   <p className="font-display text-lg font-semibold">Checklist de captação</p>
                   <p className="mb-3 text-xs text-muted">Controle interno: o que falta para o imóvel estar documentado e pronto para negociar.</p>

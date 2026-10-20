@@ -351,3 +351,26 @@ export type AcessoDemo = {
   ultimoUso?: string;
   criadoEm: string;
 };
+
+// ---------- Portal: anúncio de cada captação ----------
+
+export type FotoAnuncio = { id: string; url: string; chave: string; ordem: number };
+
+/** Anúncio público de uma captação (fase 1: edição no painel; as páginas públicas vêm na fase 2). */
+export type Anuncio = {
+  captacaoId: string;
+  titulo: string;
+  descricao: string;
+  quartos?: number;
+  suites?: number;
+  banheiros?: number;
+  vagas?: number;
+  condominio?: number;
+  iptu?: number;
+  caracteristicas: string[];
+  publicado: boolean;
+  publicadoEm?: string;
+  /** Endereço da página pública: frankkia.com/imovel/<slug> */
+  slug?: string;
+  fotos: FotoAnuncio[];
+};

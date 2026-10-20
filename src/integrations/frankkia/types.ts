@@ -61,6 +61,129 @@ export type Database = {
           },
         ]
       }
+      anuncio_fotos: {
+        Row: {
+          altura: number | null
+          captacao_id: string
+          chave: string
+          criado_em: string
+          id: string
+          imobiliaria_id: string
+          largura: number | null
+          ordem: number
+          tamanho_bytes: number | null
+          url: string
+        }
+        Insert: {
+          altura?: number | null
+          captacao_id: string
+          chave: string
+          criado_em?: string
+          id?: string
+          imobiliaria_id: string
+          largura?: number | null
+          ordem?: number
+          tamanho_bytes?: number | null
+          url: string
+        }
+        Update: {
+          altura?: number | null
+          captacao_id?: string
+          chave?: string
+          criado_em?: string
+          id?: string
+          imobiliaria_id?: string
+          largura?: number | null
+          ordem?: number
+          tamanho_bytes?: number | null
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "anuncio_fotos_captacao_id_fkey"
+            columns: ["captacao_id"]
+            isOneToOne: false
+            referencedRelation: "anuncios"
+            referencedColumns: ["captacao_id"]
+          },
+          {
+            foreignKeyName: "anuncio_fotos_imobiliaria_id_fkey"
+            columns: ["imobiliaria_id"]
+            isOneToOne: false
+            referencedRelation: "imobiliarias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      anuncios: {
+        Row: {
+          atualizado_em: string
+          banheiros: number | null
+          captacao_id: string
+          caracteristicas: string[]
+          condominio: number | null
+          descricao: string
+          imobiliaria_id: string
+          iptu: number | null
+          publicado: boolean
+          publicado_em: string | null
+          quartos: number | null
+          slug: string | null
+          suites: number | null
+          titulo: string
+          vagas: number | null
+        }
+        Insert: {
+          atualizado_em?: string
+          banheiros?: number | null
+          captacao_id: string
+          caracteristicas?: string[]
+          condominio?: number | null
+          descricao?: string
+          imobiliaria_id: string
+          iptu?: number | null
+          publicado?: boolean
+          publicado_em?: string | null
+          quartos?: number | null
+          slug?: string | null
+          suites?: number | null
+          titulo?: string
+          vagas?: number | null
+        }
+        Update: {
+          atualizado_em?: string
+          banheiros?: number | null
+          captacao_id?: string
+          caracteristicas?: string[]
+          condominio?: number | null
+          descricao?: string
+          imobiliaria_id?: string
+          iptu?: number | null
+          publicado?: boolean
+          publicado_em?: string | null
+          quartos?: number | null
+          slug?: string | null
+          suites?: number | null
+          titulo?: string
+          vagas?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "anuncios_captacao_id_fkey"
+            columns: ["captacao_id"]
+            isOneToOne: true
+            referencedRelation: "captacoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "anuncios_imobiliaria_id_fkey"
+            columns: ["imobiliaria_id"]
+            isOneToOne: false
+            referencedRelation: "imobiliarias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       aulas: {
         Row: {
           arquivo_nome: string
@@ -1265,6 +1388,11 @@ export type Database = {
       }
       pasta_imobiliaria: { Args: { p_nome: string }; Returns: string }
       pertence: { Args: { p_imob: string }; Returns: boolean }
+      pode_editar_captacao: { Args: { p_captacao: string }; Returns: boolean }
+      publicar_anuncio: {
+        Args: { p_captacao: string; p_publicar: boolean }
+        Returns: string
+      }
       ranking_mes: {
         Args: { p_imob: string; p_mes: string }
         Returns: {
@@ -1294,6 +1422,7 @@ export type Database = {
         }
         Returns: string
       }
+      slugificar: { Args: { p: string }; Returns: string }
       uso_supabase: {
         Args: never
         Returns: {
