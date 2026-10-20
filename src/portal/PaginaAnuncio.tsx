@@ -1,6 +1,16 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Bath, BedDouble, Building2, Car, Check, MapPin, Ruler, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  Bath,
+  BedDouble,
+  Building2,
+  Car,
+  Check,
+  MapPin,
+  Ruler,
+  Sparkles,
+} from "lucide-react";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 import { enviarContato, type AnuncioPublico } from "./api";
 import { Galeria } from "./Galeria";
@@ -10,6 +20,7 @@ import {
   brl,
   creciTexto,
   FotoPessoa,
+  GradeImoveis,
   linkWhats,
   numeroWhats,
   PortalShell,
@@ -162,6 +173,35 @@ export default function PaginaAnuncio({ a, url }: { a: AnuncioPublico; url: stri
               </div>
             </Link>
 
+            {/* Corretor de imobiliária: mostra a imobiliária e leva aos outros imóveis dela */}
+            {!a.imobiliaria.solo && a.imobiliaria.slug && (
+              <Link
+                to="/imobiliaria/$slug"
+                params={{ slug: a.imobiliaria.slug }}
+                preload="intent"
+                className="group flex items-center gap-3 rounded-2xl bg-canvas p-3 transition hover:bg-canvas-deep"
+              >
+                {a.imobiliaria.logo ? (
+                  <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-bg p-1.5">
+                    <img
+                      src={a.imobiliaria.logo}
+                      alt={a.imobiliaria.nome}
+                      className="max-h-full max-w-full object-contain"
+                    />
+                  </span>
+                ) : (
+                  <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-accent-soft font-display font-semibold text-accent">
+                    {a.imobiliaria.nome.slice(0, 1).toUpperCase()}
+                  </span>
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold">{a.imobiliaria.nome}</p>
+                  <p className="text-xs text-muted">Ver todos os imóveis</p>
+                </div>
+                <ArrowRight className="size-4 shrink-0 text-subtle transition group-hover:translate-x-0.5 group-hover:text-ink" />
+              </Link>
+            )}
+
             {whats && (
               <a
                 href={linkWhats(whats, msg)}
@@ -182,6 +222,40 @@ export default function PaginaAnuncio({ a, url }: { a: AnuncioPublico; url: stri
           </Surge>
         </aside>
       </div>
+
+      {!!a.relacionados?.length && (
+        <section className="mt-16">
+          <Surge className="mb-5 flex flex-wrap items-end justify-between gap-3">
+            <h2 className="font-display text-xl font-semibold">
+              {a.imobiliaria.solo
+                ? `Outros imóveis de ${a.corretor.nome.split(" ")[0]}`
+                : `Outros imóveis da ${a.imobiliaria.nome}`}
+            </h2>
+            {a.imobiliaria.solo
+              ? a.corretor.slug && (
+                  <Link
+                    to="/corretor/$slug"
+                    params={{ slug: a.corretor.slug }}
+                    preload="intent"
+                    className="text-sm font-semibold text-accent"
+                  >
+                    Ver todos
+                  </Link>
+                )
+              : a.imobiliaria.slug && (
+                  <Link
+                    to="/imobiliaria/$slug"
+                    params={{ slug: a.imobiliaria.slug }}
+                    preload="intent"
+                    className="text-sm font-semibold text-accent"
+                  >
+                    Ver todos
+                  </Link>
+                )}
+          </Surge>
+          <GradeImoveis anuncios={a.relacionados} />
+        </section>
+      )}
     </PortalShell>
   );
 }

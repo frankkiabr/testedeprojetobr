@@ -69,6 +69,8 @@ export type AnuncioPublico = {
   fotos: { url: string; largura: number | null; altura: number | null }[];
   corretor: CorretorResumo & { telefone: string | null };
   imobiliaria: ImobResumo & { cidade: string | null; telefone: string | null };
+  /** Outros imóveis da mesma imobiliária (preenchido pela página). */
+  relacionados?: CartaoAnuncio[];
 };
 
 export type CorretorPublico = CorretorResumo & {
@@ -95,6 +97,21 @@ export const buscarCorretor = (slug: string) =>
   rpc<CorretorPublico>("portal_corretor", { p_slug: slug });
 export const buscarImobiliaria = (slug: string) =>
   rpc<ImobiliariaPublica>("portal_imobiliaria", { p_slug: slug });
+
+/** Seção "Quem já usa" da home: imobiliárias e corretores Solo com anúncio publicado. */
+export type ItemVitrine = {
+  tipo: "imobiliaria" | "corretor";
+  nome: string;
+  slug: string;
+  imagem: string | null;
+  cidade: string | null;
+  total: number;
+};
+export const buscarVitrine = () => rpc<ItemVitrine[]>("portal_vitrine", {});
+
+/** Outros imóveis da mesma imobiliária (abaixo do mapa no anúncio). */
+export const buscarRelacionados = (slug: string) =>
+  rpc<CartaoAnuncio[]>("portal_relacionados", { p_slug: slug });
 
 /** Formulário do anúncio → vira lead do corretor responsável. Devolve o erro, ou null. */
 export async function enviarContato(
