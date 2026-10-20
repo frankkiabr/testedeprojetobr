@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Bath, BedDouble, Building2, Car, Check, MapPin, Ruler, Sparkles } from "lucide-react";
-import { Carrossel } from "@/components/Carrossel";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 import { enviarContato, type AnuncioPublico } from "./api";
+import { Galeria } from "./Galeria";
 import { area, brl, creciTexto, FotoPessoa, linkWhats, numeroWhats, PortalShell, preco, telefoneBonito } from "./ui";
 
 const rotuloUnidade = (categoria: string) => (categoria === "Sala comercial" ? "Sala" : "Apto");
@@ -24,9 +24,7 @@ export default function PaginaAnuncio({ a, url }: { a: AnuncioPublico; url: stri
 
   return (
     <PortalShell imob={a.imobiliaria}>
-      <div className="overflow-hidden rounded-3xl">
-        <Carrossel fotos={a.fotos.map((f) => f.url)} className="aspect-[4/3] sm:aspect-[16/9]" />
-      </div>
+      <Galeria fotos={a.fotos.map((f) => f.url)} titulo={a.titulo} />
 
       <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_22rem]">
         <div className="min-w-0 space-y-8">
