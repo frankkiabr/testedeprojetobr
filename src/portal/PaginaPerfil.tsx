@@ -88,8 +88,16 @@ export function PaginaImobiliaria({ i }: { i: ImobiliariaPublica }) {
         y={16}
         className="flex flex-col gap-5 rounded-3xl bg-canvas p-6 sm:flex-row sm:items-center sm:p-8"
       >
-        {i.logo && (
-          <img src={i.logo} alt={i.nome} className="h-16 w-auto max-w-[12rem] object-contain" />
+        {/* Solo: a "imobiliária" é o próprio corretor, então aparece a foto dele (ou as iniciais). A logo fica no menu do topo. */}
+        {i.solo ? (
+          <FotoPessoa
+            p={{ nome: i.corretores[0]?.nome ?? i.nome, foto: i.corretores[0]?.foto ?? null }}
+            className="size-20 text-2xl"
+          />
+        ) : (
+          i.logo && (
+            <img src={i.logo} alt={i.nome} className="h-16 w-auto max-w-[12rem] object-contain" />
+          )
         )}
         <div className="min-w-0 flex-1">
           <h1 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
