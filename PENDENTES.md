@@ -1,5 +1,9 @@
 # Pendências da Frankkia
 
+## Revisão de segurança
+
+**Falta:** fazer a revisão de segurança (/security-review) junto com o Claude — combinado para depois (semana de 26/10/2026).
+
 ## Termos de Uso e Política de Privacidade
 
 **Falta:** completar a razão social, o CNPJ e o endereço da empresa em `src/pages/Legal.tsx` (páginas `/termos` e `/privacidade`)
