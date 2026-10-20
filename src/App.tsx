@@ -10,7 +10,7 @@ import Performance from "@/app/pages/Performance";
 import NegociosLayout from "@/app/pages/negocios/Layout";
 import Leads from "@/app/pages/negocios/Leads";
 import Captacoes from "@/app/pages/negocios/Captacoes";
-import Imoveis from "@/app/pages/negocios/Imoveis";
+
 import Proprietarios from "@/app/pages/negocios/Proprietarios";
 import Transacoes from "@/app/pages/negocios/Transacoes";
 import Parceiros from "@/app/pages/negocios/Parceiros";
@@ -71,7 +71,8 @@ export default function App() {
                   <Route index element={<Navigate to="leads" replace />} />
                   <Route path="leads" element={<Leads />} />
                   <Route path="captacoes" element={<Captacoes />} />
-                  <Route path="imoveis" element={<Imoveis />} />
+                  {/* Imóveis agora ficam dentro de Captações (cadastro único) */}
+                  <Route path="imoveis" element={<Navigate to="/app/negocios/captacoes" replace />} />
                   <Route path="proprietarios" element={<Proprietarios />} />
                   <Route path="transacoes" element={<Transacoes />} />
                   <Route

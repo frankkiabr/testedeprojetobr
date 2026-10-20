@@ -1,7 +1,7 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { motion } from "framer-motion";
-import { BadgeDollarSign, Building2, ClipboardList, Handshake, UserRound, Users } from "lucide-react";
-import { imoveis, parceiros } from "@/data/demo";
+import { BadgeDollarSign, ClipboardList, Handshake, UserRound, Users } from "lucide-react";
+import { parceiros } from "@/data/demo";
 import { captacoesOf, fechamentosPendentes, leadsOf, proprietariosOf, transacoesOf } from "@/data/queries";
 import { useStore } from "@/data/store";
 import { useScope } from "../../session";
@@ -15,7 +15,6 @@ export default function NegociosLayout() {
   const tabs = [
     { to: "leads", label: "Leads", icon: Users, count: leadsOf(scope).length },
     { to: "captacoes", label: "Captações", icon: ClipboardList, count: captacoesOf(scope).filter((c) => c.status === "ativa").length },
-    { to: "imoveis", label: "Imóveis", icon: Building2, count: imoveis.length },
     { to: "proprietarios", label: "Proprietários", icon: UserRound, count: proprietariosOf(scope).length },
     { to: "transacoes", label: "Vendas e locações", icon: BadgeDollarSign, count: transacoesOf(scope).length, alert: pendentes },
     ...(isAdmin ? [{ to: "parceiros", label: "Parceiros", icon: Handshake, count: parceiros.length }] : []),

@@ -938,6 +938,33 @@ function createActions(bump: () => void, toast: (text: string) => void) {
 
     // ---------- Mapa ----------
 
+    /** Edita o endereço e o edifício (vale para todas as captações deste endereço). */
+    updateImovel(id: string, patch: Pick<Imovel, "categoria" | "nome" | "endereco" | "cep" | "lat" | "lng">) {
+      const im = imoveis.find((x) => x.id === id);
+      if (!im) return;
+      Object.assign(im, patch);
+      const e = im.endereco;
+      gravar(() =>
+        supabase
+          .from("imoveis")
+          .update({
+            categoria: im.categoria,
+            nome: im.nome ?? null,
+            logradouro: e.logradouro,
+            numero: e.numero,
+            bairro: e.bairro,
+            cidade: e.cidade,
+            uf: e.uf,
+            cep: im.cep ?? null,
+            lat: im.lat ?? null,
+            lng: im.lng ?? null,
+          })
+          .eq("id", id),
+      );
+      bump();
+      toast("Endereço atualizado.");
+    },
+
     /** Guarda a posição do imóvel no mapa (depois de localizar o endereço ou arrastar o marcador). */
     setLocalImovel(imovelId: string, lat: number, lng: number) {
       const im = imoveis.find((x) => x.id === imovelId);

@@ -33,7 +33,7 @@ import {
   userById,
 } from "@/data/queries";
 import { useStore } from "@/data/store";
-import type { Captacao, CategoriaImovel, EtapaLead, FechamentoInformado, Finalidade, Participante } from "@/data/types";
+import type { Captacao, CategoriaImovel, EtapaLead, FechamentoInformado, Finalidade, Participante, Imovel } from "@/data/types";
 import { brl } from "@/lib/format";
 import { useScope } from "../../session";
 import { btn, DateInput, Field, inputCls, Modal, normalizePhone, SelectField, waLink } from "../../forms";
@@ -253,21 +253,27 @@ export function ProprietarioFormModal({ open, onClose }: { open: boolean; onClos
 
 // ---------- Novo imóvel (lugar físico) ----------
 
+/** Endereço e edifício do imóvel: cadastra um novo ou, com `imovel`, edita o existente. */
 export function ImovelFormModal({
   open,
   onClose,
   categoriaInicial,
   onCreated,
+  imovel,
 }: {
   open: boolean;
   onClose: () => void;
   categoriaInicial?: CategoriaImovel;
   onCreated?: (id: string) => void;
+  imovel?: Imovel;
 }) {
-  const { addImovel } = useStore();
+  const { addImovel, updateImovel } = useStore();
   const cidadePadrao = imobiliaria.cidade.split(",")[0]?.trim() ?? "";
   const ufPadrao = imobiliaria.cidade.split(",")[1]?.trim() ?? "SP";
-  const empty = () => ({ categoria: categoriaInicial ?? ("Apartamento" as CategoriaImovel), nome: "", cep: "", logradouro: "", numero: "", bairro: "", cidade: cidadePadrao, uf: ufPadrao });
+  const empty = () =>
+    imovel
+      ? { categoria: imovel.categoria, nome: imovel.nome ?? "", cep: imovel.cep ?? "", ...imovel.endereco }
+      : { categoria: categoriaInicial ?? ("Apartamento" as CategoriaImovel), nome: "", cep: "", logradouro: "", numero: "", bairro: "", cidade: cidadePadrao, uf: ufPadrao };
   const [f, setF] = useState(empty);
   const [ponto, setPonto] = useState<Ponto | null>(null);
   const [buscando, setBuscando] = useState<"" | "cep" | "mapa">("");
@@ -275,7 +281,7 @@ export function ImovelFormModal({
   useEffect(() => {
     if (open) {
       setF(empty());
-      setPonto(null);
+      setPonto(imovel?.lat !== undefined && imovel?.lng !== undefined ? { lat: imovel.lat, lng: imovel.lng } : null);
       setAvisoMapa("");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -295,6 +301,12 @@ export function ImovelFormModal({
     } else setAvisoMapa("CEP não encontrado. Preencha o endereço à mão.");
   };
 
+  // Mudou a rua ou o número: a posição antiga no mapa deixa de valer
+  const mudarEndereco = (patch: Partial<typeof f>) => {
+    setF((x) => ({ ...x, ...patch }));
+    if (patch.logradouro !== undefined || patch.numero !== undefined || patch.cidade !== undefined) setPonto(null);
+  };
+
   const localizarNoMapa = async () => {
     setAvisoMapa("");
     setBuscando("mapa");
@@ -312,8 +324,12 @@ export function ImovelFormModal({
     <Modal
       open={open}
       onClose={onClose}
-      title="Novo imóvel"
-      subtitle="O imóvel é o lugar físico. Depois ele pode ser usado em várias captações."
+      title={imovel ? "Editar endereço" : "Novo imóvel"}
+      subtitle={
+        imovel
+          ? "Vale para todas as captações deste endereço (por exemplo, outros apartamentos do mesmo prédio)."
+          : "O imóvel é o lugar físico. Depois ele pode ser usado em várias captações."
+      }
       footer={
         <>
           <button onClick={onClose} className={btn.outline}>
@@ -323,12 +339,18 @@ export function ImovelFormModal({
             disabled={!ok}
             className={btn.primary}
             onClick={() => {
-              const im = addImovel({ categoria: f.categoria, nome: f.nome.trim() || undefined, endereco, cep: f.cep.length === 8 ? f.cep : undefined, lat: ponto?.lat, lng: ponto?.lng });
+              const dados = { categoria: f.categoria, nome: f.nome.trim() || undefined, endereco, cep: f.cep.length === 8 ? f.cep : undefined, lat: ponto?.lat, lng: ponto?.lng };
+              if (imovel) {
+                updateImovel(imovel.id, dados);
+                onClose();
+                return;
+              }
+              const im = addImovel(dados);
               onClose();
               onCreated?.(im.id);
             }}
           >
-            Cadastrar imóvel
+            {imovel ? "Salvar endereço" : "Cadastrar imóvel"}
           </button>
         </>
       }
@@ -355,10 +377,10 @@ export function ImovelFormModal({
         </Field>
         <div className="hidden sm:col-span-4 sm:block" />
         <Field label="Logradouro (tipo e nome)" className="sm:col-span-4">
-          <input className={inputCls} value={f.logradouro} onChange={(e) => setF({ ...f, logradouro: e.target.value })} placeholder="Ex.: Av. Senador Lemos" />
+          <input className={inputCls} value={f.logradouro} onChange={(e) => mudarEndereco({ logradouro: e.target.value })} placeholder="Ex.: Av. Senador Lemos" />
         </Field>
         <Field label="Número" className="sm:col-span-2">
-          <input className={inputCls} value={f.numero} onChange={(e) => setF({ ...f, numero: e.target.value })} placeholder="78" />
+          <input className={inputCls} value={f.numero} onChange={(e) => mudarEndereco({ numero: e.target.value })} placeholder="78" />
         </Field>
         <Field label="Bairro" className="sm:col-span-6">
           <input list="bairros-imovel" className={inputCls} value={f.bairro} onChange={(e) => setF({ ...f, bairro: e.target.value })} placeholder="Ex.: Umarizal" />
@@ -369,7 +391,7 @@ export function ImovelFormModal({
           </datalist>
         </Field>
         <Field label="Cidade" className="sm:col-span-4">
-          <input className={inputCls} value={f.cidade} onChange={(e) => setF({ ...f, cidade: e.target.value })} placeholder="Ex.: Belém" />
+          <input className={inputCls} value={f.cidade} onChange={(e) => mudarEndereco({ cidade: e.target.value })} placeholder="Ex.: Belém" />
         </Field>
         <Field label="Estado" className="sm:col-span-2">
           <SelectField value={f.uf} onChange={(v) => setF({ ...f, uf: v })} options={UFS.map((u) => ({ value: u, label: u }))} />

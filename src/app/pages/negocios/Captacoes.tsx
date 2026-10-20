@@ -4,7 +4,7 @@ import { Carrossel } from "@/components/Carrossel";
 import { LocalImovel } from "./LocalImovel";
 import { anuncios } from "@/data/demo";
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { PartyPopper, BadgeDollarSign, FileText, Handshake, MapPin, Plus, Ruler, UserRound, Users } from "lucide-react";
 import { CHECKLIST_CAPTACAO, CHECKLIST_MARKETING } from "@/data/demo";
@@ -14,6 +14,7 @@ import {
   captacaoCategoria,
   captacaoTitulo,
   captacoesOf,
+  captacoesDoImovel,
   corretoresAtivos,
   done,
   doneCaptacao,
@@ -37,6 +38,7 @@ import {
   CaptacaoFormModal,
   FinalidadeBadge,
   ImovelCover,
+  ImovelFormModal,
   InformarFechamentoModal,
   ReportModal,
   StatusBadge,
@@ -107,6 +109,69 @@ function comodos(captacaoId: string) {
 
 type AbaCaptacao = "imovel" | "captacao" | "marketing" | "anuncio";
 
+/** Outras captações no mesmo endereço (ex.: outros apartamentos do prédio) e os negócios já fechados ali. */
+function NesteEndereco({ imovelId, atualId, onAbrir }: { imovelId: string; atualId: string; onAbrir: (id: string) => void }) {
+  const { isAdmin, scope } = useScope();
+  const outras = captacoesDoImovel(imovelId).filter((x) => x.id !== atualId && (isAdmin || x.corretorId === scope.corretorId));
+  const fechados = transacoes
+    .filter((t) => captacaoById(t.captacaoId)?.imovelId === imovelId)
+    .sort((a, b) => b.data.localeCompare(a.data));
+  if (!outras.length && !fechados.length) return null;
+  return (
+    <div className="space-y-4">
+      {outras.length > 0 && (
+        <div>
+          <p className="mb-2 text-sm font-semibold">Outras captações neste endereço ({outras.length})</p>
+          <ul className="space-y-2">
+            {outras.map((x) => (
+              <li key={x.id}>
+                <button
+                  onClick={() => onAbrir(x.id)}
+                  className="flex w-full items-center gap-3 rounded-2xl border border-line p-3 text-left transition hover:border-line-strong hover:bg-canvas"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold">{captacaoTitulo(x)}</p>
+                    <p className="text-xs text-muted">
+                      {valorLabel(x.finalidade, x.valor)} · {x.areaM2} m²{x.codigo ? ` · ${x.codigo}` : ""}
+                    </p>
+                  </div>
+                  <StatusBadge status={x.status} />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {fechados.length > 0 && (
+        <div>
+          <p className="mb-2 text-sm font-semibold">Negócios fechados neste endereço</p>
+          <ul className="divide-y divide-line rounded-2xl border border-line">
+            {fechados.map((t) => {
+              const x = captacaoById(t.captacaoId)!;
+              return (
+                <li key={t.id} className="flex items-center justify-between gap-3 px-4 py-3 text-sm">
+                  <div>
+                    <p className="font-medium">
+                      {captacaoTitulo(x)} · {x.areaM2} m²
+                    </p>
+                    <p className="text-xs text-muted">
+                      {t.tipo === "venda" ? "Vendido" : "Alugado"} em {new Date(t.data).toLocaleDateString("pt-BR")}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold">{valorLabel(t.tipo, t.valor)}</p>
+                    <p className="text-xs text-muted">{brl(t.valor / x.areaM2)}/m²</p>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /** Editar os dados principais do imóvel captado: valor, área, unidade e cômodos. */
 function EditarDados({ c, categoria, onFim }: { c: Captacao; categoria: string; onFim: () => void }) {
   const { updateCaptacao, salvarAnuncio } = useStore();
@@ -175,6 +240,8 @@ function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: () => voi
   const [registrar, setRegistrar] = useState(false);
   const [informar, setInformar] = useState(false);
   const [editando, setEditando] = useState(false);
+  const [editarEndereco, setEditarEndereco] = useState(false);
+  const navigate = useNavigate();
   useEffect(() => {
     setAba("imovel");
     setEditando(false);
@@ -331,15 +398,23 @@ function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: () => voi
                 )}
 
                 <div className="space-y-2">
-                  <p className="flex items-start gap-2 text-sm text-muted">
-                    <MapPin className="mt-0.5 size-4 shrink-0 text-accent" />
-                    <span>
-                      {im.nome && <span className="font-semibold text-ink">{im.nome} · </span>}
-                      {enderecoCompleto(im.endereco)}
-                    </span>
-                  </p>
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="flex items-start gap-2 text-sm text-muted">
+                      <MapPin className="mt-0.5 size-4 shrink-0 text-accent" />
+                      <span>
+                        {im.nome && <span className="font-semibold text-ink">{im.nome} · </span>}
+                        {enderecoCompleto(im.endereco)}
+                      </span>
+                    </p>
+                    <button onClick={() => setEditarEndereco(true)} className="shrink-0 text-sm font-semibold text-accent">
+                      Editar endereço
+                    </button>
+                  </div>
                   <LocalImovel im={im} className="h-48" />
                 </div>
+
+                {/* Mesmo endereço: outras unidades e o histórico de negócios (o que antes ficava na aba Imóveis) */}
+                <NesteEndereco imovelId={im.id} atualId={c.id} onAbrir={(id) => navigate(`/app/negocios/captacoes?captacao=${id}`)} />
               </div>
             )}
 
@@ -379,6 +454,7 @@ function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: () => voi
         )}
       </Drawer>
       {c && <ReportModal captacao={c} open={report} onClose={() => setReport(false)} />}
+      {im && <ImovelFormModal open={editarEndereco} onClose={() => setEditarEndereco(false)} imovel={im} />}
       {c && <TransacaoFormModal open={registrar} onClose={() => setRegistrar(false)} captacaoId={c.id} />}
       {c && <InformarFechamentoModal open={informar} onClose={() => setInformar(false)} captacaoId={c.id} />}
     </>

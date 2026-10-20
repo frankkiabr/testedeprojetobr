@@ -260,7 +260,7 @@ export const errosSistema: ErroSistema[] = [
 export function nomeDaTela(path: string) {
   const map: [string, string][] = [
     ["/app/negocios/leads", "Negócios › Leads"],
-    ["/app/negocios/imoveis", "Negócios › Imóveis"],
+    ["/app/negocios/captacoes", "Negócios › Captações"],
     ["/app/negocios/proprietarios", "Negócios › Proprietários"],
     ["/app/negocios/vendas", "Negócios › Vendas"],
     ["/app/visao-geral", "Visão geral"],
