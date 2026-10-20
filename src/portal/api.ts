@@ -29,7 +29,13 @@ export type CartaoAnuncio = {
   capa: string | null;
 };
 
-export type CorretorResumo = { nome: string; slug: string | null; foto: string | null; creci: string | null; creci_uf: string | null };
+export type CorretorResumo = {
+  nome: string;
+  slug: string | null;
+  foto: string | null;
+  creci: string | null;
+  creci_uf: string | null;
+};
 export type ImobResumo = { nome: string; slug: string | null; logo: string | null; solo: boolean };
 
 export type AnuncioPublico = {
@@ -65,7 +71,11 @@ export type AnuncioPublico = {
   imobiliaria: ImobResumo & { cidade: string | null; telefone: string | null };
 };
 
-export type CorretorPublico = CorretorResumo & { telefone: string | null; imobiliaria: ImobResumo; anuncios: CartaoAnuncio[] };
+export type CorretorPublico = CorretorResumo & {
+  telefone: string | null;
+  imobiliaria: ImobResumo;
+  anuncios: CartaoAnuncio[];
+};
 export type ImobiliariaPublica = ImobResumo & {
   cidade: string | null;
   telefone: string | null;
@@ -79,22 +89,33 @@ async function rpc<T>(fn: string, args: Record<string, unknown>): Promise<T | nu
   return (data as T | null) ?? null;
 }
 
-export const buscarAnuncio = (slug: string) => rpc<AnuncioPublico>("portal_anuncio", { p_slug: slug });
-export const buscarCorretor = (slug: string) => rpc<CorretorPublico>("portal_corretor", { p_slug: slug });
-export const buscarImobiliaria = (slug: string) => rpc<ImobiliariaPublica>("portal_imobiliaria", { p_slug: slug });
+export const buscarAnuncio = (slug: string) =>
+  rpc<AnuncioPublico>("portal_anuncio", { p_slug: slug });
+export const buscarCorretor = (slug: string) =>
+  rpc<CorretorPublico>("portal_corretor", { p_slug: slug });
+export const buscarImobiliaria = (slug: string) =>
+  rpc<ImobiliariaPublica>("portal_imobiliaria", { p_slug: slug });
 
 /** Formulário do anúncio → vira lead do corretor responsável. Devolve o erro, ou null. */
-export async function enviarContato(slug: string, d: { nome: string; telefone: string; email: string; mensagem: string }): Promise<string | null> {
-  const { error } = await publico.rpc("portal_contato" as never, {
-    p_slug: slug,
-    p_nome: d.nome,
-    p_telefone: d.telefone,
-    p_email: d.email,
-    p_mensagem: d.mensagem,
-  } as never);
+export async function enviarContato(
+  slug: string,
+  d: { nome: string; telefone: string; email: string; mensagem: string },
+): Promise<string | null> {
+  const { error } = await publico.rpc(
+    "portal_contato" as never,
+    {
+      p_slug: slug,
+      p_nome: d.nome,
+      p_telefone: d.telefone,
+      p_email: d.email,
+      p_mensagem: d.mensagem,
+    } as never,
+  );
   if (!error) return null;
-  if (/MUITOS_ENVIOS/.test(error.message)) return "Recebemos vários contatos seguidos. Aguarde um pouco e tente de novo.";
-  if (/DADOS_INVALIDOS/.test(error.message)) return "Confira seu nome, o WhatsApp com DDD e o e-mail.";
+  if (/MUITOS_ENVIOS/.test(error.message))
+    return "Recebemos vários contatos seguidos. Aguarde um pouco e tente de novo.";
+  if (/DADOS_INVALIDOS/.test(error.message))
+    return "Confira seu nome, o WhatsApp com DDD e o e-mail.";
   if (/ANUNCIO_INDISPONIVEL/.test(error.message)) return "Este imóvel não está mais disponível.";
   return "Não foi possível enviar agora. Tente de novo ou chame no WhatsApp.";
 }

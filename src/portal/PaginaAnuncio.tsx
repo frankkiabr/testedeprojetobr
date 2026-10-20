@@ -1,9 +1,21 @@
 import { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { Bath, BedDouble, Building2, Car, Check, MapPin, Ruler, Sparkles } from "lucide-react";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 import { enviarContato, type AnuncioPublico } from "./api";
 import { Galeria } from "./Galeria";
-import { area, brl, creciTexto, FotoPessoa, linkWhats, numeroWhats, PortalShell, preco, telefoneBonito } from "./ui";
+import { Surge } from "./anim";
+import {
+  area,
+  brl,
+  creciTexto,
+  FotoPessoa,
+  linkWhats,
+  numeroWhats,
+  PortalShell,
+  preco,
+  telefoneBonito,
+} from "./ui";
 
 const rotuloUnidade = (categoria: string) => (categoria === "Sala comercial" ? "Sala" : "Apto");
 
@@ -17,26 +29,42 @@ export default function PaginaAnuncio({ a, url }: { a: AnuncioPublico; url: stri
   const msg = `Olá! Tenho interesse no imóvel ${a.codigo} (${a.titulo}). ${url}`;
   const itens = [
     { icon: Ruler, texto: area(a.area) },
-    a.quartos ? { icon: BedDouble, texto: `${a.quartos} ${a.quartos === 1 ? "quarto" : "quartos"}${a.suites ? ` (${a.suites} ${a.suites === 1 ? "suíte" : "suítes"})` : ""}` } : null,
-    a.banheiros ? { icon: Bath, texto: `${a.banheiros} ${a.banheiros === 1 ? "banheiro" : "banheiros"}` } : null,
+    a.quartos
+      ? {
+          icon: BedDouble,
+          texto: `${a.quartos} ${a.quartos === 1 ? "quarto" : "quartos"}${a.suites ? ` (${a.suites} ${a.suites === 1 ? "suíte" : "suítes"})` : ""}`,
+        }
+      : null,
+    a.banheiros
+      ? { icon: Bath, texto: `${a.banheiros} ${a.banheiros === 1 ? "banheiro" : "banheiros"}` }
+      : null,
     a.vagas ? { icon: Car, texto: `${a.vagas} ${a.vagas === 1 ? "vaga" : "vagas"}` } : null,
   ].filter(Boolean) as { icon: typeof Ruler; texto: string }[];
 
   return (
     <PortalShell imob={a.imobiliaria}>
-      <Galeria fotos={a.fotos.map((f) => f.url)} titulo={a.titulo} />
+      <Surge y={16}>
+        <Galeria fotos={a.fotos.map((f) => f.url)} titulo={a.titulo} />
+      </Surge>
 
       <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_22rem]">
         <div className="min-w-0 space-y-8">
-          <div>
+          <Surge delay={0.1}>
             <div className="flex flex-wrap items-center gap-2 text-xs">
               <span className="rounded-full bg-accent-soft px-2.5 py-1 font-semibold text-accent">
                 {a.finalidade === "venda" ? "Venda" : "Aluguel"}
               </span>
-              <span className="rounded-full bg-canvas px-2.5 py-1 font-medium text-muted">{a.categoria}</span>
-              <span className="font-mono font-semibold tracking-wide text-subtle">Cód. {a.codigo}</span>
+              <span className="rounded-full bg-canvas px-2.5 py-1 font-medium text-muted">
+                {a.categoria}
+              </span>
+              <span className="flex items-center gap-1.5 font-medium text-muted">
+                Cód.{" "}
+                <span className="font-mono font-semibold tracking-wide text-ink">{a.codigo}</span>
+              </span>
             </div>
-            <h1 className="mt-3 font-display text-2xl font-semibold tracking-tight sm:text-3xl">{a.titulo}</h1>
+            <h1 className="mt-3 font-display text-2xl font-semibold tracking-tight sm:text-3xl">
+              {a.titulo}
+            </h1>
             <p className="mt-2 flex items-start gap-2 text-muted">
               <MapPin className="mt-0.5 size-4 shrink-0 text-accent" />
               <span>
@@ -44,26 +72,28 @@ export default function PaginaAnuncio({ a, url }: { a: AnuncioPublico; url: stri
                 {enderecoAnuncio(a)}
               </span>
             </p>
-          </div>
+          </Surge>
 
           <div className="flex flex-wrap gap-3">
-            {itens.map(({ icon: Icon, texto }) => (
-              <span key={texto} className="flex items-center gap-2 rounded-2xl border border-line px-4 py-3 text-sm font-medium">
-                <Icon className="size-4 text-accent" />
-                {texto}
-              </span>
+            {itens.map(({ icon: Icon, texto }, k) => (
+              <Surge key={texto} delay={0.15 + k * 0.06} y={16}>
+                <span className="flex items-center gap-2 rounded-2xl border border-line px-4 py-3 text-sm font-medium">
+                  <Icon className="size-4 text-accent" />
+                  {texto}
+                </span>
+              </Surge>
             ))}
           </div>
 
           {a.descricao && (
-            <section>
+            <Surge>
               <h2 className="font-display text-lg font-semibold">Sobre o imóvel</h2>
               <p className="mt-2 whitespace-pre-line leading-relaxed text-muted">{a.descricao}</p>
-            </section>
+            </Surge>
           )}
 
           {a.caracteristicas.length > 0 && (
-            <section>
+            <Surge>
               <h2 className="flex items-center gap-2 font-display text-lg font-semibold">
                 <Sparkles className="size-4 text-accent" /> Características
               </h2>
@@ -75,10 +105,10 @@ export default function PaginaAnuncio({ a, url }: { a: AnuncioPublico; url: stri
                   </li>
                 ))}
               </ul>
-            </section>
+            </Surge>
           )}
 
-          <section>
+          <Surge>
             <h2 className="flex items-center gap-2 font-display text-lg font-semibold">
               <Building2 className="size-4 text-accent" /> Localização
             </h2>
@@ -98,14 +128,18 @@ export default function PaginaAnuncio({ a, url }: { a: AnuncioPublico; url: stri
             >
               Abrir no Google Maps
             </a>
-          </section>
+          </Surge>
         </div>
 
         <aside className="lg:sticky lg:top-24 lg:self-start">
-          <div className="space-y-5 rounded-3xl border border-line p-5 shadow-soft">
+          <Surge delay={0.2} className="space-y-5 rounded-3xl border border-line p-5 shadow-soft">
             <div>
-              <p className="text-sm text-muted">{a.finalidade === "venda" ? "Valor de venda" : "Aluguel"}</p>
-              <p className="font-display text-3xl font-semibold tracking-tight">{preco(a.finalidade, a.valor)}</p>
+              <p className="text-sm text-muted">
+                {a.finalidade === "venda" ? "Valor de venda" : "Aluguel"}
+              </p>
+              <p className="font-display text-3xl font-semibold tracking-tight">
+                {preco(a.finalidade, a.valor)}
+              </p>
               {(a.condominio || a.iptu) && (
                 <div className="mt-2 space-y-0.5 text-sm text-muted">
                   {!!a.condominio && <p>Condomínio {brl(a.condominio)}/mês</p>}
@@ -114,13 +148,19 @@ export default function PaginaAnuncio({ a, url }: { a: AnuncioPublico; url: stri
               )}
             </div>
 
-            <a href={a.corretor.slug ? `/corretor/${a.corretor.slug}` : undefined} className="flex items-center gap-3">
+            <Link
+              to="/corretor/$slug"
+              params={{ slug: a.corretor.slug ?? "" }}
+              preload="intent"
+              disabled={!a.corretor.slug}
+              className="flex items-center gap-3"
+            >
               <FotoPessoa p={a.corretor} className="size-12" />
               <div className="min-w-0">
                 <p className="truncate font-semibold">{a.corretor.nome}</p>
                 <p className="text-xs text-muted">{creciTexto(a.corretor)}</p>
               </div>
-            </a>
+            </Link>
 
             {whats && (
               <a
@@ -132,10 +172,14 @@ export default function PaginaAnuncio({ a, url }: { a: AnuncioPublico; url: stri
                 <WhatsAppIcon className="size-5" /> Conversar no WhatsApp
               </a>
             )}
-            {whats && <p className="-mt-3 text-center text-xs text-muted">{telefoneBonito(a.corretor.telefone)}</p>}
+            {whats && (
+              <p className="-mt-3 text-center text-xs text-muted">
+                {telefoneBonito(a.corretor.telefone)}
+              </p>
+            )}
 
             <FormContato slug={a.slug} codigo={a.codigo} />
-          </div>
+          </Surge>
         </aside>
       </div>
     </PortalShell>
@@ -143,10 +187,17 @@ export default function PaginaAnuncio({ a, url }: { a: AnuncioPublico; url: stri
 }
 
 function FormContato({ slug, codigo }: { slug: string; codigo: string }) {
-  const [f, setF] = useState({ nome: "", telefone: "", email: "", mensagem: `Olá! Gostaria de mais informações sobre o imóvel ${codigo}.`, site: "" });
+  const [f, setF] = useState({
+    nome: "",
+    telefone: "",
+    email: "",
+    mensagem: `Olá! Gostaria de mais informações sobre o imóvel ${codigo}.`,
+    site: "",
+  });
   const [estado, setEstado] = useState<"" | "enviando" | "ok">("");
   const [erro, setErro] = useState("");
-  const campo = "h-11 w-full rounded-xl border border-line bg-bg px-3.5 text-sm outline-none transition focus:border-accent";
+  const campo =
+    "h-11 w-full rounded-xl border border-line bg-bg px-3.5 text-sm outline-none transition focus:border-accent";
   const telOk = f.telefone.replace(/\D/g, "").length >= 10;
 
   if (estado === "ok")
@@ -173,16 +224,33 @@ function FormContato({ slug, codigo }: { slug: string; codigo: string }) {
       }}
     >
       <p className="text-sm font-semibold">Ou deixe seu contato</p>
-      <input className={campo} placeholder="Seu nome" value={f.nome} onChange={(e) => setF({ ...f, nome: e.target.value })} required minLength={2} maxLength={120} />
+      <input
+        className={campo}
+        placeholder="Seu nome"
+        value={f.nome}
+        onChange={(e) => setF({ ...f, nome: e.target.value })}
+        required
+        minLength={2}
+        maxLength={120}
+      />
       <input
         className={campo}
         placeholder="WhatsApp com DDD"
         inputMode="tel"
         value={f.telefone}
-        onChange={(e) => setF({ ...f, telefone: e.target.value.replace(/[^\d()\s-]/g, "").slice(0, 16) })}
+        onChange={(e) =>
+          setF({ ...f, telefone: e.target.value.replace(/[^\d()\s-]/g, "").slice(0, 16) })
+        }
         required
       />
-      <input className={campo} placeholder="E-mail (opcional)" type="email" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} maxLength={160} />
+      <input
+        className={campo}
+        placeholder="E-mail (opcional)"
+        type="email"
+        value={f.email}
+        onChange={(e) => setF({ ...f, email: e.target.value })}
+        maxLength={160}
+      />
       <textarea
         className={`${campo} h-24 resize-none py-2.5`}
         value={f.mensagem}
@@ -205,7 +273,9 @@ function FormContato({ slug, codigo }: { slug: string; codigo: string }) {
       >
         {estado === "enviando" ? "Enviando..." : "Quero mais informações"}
       </button>
-      <p className="text-center text-[0.6875rem] text-subtle">Seus dados vão só para o corretor deste imóvel.</p>
+      <p className="text-center text-[0.6875rem] text-subtle">
+        Seus dados vão só para o corretor deste imóvel.
+      </p>
     </form>
   );
 }

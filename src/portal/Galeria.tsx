@@ -41,7 +41,11 @@ export function Galeria({ fotos, titulo }: { fotos: string[]; titulo: string }) 
           onClick={() => setAberta(0)}
           className={`group relative col-span-4 aspect-[4/3] overflow-hidden bg-canvas sm:aspect-auto sm:row-span-2 ${s ? "sm:col-span-2" : ""}`}
         >
-          <img src={fotos[0]} alt={titulo} className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]" />
+          <img
+            src={fotos[0]}
+            alt={titulo}
+            className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
+          />
         </button>
         {menores.map((url, k) => (
           <button
@@ -49,21 +53,35 @@ export function Galeria({ fotos, titulo }: { fotos: string[]; titulo: string }) 
             onClick={() => setAberta(k + 1)}
             className={`group relative aspect-square overflow-hidden bg-canvas sm:aspect-auto ${lugar(k)}`}
           >
-            <img src={url} alt={`${titulo} - foto ${k + 2}`} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]" />
+            <img
+              src={url}
+              alt={`${titulo} - foto ${k + 2}`}
+              loading="lazy"
+              className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+            />
             {k === s - 1 && restantes > 0 && (
-              <span className="absolute inset-0 flex items-center justify-center bg-ink/55 font-semibold text-white">+{restantes}</span>
+              <span className="absolute inset-0 flex items-center justify-center bg-ink/55 font-semibold text-white">
+                +{restantes}
+              </span>
             )}
           </button>
         ))}
       </div>
       {fotos.length > 1 && (
-        <button onClick={() => setAberta(0)} className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-accent">
+        <button
+          onClick={() => setAberta(0)}
+          className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-accent"
+        >
           <Images className="size-4" /> Ver as {fotos.length} fotos
         </button>
       )}
 
       {aberta !== null && (
-        <div className="fixed inset-0 z-50 flex flex-col bg-black/95" role="dialog" aria-label="Fotos do imóvel">
+        <div
+          className="fixed inset-0 z-50 flex flex-col bg-black/95"
+          role="dialog"
+          aria-label="Fotos do imóvel"
+        >
           <div className="flex justify-end p-3">
             <button
               onClick={() => setAberta(null)}

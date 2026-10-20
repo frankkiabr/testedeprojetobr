@@ -22,7 +22,9 @@ export function Carrossel({
 }) {
   const [i, setI] = useState(inicio);
   const [toque, setToque] = useState<number | null>(null);
-  useEffect(() => setI(inicio), [fotos.length, inicio]);
+  useEffect(() => {
+    setI(inicio);
+  }, [fotos.length, inicio]);
   const n = fotos.length;
   const ir = (d: number) => setI((x) => (x + d + n) % n);
   useEffect(() => {
