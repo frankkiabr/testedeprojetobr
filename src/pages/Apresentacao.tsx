@@ -129,7 +129,8 @@ export default function Apresentacao() {
       </div>
 
       {/* Painel visual (igual ao do login) */}
-      <div className="relative hidden overflow-hidden bg-ink p-4 lg:block">
+      {/* Preso à altura da tela: o mockup fica sempre no mesmo lugar, mesmo com formulários mais longos */}
+      <div className="relative hidden overflow-hidden bg-ink p-4 lg:sticky lg:top-0 lg:block lg:h-screen">
         <div className="absolute inset-0 bg-[radial-gradient(70%_60%_at_80%_10%,rgb(47_91_234/0.55),transparent_70%)]" />
         <div className="relative flex h-full flex-col justify-between rounded-[2.25rem] p-10 text-bg">
           <motion.p

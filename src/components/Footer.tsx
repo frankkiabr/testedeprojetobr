@@ -36,7 +36,7 @@ export function Footer({ onSearch }: { onSearch: () => void }) {
       <div className="relative mx-auto max-w-[90rem] overflow-hidden rounded-panel bg-ink text-bg">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_10%_0%,rgb(47_91_234/0.35),transparent_70%)]" />
         <div className="relative mx-auto w-full max-w-[70rem] px-5 pb-8 pt-20 sm:px-8 sm:pt-28">
-          <div className="grid gap-14 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:gap-20">
+          <div className="grid gap-14 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-16">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -48,7 +48,7 @@ export function Footer({ onSearch }: { onSearch: () => void }) {
               <p className="mt-4 max-w-[30rem] text-bg/60 sm:text-lg">{site.description}</p>
             </motion.div>
 
-            <nav className="grid grid-cols-2 gap-8 text-[0.9375rem] sm:grid-cols-3 lg:pt-2">
+            <nav className="grid grid-cols-2 gap-x-10 gap-y-8 text-[0.9375rem] sm:grid-cols-[repeat(3,auto)] lg:pt-2">
               <div>
                 <h3 className="type-eyebrow text-bg/60">Plataforma</h3>
                 <ul className="mt-4 space-y-3">
@@ -60,7 +60,7 @@ export function Footer({ onSearch }: { onSearch: () => void }) {
                           e.preventDefault();
                           scrollToId(s.id);
                         }}
-                        className="text-bg/80 transition-colors hover:text-bg"
+                        className="whitespace-nowrap text-bg/80 transition-colors hover:text-bg"
                       >
                         {s.label}
                       </a>
@@ -72,14 +72,14 @@ export function Footer({ onSearch }: { onSearch: () => void }) {
                 <h3 className="type-eyebrow text-bg/60">Imóveis</h3>
                 <ul className="mt-4 space-y-3">
                   <li>
-                    <a href="/imoveis" className="inline-flex items-center gap-2 text-bg/80 transition-colors hover:text-bg">
+                    <a href="/imoveis" className="inline-flex items-center gap-2 whitespace-nowrap text-bg/80 transition-colors hover:text-bg">
                       <Search className="size-4" />
                       Buscar imóveis
                     </a>
                   </li>
                   {cidades.map((c) => (
                     <li key={c.slug}>
-                      <a href={`/imoveis/${c.slug}`} className="text-bg/80 transition-colors hover:text-bg">
+                      <a href={`/imoveis/${c.slug}`} className="whitespace-nowrap text-bg/80 transition-colors hover:text-bg">
                         {c.cidade} - {c.uf}
                       </a>
                     </li>
@@ -90,19 +90,19 @@ export function Footer({ onSearch }: { onSearch: () => void }) {
                 <h3 className="type-eyebrow text-bg/60">Contato</h3>
                 <ul className="mt-4 space-y-3">
                   <li>
-                    <Link to="/login" className="inline-flex items-center gap-2 text-bg/80 transition-colors hover:text-bg">
+                    <Link to="/login" className="inline-flex items-center gap-2 whitespace-nowrap text-bg/80 transition-colors hover:text-bg">
                       <LogIn className="size-4" />
                       Acessar plataforma
                     </Link>
                   </li>
                   <li>
-                    <a href={`mailto:${site.email}`} className="inline-flex items-center gap-2 text-bg/80 transition-colors hover:text-bg">
+                    <a href={`mailto:${site.email}`} className="inline-flex items-center gap-2 whitespace-nowrap text-bg/80 transition-colors hover:text-bg">
                       <Mail className="size-4" />
                       Enviar e-mail
                     </a>
                   </li>
                   <li>
-                    <button onClick={copyEmail} className="inline-flex items-center gap-2 text-bg/80 transition-colors hover:text-bg">
+                    <button onClick={copyEmail} className="inline-flex items-center gap-2 whitespace-nowrap text-bg/80 transition-colors hover:text-bg">
                       {copied ? <Check className="size-4 text-verified" /> : <Copy className="size-4" />}
                       {copied ? "Copiado!" : "Copiar e-mail"}
                     </button>
