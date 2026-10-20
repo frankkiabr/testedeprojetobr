@@ -1,5 +1,10 @@
 # Pendências da Frankkia
 
+## Termos de Uso e Política de Privacidade
+
+**Falta:** completar a razão social, o CNPJ e o endereço da empresa em `src/pages/Legal.tsx` (páginas `/termos` e `/privacidade`)
+e pedir a revisão de um advogado antes de divulgar em larga escala.
+
 ## E-mails do login (convites, confirmação, nova senha)
 
 **Feito:** login real, convite por link, primeiro acesso, "Esqueceu a senha?".
