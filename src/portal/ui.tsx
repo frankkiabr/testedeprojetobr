@@ -99,6 +99,14 @@ export function PortalShell({
       <footer className="border-t border-line">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-6 text-sm text-muted sm:px-6">
           <span>Anúncios publicados por imobiliárias e corretores credenciados.</span>
+          <span className="flex gap-4">
+            <a href="/termos" className="hover:text-ink">
+              Termos de Uso
+            </a>
+            <a href="/privacidade" className="hover:text-ink">
+              Privacidade
+            </a>
+          </span>
           <a href="/" className="flex items-center gap-1.5 hover:text-ink">
             Feito com <Logo className="text-base text-ink" />
           </a>

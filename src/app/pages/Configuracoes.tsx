@@ -191,7 +191,9 @@ function Perfil() {
   useEffect(() => setF(init()), [user]); // eslint-disable-line react-hooks/exhaustive-deps
   const senhaOk = senha.atual && senha.nova.length >= 8 && senha.nova === senha.confirma;
   // Corretor sem ser estagiário precisa informar o CRECI.
-  const creciObrigatorio = user.papel === "corretor" && !f.estagiario;
+  // Solo: o dono da conta é o próprio corretor, então o CRECI é sempre obrigatório.
+  const solo = ehSolo(imobiliaria.plano);
+  const creciObrigatorio = solo || (user.papel === "corretor" && !f.estagiario);
   const perfilOk = f.nome.trim() && (!creciObrigatorio || f.creci.trim());
 
   return (
@@ -277,7 +279,7 @@ function Perfil() {
             <p className="flex items-center gap-2 text-sm font-semibold">
               <BadgeCheck className="size-4 text-accent" /> Registro no CRECI
             </p>
-            {user.papel === "corretor" && (
+            {user.papel === "corretor" && !solo && (
               <label className="flex cursor-pointer items-center gap-2 text-sm">
                 <input type="checkbox" className="size-4 accent-accent" checked={f.estagiario} onChange={(e) => setF({ ...f, estagiario: e.target.checked })} />
                 <GraduationCap className="size-4 text-muted" /> Sou estagiário(a)
@@ -285,7 +287,7 @@ function Perfil() {
             )}
           </div>
           <div className="mt-3 grid grid-cols-[1fr_6rem] gap-3">
-            <Field label={creciObrigatorio ? "Número do CRECI" : "Número do CRECI (opcional)"} hint={creciObrigatorio && !f.creci.trim() ? "Obrigatório para corretores." : undefined}>
+            <Field label={creciObrigatorio ? "Número do CRECI" : "Número do CRECI (opcional)"} hint={creciObrigatorio && !f.creci.trim() ? (solo ? "Obrigatório: aparece nos seus anúncios." : "Obrigatório para corretores.") : undefined}>
               <input className={inputCls} value={f.creci} onChange={(e) => setF({ ...f, creci: e.target.value })} placeholder="Ex.: 84213-F" />
             </Field>
             <Field label="Estado">

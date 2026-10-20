@@ -21,6 +21,7 @@ import {
   enderecoCompleto,
   imovelById,
   participanteNome,
+  participanteAvatar,
   proprietarioById,
   userById,
   pessoa,
@@ -367,7 +368,14 @@ function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: () => voi
                   {t && (
                     <div className="col-span-2 rounded-2xl bg-canvas p-3.5">
                       <p className="text-xs text-muted">Fechado em {new Date(t.data).toLocaleDateString("pt-BR")} · participantes</p>
-                      <p className="mt-1 font-medium">{t.participantes.map((p) => `${participanteNome(p)} (${p.pct}%)`).join(" · ")}</p>
+                      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2">
+                        {t.participantes.map((p, k) => (
+                          <span key={k} className="flex items-center gap-2 font-medium">
+                            <Avatar user={participanteAvatar(p)} className="size-7 text-[0.5625rem]" />
+                            {participanteNome(p)} <span className="text-muted">({p.pct}%)</span>
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   )}
                   {isAdmin && (

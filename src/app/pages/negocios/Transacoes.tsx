@@ -13,6 +13,7 @@ import {
   parteDe,
   parteImobiliaria,
   participanteNome,
+  participanteAvatar,
   transacoesOf,
   pessoa,
 } from "@/data/queries";
@@ -220,8 +221,11 @@ export default function Transacoes() {
                       <td className="px-3 py-3">
                         <div className="flex flex-col gap-0.5 text-xs">
                           {t.participantes.map((p, k) => (
-                            <span key={k} className={p.tipo === "parceiro" ? "text-violet-700" : ""}>
-                              {participanteNome(p)} <span className="text-muted">({p.pct}%{p.tipo === "parceiro" ? ", externo" : ""})</span>
+                            <span key={k} className={`flex items-center gap-1.5 ${p.tipo === "parceiro" ? "text-violet-700" : ""}`}>
+                              <Avatar user={participanteAvatar(p)} className="size-5 text-[0.5rem]" />
+                              <span className="min-w-0">
+                                {participanteNome(p)} <span className="text-muted">({p.pct}%{p.tipo === "parceiro" ? ", externo" : ""})</span>
+                              </span>
                             </span>
                           ))}
                         </div>

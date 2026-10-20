@@ -77,6 +77,9 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
   TanStack (`src/routes/imovel.$slug.tsx` etc., código em `src/portal/`), renderizadas no servidor para o Google e a prévia
   do WhatsApp; nelas o `<App />` não é montado. Dados só pelas funções `portal_anuncio`, `portal_corretor`,
   `portal_imobiliaria`; o formulário usa `portal_contato`, que cria o lead (origem "Portal") do corretor do imóvel.
+- Termos de Uso e Política de Privacidade: `/termos` e `/privacidade` (`src/pages/Legal.tsx`), com links no rodapé, no
+  portal, no formulário de contato, na apresentação e no primeiro acesso.
+- CRECI: obrigatório para corretor de equipe (ou estagiário) e sempre para o dono da conta Solo (`checar_creci`, `aceitar_convite`).
 - Interessados: `/apresentacao` e o formulário do site gravam em `interessados` (visitante só envia; só a Frankkia lê).
 - Demonstração: NÃO é pública. Só abre por `/demo/<código>` liberado pela Frankkia (`acessos_demo`, com validade;
   `validar_demo`). Não recoloque botões de demonstração na tela de login.

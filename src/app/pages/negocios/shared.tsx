@@ -31,13 +31,14 @@ import {
   proprietarioById,
   proprietariosOf,
   userById,
+  participanteAvatar,
 } from "@/data/queries";
 import { useStore } from "@/data/store";
 import type { Captacao, CategoriaImovel, EtapaLead, FechamentoInformado, Finalidade, Participante, Imovel } from "@/data/types";
 import { brl } from "@/lib/format";
 import { useScope } from "../../session";
 import { btn, DateInput, Field, inputCls, Modal, normalizePhone, SelectField, waLink } from "../../forms";
-import { Segmented } from "../../kit";
+import { Avatar, Segmented } from "../../kit";
 
 // ---------- Visual ----------
 
@@ -924,10 +925,12 @@ export function TransacaoFormModal({
                     <option value="corretor">Da equipe</option>
                     <option value="parceiro">Parceiro externo</option>
                   </select>
+                  <div className="flex min-w-0 items-center gap-2">
+                  {p.refId && <Avatar user={participanteAvatar(p)} className="size-8 text-[0.5625rem]" />}
                   <select
                     value={p.refId}
                     onChange={(e) => (e.target.value === "__novo" ? setNovoParceiro(i) : setPart(i, { refId: e.target.value }))}
-                    className="h-10 min-w-0 rounded-lg border border-line-strong bg-bg px-2 text-sm outline-hidden"
+                    className="h-10 min-w-0 flex-1 rounded-lg border border-line-strong bg-bg px-2 text-sm outline-hidden"
                   >
                     <option value="" disabled>
                       Selecione
@@ -939,6 +942,7 @@ export function TransacaoFormModal({
                     ))}
                     {p.tipo === "parceiro" && <option value="__novo">+ Cadastrar parceiro…</option>}
                   </select>
+                  </div>
                   <label className="relative">
                     <input
                       value={p.pct || ""}

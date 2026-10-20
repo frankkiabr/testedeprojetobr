@@ -1425,6 +1425,8 @@ export type Database = {
       pode_editar_captacao: { Args: { p_captacao: string }; Returns: boolean }
       pode_mexer_avatar: { Args: { p_nome: string }; Returns: boolean }
       portal_anuncio: { Args: { p_slug: string }; Returns: Json }
+      portal_busca: { Args: never; Returns: Json }
+      portal_cartao_corretor: { Args: { p_corretor: string }; Returns: Json }
       portal_cartoes: {
         Args: { p_corretor: string; p_imob: string }
         Returns: Json
@@ -1496,6 +1498,7 @@ export type Database = {
           email: string
           imobiliaria: string
           papel: string
+          solo: boolean
         }[]
       }
     }

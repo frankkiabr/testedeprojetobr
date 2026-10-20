@@ -96,6 +96,13 @@ export default function Apresentacao() {
                   {form.enviando ? "Enviando..." : "Quero uma apresentação"}
                   <ArrowRight className="size-4 transition-transform group-hover/button:translate-x-0.5" />
                 </button>
+                <p className="text-center text-xs text-subtle">
+                  Ao enviar, você concorda com a{" "}
+                  <Link to="/privacidade" className="underline hover:text-muted">
+                    Política de Privacidade
+                  </Link>
+                  .
+                </p>
               </form>
 
               <ul className="mt-8 space-y-2.5 text-sm text-muted">

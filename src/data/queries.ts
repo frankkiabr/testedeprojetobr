@@ -63,6 +63,18 @@ export function userById(id: string): Usuario | undefined {
 export const parceiroById = (id: string) => parceiros.find((p) => p.id === id);
 export const participanteNome = (p: Participante) =>
   p.refId === OUTROS_PARTICIPANTES ? "Outros participantes" : ((p.tipo === "corretor" ? userById(p.refId)?.nome : parceiroById(p.refId)?.nome) ?? "—");
+/** Foto (ou iniciais) de quem participou de uma venda: corretor da equipe ou parceiro externo. */
+export function participanteAvatar(p: Participante) {
+  const nome = participanteNome(p);
+  const iniciais = nome
+    .split(/s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((x) => x[0]?.toUpperCase())
+    .join("");
+  const fotoUrl = p.refId === OUTROS_PARTICIPANTES ? undefined : p.tipo === "corretor" ? userById(p.refId)?.fotoUrl : parceiroById(p.refId)?.fotoUrl;
+  return { id: p.refId || nome, nome, iniciais, fotoUrl };
+}
 export const creciLabel = (u: Pick<Usuario, "creci" | "creciUF" | "estagiario">) =>
   u.estagiario ? "Estagiário(a)" : u.creci ? `CRECI ${u.creci}${u.creciUF ? `/${u.creciUF}` : ""}` : "CRECI pendente";
 

@@ -10,7 +10,7 @@ import { DateInput, Field, inputCls, normalizePhone, SelectField, Toaster } from
 import { inicioDe, useSession } from "@/app/session";
 import { mensagemErro, supabase } from "@/integrations/frankkia/client";
 
-type ConviteInfo = { email: string; imobiliaria: string; papel: "admin" | "corretor"; demo: boolean };
+type ConviteInfo = { email: string; imobiliaria: string; papel: "admin" | "corretor"; demo: boolean; solo?: boolean };
 
 /**
  * PRIMEIRO ACESSO (convite).
@@ -34,7 +34,7 @@ export default function Convite() {
     supabase.rpc("ver_convite", { p_token: id }).then(({ data }) => {
       if (!vivo) return;
       const c = data?.[0];
-      setInfo(c ? { email: c.email, imobiliaria: c.imobiliaria, papel: c.papel as "admin" | "corretor", demo: false } : null);
+      setInfo(c ? { email: c.email, imobiliaria: c.imobiliaria, papel: c.papel as "admin" | "corretor", demo: false, solo: !!c.solo } : null);
     });
     return () => {
       vivo = false;
@@ -52,7 +52,9 @@ export default function Convite() {
   const logadoOutraConta = !!info && !info.demo && modo === "real" && !logadoNoConvite;
   const pedeSenha = !logadoNoConvite;
 
-  const creciOk = info?.papel === "admin" || f.estagiario || f.creci.trim().length >= 3;
+  // Solo: o dono da conta é o próprio corretor, então o CRECI é obrigatório (sem a opção de estagiário)
+  const creciObrigatorio = !!info?.solo || (info?.papel === "corretor" && !f.estagiario);
+  const creciOk = !creciObrigatorio || f.creci.trim().length >= 3;
   const senhaOk = !pedeSenha || (f.senha.length >= 8 && f.senha === f.confirma);
   const ok = f.nome.trim().split(/\s+/).length >= 2 && normalizePhone(f.telefone).length >= 12 && f.aniversario && creciOk && senhaOk;
 
@@ -226,13 +228,18 @@ export default function Convite() {
                     <p className="flex items-center gap-2 text-sm font-semibold">
                       <BadgeCheck className="size-4 text-accent" /> Registro no CRECI
                     </p>
-                    <label className="flex cursor-pointer items-center gap-2 text-sm">
-                      <input type="checkbox" className="size-4 accent-accent" checked={f.estagiario} onChange={(e) => setF({ ...f, estagiario: e.target.checked })} />
-                      <GraduationCap className="size-4 text-muted" /> Sou estagiário(a)
-                    </label>
+                    {!info.solo && (
+                      <label className="flex cursor-pointer items-center gap-2 text-sm">
+                        <input type="checkbox" className="size-4 accent-accent" checked={f.estagiario} onChange={(e) => setF({ ...f, estagiario: e.target.checked })} />
+                        <GraduationCap className="size-4 text-muted" /> Sou estagiário(a)
+                      </label>
+                    )}
                   </div>
                   <div className="mt-3 grid grid-cols-[1fr_6rem] gap-3">
-                    <Field label={f.estagiario || info.papel === "admin" ? "Número do CRECI (opcional)" : "Número do CRECI"}>
+                    <Field
+                      label={creciObrigatorio ? "Número do CRECI" : "Número do CRECI (opcional)"}
+                      hint={info.solo ? "Obrigatório: aparece nos seus anúncios, como exige o conselho." : undefined}
+                    >
                       <input className={inputCls} value={f.creci} onChange={(e) => setF({ ...f, creci: e.target.value })} placeholder="Ex.: 84213-F" />
                     </Field>
                     <Field label="Estado">
@@ -266,6 +273,17 @@ export default function Convite() {
                 >
                   {enviando ? "Concluindo..." : "Concluir cadastro"} <ArrowRight className="size-4" />
                 </button>
+                <p className="text-center text-xs text-subtle">
+                  Ao concluir, você concorda com os{" "}
+                  <a href="/termos" target="_blank" rel="noreferrer" className="underline hover:text-muted">
+                    Termos de Uso
+                  </a>{" "}
+                  e a{" "}
+                  <a href="/privacidade" target="_blank" rel="noreferrer" className="underline hover:text-muted">
+                    Política de Privacidade
+                  </a>
+                  .
+                </p>
                 {info.demo && <p className="text-center text-xs text-subtle">Convite de demonstração: a senha não é salva.</p>}
               </div>
             </motion.div>

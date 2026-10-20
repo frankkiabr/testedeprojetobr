@@ -91,7 +91,15 @@ export function Footer({ onSearch }: { onSearch: () => void }) {
                 <kbd className="rounded-md border border-white/20 px-1.5 py-0.5 font-mono text-[0.6875rem] text-bg/70">Ctrl K</kbd> para buscar
               </button>
             </p>
-            <p>{site.email}</p>
+            <p className="flex flex-wrap gap-x-4 gap-y-1">
+              <Link to="/termos" className="hover:text-bg/80">
+                Termos de Uso
+              </Link>
+              <Link to="/privacidade" className="hover:text-bg/80">
+                Privacidade
+              </Link>
+              <span>{site.email}</span>
+            </p>
           </div>
         </div>
       </div>

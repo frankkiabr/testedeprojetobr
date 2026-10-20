@@ -21,6 +21,7 @@ import Convite from "@/pages/Convite";
 import RedefinirSenha from "@/pages/RedefinirSenha";
 import Apresentacao from "@/pages/Apresentacao";
 import Demo from "@/pages/Demo";
+import { Privacidade, Termos } from "@/pages/Legal";
 import Interessados from "@/app/admin/Interessados";
 import { Guard } from "@/app/Guard";
 import Checkout from "@/pages/Checkout";
@@ -51,6 +52,8 @@ export default function App() {
               <Route path="/redefinir-senha" element={<RedefinirSenha />} />
               <Route path="/apresentacao" element={<Apresentacao />} />
               <Route path="/demo/:token" element={<Demo />} />
+              <Route path="/termos" element={<Termos />} />
+              <Route path="/privacidade" element={<Privacidade />} />
               <Route path="/convite/:id" element={<Convite />} />
               <Route path="/checkout/:id" element={<Checkout />} />
 
