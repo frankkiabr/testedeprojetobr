@@ -10,10 +10,10 @@ import appCss from "../index.css?url";
 const App = lazy(() => import("../App"));
 
 /**
- * Exceção: as páginas públicas do portal (/imovel, /corretor, /imobiliaria) vêm prontas do servidor
+ * Exceção: as páginas públicas do portal (/imoveis, /imovel, /corretor, /imobiliaria) vêm prontas do servidor
  * (src/routes/imovel.$slug.tsx etc.), para o Google e a prévia de links do WhatsApp.
  */
-const PORTAL = /^\/(imovel|corretor|imobiliaria)\//;
+const PORTAL = /^\/(imoveis\/?$|(imovel|corretor|imobiliaria)\/)/;
 
 const TITULO = "Frankkia — Seu universo imobiliário, em um só lugar.";
 const DESCRICAO =

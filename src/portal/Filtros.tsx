@@ -1,9 +1,13 @@
 import { useMemo, useState } from "react";
-import { Check, Share2 } from "lucide-react";
+import { Check, Search, Share2 } from "lucide-react";
 import type { CartaoAnuncio } from "./api";
 import { GradeImoveis } from "./ui";
 
+type Ordem = "recentes" | "menor" | "maior";
 type Filtro = {
+  texto: string;
+  tipo: string;
+  ordem: Ordem;
   uf: string;
   cidade: string;
   bairro: string;
@@ -14,6 +18,9 @@ type Filtro = {
   max: string;
 };
 const VAZIO: Filtro = {
+  texto: "",
+  tipo: "",
+  ordem: "recentes",
   uf: "",
   cidade: "",
   bairro: "",
@@ -116,16 +123,30 @@ function Opcoes({ valor, onChange }: { valor: number; onChange: (v: number) => v
   );
 }
 
+/** Sem acento e minúsculo, para a busca por texto achar "Umarizal" com "umarizal". */
+const simples = (s: string) =>
+  s
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
 /**
  * Lista de imóveis com filtros sempre à mostra. Estado, cidade e bairro só oferecem o que existe
  * nos imóveis anunciados (e um depende do outro), para o cliente escolher em vez de digitar.
  */
-export function ImoveisComFiltro({ anuncios }: { anuncios: CartaoAnuncio[] }) {
+export function ImoveisComFiltro({
+  anuncios,
+  busca = false,
+}: {
+  anuncios: CartaoAnuncio[];
+  busca?: boolean;
+}) {
   const [f, setF] = useState<Filtro>(VAZIO);
   const temVendaEAluguel = new Set(anuncios.map((a) => a.finalidade)).size > 1;
-  const ativos = JSON.stringify(f) !== JSON.stringify(VAZIO);
+  const ativos = JSON.stringify({ ...f, ordem: "" }) !== JSON.stringify({ ...VAZIO, ordem: "" });
 
   const estados = unicos(anuncios.map((a) => a.uf));
+  const tipos = unicos(anuncios.map((a) => a.categoria));
   const cidades = unicos(anuncios.filter((a) => !f.uf || a.uf === f.uf).map((a) => a.cidade));
   const bairros = unicos(
     anuncios
@@ -135,26 +156,48 @@ export function ImoveisComFiltro({ anuncios }: { anuncios: CartaoAnuncio[] }) {
 
   const lista = useMemo(
     () =>
-      anuncios.filter(
-        (a) =>
-          (!f.uf || a.uf === f.uf) &&
-          (!f.cidade || a.cidade === f.cidade) &&
-          (!f.bairro || a.bairro === f.bairro) &&
-          (!f.finalidade || a.finalidade === f.finalidade) &&
-          (!f.quartos || (a.quartos ?? 0) >= f.quartos) &&
-          (!f.banheiros || (a.banheiros ?? 0) >= f.banheiros) &&
-          (!numero(f.min) || a.valor >= numero(f.min)) &&
-          (!numero(f.max) || a.valor <= numero(f.max)),
-      ),
+      anuncios
+        .filter(
+          (a) =>
+            (!f.texto.trim() ||
+              simples(
+                `${a.codigo} ${a.titulo} ${a.bairro} ${a.cidade} ${a.categoria} ${a.anunciante ?? ""}`,
+              ).includes(simples(f.texto.trim()))) &&
+            (!f.tipo || a.categoria === f.tipo) &&
+            (!f.uf || a.uf === f.uf) &&
+            (!f.cidade || a.cidade === f.cidade) &&
+            (!f.bairro || a.bairro === f.bairro) &&
+            (!f.finalidade || a.finalidade === f.finalidade) &&
+            (!f.quartos || (a.quartos ?? 0) >= f.quartos) &&
+            (!f.banheiros || (a.banheiros ?? 0) >= f.banheiros) &&
+            (!numero(f.min) || a.valor >= numero(f.min)) &&
+            (!numero(f.max) || a.valor <= numero(f.max)),
+        )
+        .sort((a, b) =>
+          f.ordem === "menor"
+            ? a.valor - b.valor
+            : f.ordem === "maior"
+              ? b.valor - a.valor
+              : (b.publicado_em ?? "").localeCompare(a.publicado_em ?? ""),
+        ),
     [anuncios, f],
   );
 
   return (
     <div>
       <div className="mb-6 space-y-4 rounded-3xl border border-line p-5">
-        <div
-          className={`grid gap-3 sm:grid-cols-2 ${temVendaEAluguel ? "lg:grid-cols-4" : "lg:grid-cols-3"}`}
-        >
+        {busca && (
+          <label className="relative block">
+            <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted" />
+            <input
+              className="h-12 w-full rounded-2xl border border-line bg-canvas pl-11 pr-4 text-[0.9375rem] outline-none transition focus:border-accent focus:bg-bg"
+              placeholder="Buscar por código (FK-...), bairro, cidade ou imobiliária"
+              value={f.texto}
+              onChange={(e) => setF({ ...f, texto: e.target.value })}
+            />
+          </label>
+        )}
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <Escolha
             rotulo="Estado"
             todos="Todos os estados"
@@ -175,6 +218,13 @@ export function ImoveisComFiltro({ anuncios }: { anuncios: CartaoAnuncio[] }) {
             valor={f.bairro}
             onChange={(bairro) => setF({ ...f, bairro })}
             opcoes={bairros.map((b) => ({ valor: b, texto: b }))}
+          />
+          <Escolha
+            rotulo="Tipo de imóvel"
+            todos="Todos os tipos"
+            valor={f.tipo}
+            onChange={(tipo) => setF({ ...f, tipo })}
+            opcoes={tipos.map((t) => ({ valor: t, texto: t }))}
           />
           {temVendaEAluguel && (
             <Escolha
@@ -225,15 +275,30 @@ export function ImoveisComFiltro({ anuncios }: { anuncios: CartaoAnuncio[] }) {
         <p className="text-sm text-muted">
           {lista.length} de {anuncios.length} {anuncios.length === 1 ? "imóvel" : "imóveis"}
         </p>
-        {ativos && (
-          <button onClick={() => setF(VAZIO)} className="text-sm font-semibold text-accent">
-            Limpar filtros
-          </button>
-        )}
+        <div className="flex items-center gap-4">
+          {ativos && (
+            <button
+              onClick={() => setF({ ...VAZIO, ordem: f.ordem })}
+              className="text-sm font-semibold text-accent"
+            >
+              Limpar filtros
+            </button>
+          )}
+          <select
+            aria-label="Ordenar"
+            className="h-9 cursor-pointer rounded-full border border-line bg-bg px-3 text-sm font-medium outline-none focus:border-accent"
+            value={f.ordem}
+            onChange={(e) => setF({ ...f, ordem: e.target.value as Ordem })}
+          >
+            <option value="recentes">Mais recentes</option>
+            <option value="menor">Menor preço</option>
+            <option value="maior">Maior preço</option>
+          </select>
+        </div>
       </div>
 
       {lista.length ? (
-        <GradeImoveis anuncios={lista} />
+        <GradeImoveis anuncios={lista} anunciante={busca} />
       ) : (
         <div className="rounded-3xl bg-canvas p-10 text-center">
           <p className="font-semibold">Nenhum imóvel com esses filtros</p>

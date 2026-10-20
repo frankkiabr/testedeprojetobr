@@ -28,6 +28,9 @@ export type CartaoAnuncio = {
   banheiros: number | null;
   vagas: number | null;
   capa: string | null;
+  publicado_em?: string;
+  /** Imobiliária (ou o corretor, no Solo) que anuncia. */
+  anunciante?: string;
 };
 
 export type CorretorResumo = {
@@ -109,6 +112,9 @@ export type ItemVitrine = {
   cidade: string | null;
   total: number;
 };
+/** Busca geral (/imoveis): todos os imóveis publicados no portal. */
+export const buscarTodos = () => rpc<CartaoAnuncio[]>("portal_busca", {});
+
 export const buscarVitrine = () => rpc<ItemVitrine[]>("portal_vitrine", {});
 
 /** Outros imóveis da mesma imobiliária (abaixo do mapa no anúncio). */

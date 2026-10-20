@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowRight, ArrowUp, LogIn } from "lucide-react";
+import { ArrowRight, ArrowUp, LogIn, Search } from "lucide-react";
 import { nav, site } from "@/content";
 import { EASE_OUT_EXPO, scrollToId } from "@/lib/scroll";
 import { Logo, LogoMark } from "./ui";
@@ -115,6 +115,10 @@ export function Navbar() {
                 ))}
               </ul>
               <div className="flex items-center gap-1">
+                {/* Busca de imóveis do portal (página fora da plataforma: abre com recarga) */}
+                <a href="/imoveis" className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium text-bg/70 transition-colors hover:bg-bg/15 hover:text-bg">
+                  <Search className="size-4" /> Imóveis
+                </a>
                 <Link to="/login" className="rounded-full px-3.5 py-2 text-sm font-medium text-bg/70 transition-colors hover:bg-bg/15 hover:text-bg">
                   Entrar
                 </Link>
@@ -146,6 +150,11 @@ export function Navbar() {
               >
                 {LABELS[active]}
               </motion.span>
+              {!desktop && (
+                <a href="/imoveis" aria-label="Buscar imóveis" className="grid size-8 place-items-center rounded-full text-bg/70 hover:bg-bg/15 hover:text-bg">
+                  <Search className="size-4" />
+                </a>
+              )}
               {!desktop && (
                 <Link to="/login" aria-label="Entrar" className="grid size-8 place-items-center rounded-full text-bg/70 hover:bg-bg/15 hover:text-bg">
                   <LogIn className="size-4" />

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { buscarVitrine, type ItemVitrine } from "@/portal/api";
 
@@ -66,6 +66,21 @@ export function Clientes() {
             </motion.li>
           ))}
         </ul>
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, ease: EASE_OUT_EXPO }}
+          className="mt-8 flex justify-center"
+        >
+          <a
+            href="/imoveis"
+            className="group/button inline-flex h-12 items-center gap-2 rounded-full bg-ink px-6 text-[0.9375rem] font-semibold text-bg transition hover:bg-ink/85 active:scale-[0.98]"
+          >
+            Ver todos os imóveis
+            <ArrowRight className="size-4 transition-transform duration-200 group-hover/button:translate-x-0.5" />
+          </a>
+        </motion.div>
       </div>
     </section>
   );

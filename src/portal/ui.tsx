@@ -1,6 +1,6 @@
 import { useEffect, type ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Bath, BedDouble, Car, MapPin, Ruler } from "lucide-react";
+import { Bath, BedDouble, Car, MapPin, Ruler, Search } from "lucide-react";
 import { Logo, LogoMark } from "@/components/ui";
 import { EntradaPagina, Surge } from "./anim";
 import type { CartaoAnuncio, CorretorResumo, Finalidade, ImobResumo } from "./api";
@@ -72,6 +72,15 @@ export function PortalShell({ imob, children }: { imob?: ImobResumo | null; chil
               <Logo className="text-xl" />
             </a>
           )}
+          {caminho !== "/imoveis" && (
+            <Link
+              to="/imoveis"
+              preload="intent"
+              className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-line-strong px-4 text-sm font-semibold transition hover:bg-canvas"
+            >
+              <Search className="size-4" /> <span className="hidden sm:inline">Buscar imóveis</span>
+            </Link>
+          )}
         </div>
       </header>
       <main className="mx-auto max-w-6xl px-4 pb-20 pt-6 sm:px-6">
@@ -90,7 +99,13 @@ export function PortalShell({ imob, children }: { imob?: ImobResumo | null; chil
 }
 
 /** Cartão de um anúncio nas listas (página do corretor e da imobiliária). */
-export function CartaoImovel({ a }: { a: CartaoAnuncio }) {
+export function CartaoImovel({
+  a,
+  anunciante = false,
+}: {
+  a: CartaoAnuncio;
+  anunciante?: boolean;
+}) {
   return (
     <Link
       to="/imovel/$slug"
@@ -116,6 +131,9 @@ export function CartaoImovel({ a }: { a: CartaoAnuncio }) {
           {preco(a.finalidade, a.valor)}
         </p>
         <p className="line-clamp-2 text-sm font-medium">{a.titulo}</p>
+        {anunciante && a.anunciante && (
+          <p className="truncate text-xs text-subtle">{a.anunciante}</p>
+        )}
         <p className="flex items-center gap-1.5 text-xs text-muted">
           <MapPin className="size-3.5 shrink-0" />
           {a.bairro}, {a.cidade} - {a.uf}
@@ -152,12 +170,18 @@ export function CartaoImovel({ a }: { a: CartaoAnuncio }) {
   );
 }
 
-export function GradeImoveis({ anuncios }: { anuncios: CartaoAnuncio[] }) {
+export function GradeImoveis({
+  anuncios,
+  anunciante = false,
+}: {
+  anuncios: CartaoAnuncio[];
+  anunciante?: boolean;
+}) {
   return (
     <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
       {anuncios.map((a, k) => (
         <Surge key={a.slug} delay={(k % 3) * 0.08} className="grid">
-          <CartaoImovel a={a} />
+          <CartaoImovel a={a} anunciante={anunciante} />
         </Surge>
       ))}
     </div>
