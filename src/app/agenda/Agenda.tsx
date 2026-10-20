@@ -66,7 +66,7 @@ export function Agenda({ eu, equipe, semVinculos }: { eu: Usuario; equipe?: Usua
     );
   };
 
-  const responsaveis = equipe ? [eu, ...equipe] : undefined;
+  const responsaveis = equipe?.length ? [eu, ...equipe] : undefined;
   const sincronizado = (id: string) => !!conexoesGoogle[id];
 
   return (
@@ -107,7 +107,7 @@ export function Agenda({ eu, equipe, semVinculos }: { eu: Usuario; equipe?: Usua
               { value: "mes", label: "Mês" },
             ]}
           />
-          {equipe && (
+          {equipe && equipe.length > 0 && (
             <Select
               label="Agenda de"
               icon={<Users className="size-4" />}

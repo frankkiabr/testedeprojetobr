@@ -4,7 +4,13 @@ import { motion } from "framer-motion";
 import { Building2, ChevronRight, LineChart, MapPin, Plus } from "lucide-react";
 import { CATEGORIAS, imoveis, transacoes } from "@/data/demo";
 import { LocalImovel } from "./LocalImovel";
-import { fotoDoImovel, captacaoById, captacaoTitulo, captacoesDoImovel, enderecoCompleto, imovelById, imovelNome } from "@/data/queries";
+import { Carrossel } from "@/components/Carrossel";
+import { anuncios } from "@/data/demo";
+
+/** Todas as fotos dos anúncios das captações deste imóvel (a captação mais recente primeiro). */
+const fotosDoImovel = (imovelId: string) =>
+  captacoesDoImovel(imovelId).flatMap((c) => anuncios.find((a) => a.captacaoId === c.id)?.fotos.map((x) => x.url) ?? []);
+import { captacaoById, captacaoTitulo, captacoesDoImovel, enderecoCompleto, imovelById, imovelNome } from "@/data/queries";
 import { useStore } from "@/data/store";
 import type { CategoriaImovel } from "@/data/types";
 import { brl } from "@/lib/format";
@@ -29,11 +35,17 @@ function ImovelDrawer({ id, onClose }: { id: string | null; onClose: () => void 
     <Drawer open={!!im} onClose={onClose} title={im && imovelNome(im)} subtitle={im?.categoria}>
       {im && (
         <div className="space-y-7">
-          {/* Com posição no mapa, o mapa aparece no lugar da ilustração */}
-          {im.lat === undefined && (
+          {/* Fotos das captações deste imóvel (carrossel); sem fotos e sem mapa, a ilustração */}
+          {fotosDoImovel(im.id).length ? (
             <div className="overflow-hidden rounded-3xl">
-              <ImovelCover categoria={im.categoria} foto={fotoDoImovel(im.id)} className="aspect-[16/7]" />
+              <Carrossel fotos={fotosDoImovel(im.id)} />
             </div>
+          ) : (
+            im.lat === undefined && (
+              <div className="overflow-hidden rounded-3xl">
+                <ImovelCover categoria={im.categoria} className="aspect-[16/7]" />
+              </div>
+            )
           )}
           <p className="flex items-start gap-2 text-sm">
             <MapPin className="mt-0.5 size-4 shrink-0 text-accent" />

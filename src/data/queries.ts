@@ -76,10 +76,24 @@ export const enderecoCompleto = (e: Endereco) => `${e.logradouro}, ${e.numero}, 
 export const imovelNome = (im: Imovel) => im.nome ?? `${im.endereco.logradouro}, ${im.endereco.numero}`;
 
 /** Título curto de uma captação: "Apto 302 · Edifício Aurora" ou "Casa · Rua do Sol, 120". */
+/**
+ * Unidade com o rótulo certo: só o número ("302") vira "Apto 302" (apartamento) ou "Sala 302" (sala comercial);
+ * textos que já têm o tipo ("Cobertura 1801", "Studio 504") ficam como estão.
+ */
+export function rotuloUnidade(categoria: string, unidade?: string) {
+  const u = unidade?.trim();
+  if (!u) return undefined;
+  if (/^[a-zà-ú]/i.test(u)) return u;
+  if (categoria === "Apartamento") return `Apto ${u}`;
+  if (categoria === "Sala comercial") return `Sala ${u}`;
+  return `Unidade ${u}`;
+}
+
 export function captacaoTitulo(c: Captacao) {
   const im = imovelById(c.imovelId);
   if (!im) return c.unidade ?? "Captação";
-  return c.unidade ? `${c.unidade} · ${imovelNome(im)}` : `${im.categoria} · ${imovelNome(im)}`;
+  const unidade = rotuloUnidade(im.categoria, c.unidade);
+  return unidade ? `${unidade} · ${imovelNome(im)}` : `${im.categoria} · ${imovelNome(im)}`;
 }
 export const captacaoBairro = (c: Captacao) => imovelById(c.imovelId)?.endereco.bairro ?? "";
 export const captacaoCategoria = (c: Captacao) => imovelById(c.imovelId)?.categoria ?? "Apartamento";

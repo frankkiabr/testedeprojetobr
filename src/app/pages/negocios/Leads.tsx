@@ -330,7 +330,7 @@ export default function Leads() {
         <div className="flex flex-wrap items-center gap-2">
           <SearchInput value={busca} onChange={setBusca} placeholder="Buscar lead..." />
           <Select label="Período" value={periodo} onChange={setPeriodo} options={PERIODOS} />
-          {isAdmin && (
+          {isAdmin && corretoresAtivos().length > 0 && (
             <Select
               label="Corretor"
               icon={<Users className="size-4" />}

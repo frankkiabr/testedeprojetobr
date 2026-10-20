@@ -1,11 +1,12 @@
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 import { AnuncioEditor } from "./Anuncio";
+import { Carrossel } from "@/components/Carrossel";
 import { LocalImovel } from "./LocalImovel";
 import { anuncios } from "@/data/demo";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { BadgeDollarSign, FileText, Handshake, MapPin, Plus, Ruler, UserRound, Users } from "lucide-react";
+import { PartyPopper, BadgeDollarSign, FileText, Handshake, MapPin, Plus, Ruler, UserRound, Users } from "lucide-react";
 import { CHECKLIST_CAPTACAO, CHECKLIST_MARKETING } from "@/data/demo";
 import {
   captacaoById,
@@ -74,6 +75,7 @@ function CaptacaoCard({ c, showCorretor, onOpen, i }: { c: Captacao; showCorreto
         <p className="mt-0.5 truncate text-xs text-muted">
           {captacaoBairro(c)} · {c.areaM2} m² · {prop?.nome}
         </p>
+        {comodos(c.id) && <p className="mt-0.5 truncate text-xs font-medium text-ink/80">{comodos(c.id)}</p>}
         <div className="mt-4 space-y-1.5">
           {[
             { label: "captação", k: doneCaptacao(c), n: CHECKLIST_CAPTACAO.length },
@@ -92,153 +94,212 @@ function CaptacaoCard({ c, showCorretor, onOpen, i }: { c: Captacao; showCorreto
   );
 }
 
+/** Resumo dos cômodos que o corretor preencheu no anúncio (ex.: "3 quartos · 2 banheiros · 1 vaga"). */
+function comodos(captacaoId: string) {
+  const a = anuncios.find((x) => x.captacaoId === captacaoId);
+  if (!a) return "";
+  const p = (n: number | undefined, um: string, varios: string) => (n ? `${n} ${n === 1 ? um : varios}` : "");
+  return [p(a.quartos, "quarto", "quartos"), p(a.suites, "suíte", "suítes"), p(a.banheiros, "banheiro", "banheiros"), p(a.vagas, "vaga", "vagas")]
+    .filter(Boolean)
+    .join(" · ");
+}
+
+type AbaCaptacao = "imovel" | "captacao" | "marketing" | "anuncio";
+
 function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: () => void }) {
   const { toggleMarketing, toggleCaptacao } = useStore();
-  const [aba, setAba] = useState<"captacao" | "marketing" | "anuncio">("captacao");
-  const { isAdmin } = useScope();
+  const [aba, setAba] = useState<AbaCaptacao>("imovel");
+  const { isAdmin, user } = useScope();
   const [report, setReport] = useState(false);
   const [registrar, setRegistrar] = useState(false);
   const [informar, setInformar] = useState(false);
+  useEffect(() => setAba("imovel"), [id]);
   const c = id ? captacaoById(id) : undefined;
   const im = c ? imovelById(c.imovelId) : undefined;
   const prop = c ? proprietarioById(c.proprietarioId) : undefined;
   const feitos = c ? done(c) : 0;
   const t = c && c.status !== "ativa" ? transacoes.find((x) => x.captacaoId === c.id) : undefined;
+  const an = c ? anuncios.find((x) => x.captacaoId === c.id) : undefined;
+  const fotos = an?.fotos.map((x) => x.url) ?? [];
+  const fechada = c ? c.status !== "ativa" : false;
+
+  // Venda ou locação concluída: mensagem de parabéns para o proprietário (não para o cliente)
+  const parabens =
+    c && prop
+      ? `Olá, ${prop.nome.split(" ")[0]}! Parabéns pela ${c.finalidade === "venda" ? "venda" : "locação"} do seu imóvel (${captacaoTitulo(c)}). ` +
+        `Foi um prazer cuidar desse negócio com você! Se precisar de algo, ou conhecer alguém que queira ${c.finalidade === "venda" ? "comprar ou vender" : "alugar"} um imóvel, conte comigo. ${user.nome.split(" ")[0]}`
+      : "";
 
   return (
     <>
-      <Drawer
-        open={!!c}
-        onClose={onClose}
-        title={c && captacaoTitulo(c)}
-        subtitle={c && `${c.finalidade === "venda" ? "Venda" : "Locação"} · captada ${relTime(c.captadoEm)}`}
-        footer={
-          c && (
-            <>
-              <button onClick={() => setReport(true)} className={btn.outline}>
-                <FileText className="size-4" /> Gerar relatório
-              </button>
-              {c.status === "ativa" &&
-                (isAdmin ? (
-                  <button onClick={() => setRegistrar(true)} className={btn.accent}>
-                    <BadgeDollarSign className="size-4" /> Registrar {c.finalidade === "venda" ? "venda" : "locação"}
-                  </button>
-                ) : (
-                  <button onClick={() => setInformar(true)} className={btn.accent}>
-                    <Handshake className="size-4" /> Informar fechamento
-                  </button>
-                ))}
-            </>
-          )
-        }
-      >
+      <Drawer open={!!c} onClose={onClose} title={c && captacaoTitulo(c)} subtitle={c && `${c.finalidade === "venda" ? "Venda" : "Locação"} · captada ${relTime(c.captadoEm)}`}>
         {c && im && (
-          <div className="space-y-7">
-            <div className="relative overflow-hidden rounded-3xl">
-              <ImovelCover categoria={im.categoria} foto={fotoCapa(c.id)} className="aspect-[16/8]" />
-              <span className="absolute left-4 top-4 flex gap-1.5">
-                <StatusBadge status={c.status} />
-                <FinalidadeBadge finalidade={c.finalidade} />
-              </span>
-            </div>
-
-            <p className="flex items-start gap-2 text-sm text-muted">
-              <MapPin className="mt-0.5 size-4 shrink-0 text-accent" />
-              <span>
-                {im.nome && <span className="font-semibold text-ink">{im.nome} · </span>}
-                {enderecoCompleto(im.endereco)}
-              </span>
-            </p>
-            <LocalImovel im={im} className="h-48" />
-
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div className="rounded-2xl bg-canvas p-3.5">
-                <p className="text-xs text-muted">{t ? (t.tipo === "venda" ? "Vendida por" : "Alugada por") : c.finalidade === "venda" ? "Valor de venda" : "Aluguel mensal"}</p>
-                <p className="mt-0.5 font-display text-lg font-semibold">{valorLabel(c.finalidade, t ? t.valor : c.valor)}</p>
-              </div>
-              <div className="rounded-2xl bg-canvas p-3.5">
-                <p className="flex items-center gap-1 text-xs text-muted">
-                  <Ruler className="size-3" /> Área · valor por m²
-                </p>
-                <p className="mt-0.5 font-display text-lg font-semibold">
-                  {c.areaM2} m² <span className="text-sm font-normal text-muted">· {brl((t ? t.valor : c.valor) / c.areaM2)}</span>
-                </p>
-              </div>
-              {t && (
-                <div className="col-span-2 rounded-2xl bg-canvas p-3.5">
-                  <p className="text-xs text-muted">Fechado em {new Date(t.data).toLocaleDateString("pt-BR")} · participantes</p>
-                  <p className="mt-1 font-medium">{t.participantes.map((p) => `${participanteNome(p)} (${p.pct}%)`).join(" · ")}</p>
-                </div>
-              )}
-              {isAdmin && (
-                <div className="col-span-2 flex items-center gap-3 rounded-2xl bg-canvas p-3.5">
-                  <Avatar user={pessoa(c.corretorId)} className="size-8 text-[0.625rem]" />
-                  <div>
-                    <p className="text-xs text-muted">Corretor captador</p>
-                    <p className="font-semibold">{userById(c.corretorId)?.nome}</p>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {prop && (
-              <div className="flex items-center gap-3 rounded-2xl border border-line p-4">
-                <span className="grid size-10 place-items-center rounded-full bg-accent-soft text-accent">
-                  <UserRound className="size-4" />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs text-muted">Proprietário</p>
-                  <p className="truncate font-semibold">{prop.nome}</p>
-                  <p className="text-xs text-muted">{formatPhone(prop.whatsapp)}</p>
-                </div>
-                <a href={waLink(prop.whatsapp)} target="_blank" rel="noreferrer" aria-label="WhatsApp do proprietário" className="grid size-10 place-items-center rounded-full bg-[#25d366] text-white">
-                  <WhatsAppIcon className="size-4" />
-                </a>
-              </div>
-            )}
-
-            {/* Dois checklists: captação (controle interno) e marketing (divulgação) */}
-            <div>
+          <div>
+            {/* Abas fixas no topo enquanto a janela rola */}
+            <div className="sticky -top-6 z-10 -mx-6 -mt-6 mb-6 border-b border-line bg-bg/95 px-6 py-3 backdrop-blur">
               <Segmented
-                id="cap-checklist"
+                id="cap-abas"
                 value={aba}
                 onChange={setAba}
                 options={[
+                  { value: "imovel", label: "Imóvel" },
                   { value: "captacao", label: `Captação · ${doneCaptacao(c)}/${CHECKLIST_CAPTACAO.length}` },
                   { value: "marketing", label: `Marketing · ${feitos}/${CHECKLIST_MARKETING.length}` },
-                  { value: "anuncio", label: anuncios.find((x) => x.captacaoId === c.id)?.publicado ? "Anúncio · no ar" : "Anúncio" },
+                  { value: "anuncio", label: an?.publicado ? "Anúncio · no ar" : "Anúncio" },
                 ]}
               />
-              {aba === "anuncio" ? (
-                <AnuncioEditor captacao={c} onPublicado={onClose} />
-              ) : aba === "captacao" ? (
-                <div className="mt-4">
-                  <p className="font-display text-lg font-semibold">Checklist de captação</p>
-                  <p className="mb-3 text-xs text-muted">Controle interno: o que falta para o imóvel estar documentado e pronto para negociar.</p>
-                  <ProgressBar
-                    value={doneCaptacao(c) / CHECKLIST_CAPTACAO.length}
-                    className="mb-3"
-                    tone={doneCaptacao(c) === CHECKLIST_CAPTACAO.length ? "verified" : "accent"}
-                  />
-                  <div className="space-y-2">
-                    {CHECKLIST_CAPTACAO.map((label, i) => (
-                      <CheckItem key={label} index={i} label={label} checked={c.checklistCaptacao[i]} onToggle={() => toggleCaptacao(c.id, i)} />
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="mt-4">
-                  <p className="font-display text-lg font-semibold">Checklist de marketing</p>
-                  <p className="mb-3 text-xs text-muted">Ações de divulgação. São elas que aparecem no relatório enviado ao proprietário.</p>
-                  <ProgressBar value={feitos / CHECKLIST_MARKETING.length} className="mb-3" tone={feitos === CHECKLIST_MARKETING.length ? "verified" : "accent"} />
-                  <div className="space-y-2">
-                    {CHECKLIST_MARKETING.map((label, i) => (
-                      <CheckItem key={label} index={i} label={label} checked={c.checklistMarketing[i]} onToggle={() => toggleMarketing(c.id, i)} />
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
+
+            {aba === "imovel" && (
+              <div className="space-y-6">
+                {/* Fotos (carrossel) ou ilustração */}
+                <div className="relative overflow-hidden rounded-3xl">
+                  {fotos.length ? (
+                    <Carrossel
+                      fotos={fotos}
+                      sobre={
+                        <span className="absolute left-4 top-4 flex gap-1.5">
+                          <StatusBadge status={c.status} />
+                          <FinalidadeBadge finalidade={c.finalidade} />
+                        </span>
+                      }
+                    />
+                  ) : (
+                    <>
+                      <ImovelCover categoria={im.categoria} className="aspect-[16/8]" />
+                      <span className="absolute left-4 top-4 flex gap-1.5">
+                        <StatusBadge status={c.status} />
+                        <FinalidadeBadge finalidade={c.finalidade} />
+                      </span>
+                    </>
+                  )}
+                </div>
+
+                {/* Ações deste imóvel */}
+                <div className="flex flex-wrap gap-2">
+                  {!fechada ? (
+                    <>
+                      {isAdmin ? (
+                        <button onClick={() => setRegistrar(true)} className={btn.accent}>
+                          <BadgeDollarSign className="size-4" /> Registrar {c.finalidade === "venda" ? "venda" : "locação"}
+                        </button>
+                      ) : (
+                        <button onClick={() => setInformar(true)} className={btn.accent}>
+                          <Handshake className="size-4" /> Informar fechamento
+                        </button>
+                      )}
+                      <button onClick={() => setReport(true)} className={btn.outline}>
+                        <FileText className="size-4" /> Relatório ao proprietário
+                      </button>
+                    </>
+                  ) : (
+                    prop && (
+                      <a href={waLink(prop.whatsapp, parabens)} target="_blank" rel="noreferrer" className={btn.whatsapp}>
+                        <PartyPopper className="size-4" /> Parabenizar o proprietário
+                      </a>
+                    )
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div className="rounded-2xl bg-canvas p-3.5">
+                    <p className="text-xs text-muted">{t ? (t.tipo === "venda" ? "Vendida por" : "Alugada por") : c.finalidade === "venda" ? "Valor de venda" : "Aluguel mensal"}</p>
+                    <p className="mt-0.5 font-display text-lg font-semibold">{valorLabel(c.finalidade, t ? t.valor : c.valor)}</p>
+                  </div>
+                  <div className="rounded-2xl bg-canvas p-3.5">
+                    <p className="flex items-center gap-1 text-xs text-muted">
+                      <Ruler className="size-3" /> Área · valor por m²
+                    </p>
+                    <p className="mt-0.5 font-display text-lg font-semibold">
+                      {c.areaM2} m² <span className="text-sm font-normal text-muted">· {brl((t ? t.valor : c.valor) / c.areaM2)}</span>
+                    </p>
+                  </div>
+                  {comodos(c.id) && <p className="col-span-2 rounded-2xl bg-canvas p-3.5 font-medium">{comodos(c.id)}</p>}
+                  {(an?.condominio || an?.iptu) && (
+                    <p className="col-span-2 rounded-2xl bg-canvas p-3.5 text-muted">
+                      {an?.condominio ? `Condomínio ${brl(an.condominio)}/mês` : ""}
+                      {an?.condominio && an?.iptu ? " · " : ""}
+                      {an?.iptu ? `IPTU ${brl(an.iptu)}/ano` : ""}
+                    </p>
+                  )}
+                  {t && (
+                    <div className="col-span-2 rounded-2xl bg-canvas p-3.5">
+                      <p className="text-xs text-muted">Fechado em {new Date(t.data).toLocaleDateString("pt-BR")} · participantes</p>
+                      <p className="mt-1 font-medium">{t.participantes.map((p) => `${participanteNome(p)} (${p.pct}%)`).join(" · ")}</p>
+                    </div>
+                  )}
+                  {isAdmin && (
+                    <div className="col-span-2 flex items-center gap-3 rounded-2xl bg-canvas p-3.5">
+                      <Avatar user={pessoa(c.corretorId)} className="size-8 text-[0.625rem]" />
+                      <div>
+                        <p className="text-xs text-muted">Corretor captador</p>
+                        <p className="font-semibold">{userById(c.corretorId)?.nome}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {prop && (
+                  <div className="flex items-center gap-3 rounded-2xl border border-line p-4">
+                    <span className="grid size-10 place-items-center rounded-full bg-accent-soft text-accent">
+                      <UserRound className="size-4" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-muted">Proprietário</p>
+                      <p className="truncate font-semibold">{prop.nome}</p>
+                      <p className="text-xs text-muted">{formatPhone(prop.whatsapp)}</p>
+                    </div>
+                    <a href={waLink(prop.whatsapp)} target="_blank" rel="noreferrer" aria-label="WhatsApp do proprietário" className="grid size-10 place-items-center rounded-full bg-[#25d366] text-white">
+                      <WhatsAppIcon className="size-4" />
+                    </a>
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <p className="flex items-start gap-2 text-sm text-muted">
+                    <MapPin className="mt-0.5 size-4 shrink-0 text-accent" />
+                    <span>
+                      {im.nome && <span className="font-semibold text-ink">{im.nome} · </span>}
+                      {enderecoCompleto(im.endereco)}
+                    </span>
+                  </p>
+                  <LocalImovel im={im} className="h-48" />
+                </div>
+              </div>
+            )}
+
+            {aba === "captacao" && (
+              <div>
+                <p className="font-display text-lg font-semibold">Checklist de captação</p>
+                <p className="mb-3 text-xs text-muted">Controle interno: o que falta para o imóvel estar documentado e pronto para negociar.</p>
+                <ProgressBar value={doneCaptacao(c) / CHECKLIST_CAPTACAO.length} className="mb-3" tone={doneCaptacao(c) === CHECKLIST_CAPTACAO.length ? "verified" : "accent"} />
+                <div className="space-y-2">
+                  {CHECKLIST_CAPTACAO.map((label, i) => (
+                    <CheckItem key={label} index={i} label={label} checked={c.checklistCaptacao[i]} onToggle={() => toggleCaptacao(c.id, i)} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {aba === "marketing" && (
+              <div>
+                <p className="font-display text-lg font-semibold">Checklist de marketing</p>
+                <p className="mb-3 text-xs text-muted">Ações de divulgação. São elas que aparecem no relatório enviado ao proprietário.</p>
+                <ProgressBar value={feitos / CHECKLIST_MARKETING.length} className="mb-3" tone={feitos === CHECKLIST_MARKETING.length ? "verified" : "accent"} />
+                <div className="space-y-2">
+                  {CHECKLIST_MARKETING.map((label, i) => (
+                    <CheckItem key={label} index={i} label={label} checked={c.checklistMarketing[i]} onToggle={() => toggleMarketing(c.id, i)} />
+                  ))}
+                </div>
+                {!fechada && (
+                  <button onClick={() => setReport(true)} className={`${btn.outline} mt-4`}>
+                    <FileText className="size-4" /> Enviar relatório ao proprietário
+                  </button>
+                )}
+              </div>
+            )}
+
+            {aba === "anuncio" && <AnuncioEditor captacao={c} onPublicado={onClose} />}
           </div>
         )}
       </Drawer>
@@ -292,7 +353,7 @@ export default function Captacoes() {
               { value: "locacao", label: "Só locação" },
             ]}
           />
-          {isAdmin && (
+          {isAdmin && corretoresAtivos().length > 0 && (
             <Select
               label="Corretor"
               icon={<Users className="size-4" />}

@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { AlertTriangle, CheckCircle2, Download, ImageIcon, Info, RefreshCw, Trash2, Upload } from "lucide-react";
 import { imobiliaria, marca } from "@/data/demo";
+import { ehSolo } from "@/data/platform";
 import { useStore } from "@/data/store";
 import { fmtBytes, inspectPng } from "@/lib/files";
 import { relTime } from "@/lib/format";
@@ -70,7 +71,7 @@ export default function Marketing() {
       <motion.div {...stagger(0)}>
         <PageHeader
           title="Marketing"
-          subtitle={isAdmin ? "Envie os materiais oficiais da imobiliária para toda a equipe." : "Materiais oficiais da imobiliária para baixar e usar."}
+          subtitle={isAdmin && !ehSolo(imobiliaria.plano) ? "Envie os materiais oficiais da imobiliária para toda a equipe." : isAdmin ? "Guarde aqui os materiais oficiais da sua marca." : "Materiais oficiais da imobiliária para baixar e usar."}
         />
       </motion.div>
 
@@ -200,7 +201,9 @@ export default function Marketing() {
       <motion.p {...stagger(2)} className="flex items-start gap-2 text-sm text-muted">
         <Info className="mt-0.5 size-4 shrink-0 text-accent" />
         {isAdmin
-          ? "Ao substituir a logo, todos os corretores passam a baixar a versão nova automaticamente."
+          ? ehSolo(imobiliaria.plano)
+            ? "Ao substituir a logo, a versão nova passa a valer em todo o sistema."
+            : "Ao substituir a logo, todos os corretores passam a baixar a versão nova automaticamente."
           : "Use sempre este arquivo oficial nas suas artes e anúncios. Ele é atualizado pelo administrador."}
       </motion.p>
     </div>

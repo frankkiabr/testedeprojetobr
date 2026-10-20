@@ -99,7 +99,7 @@ export default function Transacoes() {
               { value: "locacao", label: "Só locações" },
             ]}
           />
-          {isAdmin && (
+          {isAdmin && corretoresAtivos().length > 0 && (
             <Select
               label="Corretor"
               icon={<Users className="size-4" />}

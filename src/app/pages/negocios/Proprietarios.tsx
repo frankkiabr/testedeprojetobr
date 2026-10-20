@@ -93,7 +93,7 @@ export default function Proprietarios() {
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-wrap items-center gap-2">
           <SearchInput value={busca} onChange={setBusca} placeholder="Buscar proprietário..." />
-          {isAdmin && (
+          {isAdmin && corretoresAtivos().length > 0 && (
             <Select
               label="Corretor"
               icon={<Users className="size-4" />}

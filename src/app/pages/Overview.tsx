@@ -31,7 +31,7 @@ import {
   marketingPendente,
   metrics,
   position,
-  proximasVisitas,
+  proximosCompromissos,
   ranking,
   type Scope,
   pessoa,
@@ -69,7 +69,8 @@ export default function Overview() {
   const m = metrics(scope, month.key);
 
   const semAtendimento = leadsSemAtendimento(scope);
-  const visitas = proximasVisitas(scope);
+  // Próximos compromissos da Agenda (inclui as visitas marcadas nos leads)
+  const proximos = proximosCompromissos(isAdmin ? [user.id, ...corretoresAtivos().map((c) => c.id)] : [user.id], 4);
   const pendentes = marketingPendente(scope);
   const feed = atividades(scope, 7);
   const top = ranking("vgv", month.key)[0];
@@ -212,34 +213,37 @@ export default function Overview() {
             <motion.div {...stagger(3)}>
               <Card className="h-full">
                 <CardHeader
-                  title="Próximas visitas"
-                  subtitle="Nos próximos 7 dias."
+                  title="Próximos compromissos"
+                  subtitle={isAdmin && !solo ? "Seus e da equipe, na Agenda." : "Da sua Agenda."}
                   action={
                     <Link to="/app/agenda" className="text-sm font-semibold text-accent">
                       Ver agenda
                     </Link>
                   }
                 />
-                {visitas.length ? (
+                {proximos.length ? (
                   <ul className="mt-3 space-y-1 px-2 pb-3">
-                    {visitas.slice(0, 4).map((l) => (
+                    {proximos.map((c) => (
                       <li
-                        key={l.id}
-                        onClick={() => navigate(`/app/negocios/leads?lead=${l.id}`)}
+                        key={c.id}
+                        onClick={() => navigate(c.leadId ? `/app/negocios/leads?lead=${c.leadId}` : "/app/agenda")}
                         className="flex cursor-pointer items-center gap-3 rounded-2xl px-3 py-2.5 hover:bg-canvas"
                       >
                         <span className="grid size-9 place-items-center rounded-full bg-accent-soft text-accent">
                           <CalendarClock className="size-4" />
                         </span>
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-semibold">{l.nome}</p>
-                          <p className="truncate text-xs text-muted">{dateTime(l.visitaEm!)}</p>
+                          <p className="truncate text-sm font-semibold">{c.titulo}</p>
+                          <p className="truncate text-xs text-muted">
+                            {dateTime(c.inicio)}
+                            {isAdmin && !solo && c.donoId !== user.id ? ` · ${pessoa(c.donoId).nome.split(" ")[0]}` : ""}
+                          </p>
                         </div>
                       </li>
                     ))}
                   </ul>
                 ) : (
-                  <Empty>Nenhuma visita agendada.</Empty>
+                  <Empty>Nenhum compromisso marcado.</Empty>
                 )}
               </Card>
             </motion.div>

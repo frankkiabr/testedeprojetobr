@@ -284,7 +284,7 @@ export function ImovelFormModal({
 
   // CEP completo: preenche rua, bairro, cidade e estado
   const mudarCep = async (v: string) => {
-    const cep = v.replace(/D/g, "").slice(0, 8);
+    const cep = v.replace(/\D/g, "").slice(0, 8);
     setF((x) => ({ ...x, cep }));
     if (cep.length !== 8) return;
     setBuscando("cep");
@@ -498,7 +498,10 @@ export function CaptacaoFormModal({ open, onClose }: { open: boolean; onClose: (
             <Plus className="size-3.5" /> Não encontrou? Cadastrar {f.categoria === "Apartamento" ? "edifício" : f.categoria.toLowerCase()}
           </button>
           {comUnidade && (
-            <Field label="Unidade" hint="Ex.: Apto 302, Cobertura 1801, Studio 504, Sala 1204">
+            <Field
+              label={f.categoria === "Sala comercial" ? "Número da sala" : "Número do apartamento"}
+              hint={f.categoria === "Sala comercial" ? "Ex.: 1204 (aparece como Sala 1204)" : "Ex.: 302 (aparece como Apto 302). Para cobertura ou studio, escreva: Cobertura 1801"}
+            >
               <input className={inputCls} value={f.unidade} onChange={(e) => setF({ ...f, unidade: e.target.value })} />
             </Field>
           )}
