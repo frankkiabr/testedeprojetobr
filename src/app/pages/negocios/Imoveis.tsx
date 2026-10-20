@@ -79,7 +79,7 @@ function ImovelDrawer({ id, onClose }: { id: string | null; onClose: () => void 
                 ))}
               </ul>
             ) : (
-              <p className="rounded-2xl bg-canvas p-4 text-sm text-muted">Nenhuma captação ainda. Use “Nova captação” e escolha este imóvel.</p>
+              <p className="rounded-2xl bg-canvas p-4 text-sm text-muted">Nenhuma captação ainda. Use “Novo imóvel” com este mesmo endereço.</p>
             )}
           </div>
 
@@ -120,6 +120,7 @@ function ImovelDrawer({ id, onClose }: { id: string | null; onClose: () => void 
 }
 
 export default function Imoveis() {
+  const navigate = useNavigate();
   useStore();
   const [params, setParams] = useSearchParams();
   const [busca, setBusca] = useState("");
@@ -146,7 +147,7 @@ export default function Imoveis() {
           <SearchInput value={busca} onChange={setBusca} placeholder="Buscar edifício, rua ou bairro..." />
           <Select label="Categoria" value={categoria} onChange={setCategoria} options={[{ value: "", label: "Todas as categorias" }, ...CATEGORIAS.map((c) => ({ value: c, label: c }))]} />
         </div>
-        <button onClick={() => setParam("novo", "1")} className={btn.accent}>
+        <button onClick={() => navigate("/app/negocios/captacoes?novo=1")} className={btn.accent}>
           <Plus className="size-4" /> Novo imóvel
         </button>
       </div>

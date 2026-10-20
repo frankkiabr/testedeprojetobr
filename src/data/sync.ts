@@ -179,6 +179,7 @@ const paraImovel = (r: Row<"imoveis">): Imovel => ({
 
 const paraCaptacao = (r: Row<"captacoes">): Captacao => ({
   id: r.id,
+  codigo: r.codigo,
   corretorId: r.corretor_id,
   proprietarioId: r.proprietario_id,
   imovelId: r.imovel_id,

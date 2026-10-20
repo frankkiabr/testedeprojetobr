@@ -68,6 +68,8 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
   o administrador não ocupa vaga). `planos.anuncios` = limite de imóveis publicados no portal (em breve), compartilhado pela
   equipe; o CRM é ilimitado. Solo não faz upgrade de vagas: vira plano de equipe com a Frankkia. Use `ehSolo()` no app.
 - Uso do Supabase no painel Frankkia: `uso_supabase()` (banco, arquivos e contas contra os limites do plano gratuito).
+- Cadastro único: "Novo imóvel" (CaptacaoFormModal) já tem endereço, CEP, mapa e cômodos; o imóvel (lugar físico) é criado
+  por trás ou reaproveitado se o endereço já existe. Cada captação tem `codigo` único global (FK-XXXXXX, `gerar_codigo_imovel`).
 - Portal (fase 1): aba "Anúncio" na captação (`anuncios`, `anuncio_fotos`). Fotos vão direto do navegador para o
   Cloudflare R2 por um endereço assinado da função `fotos-r2` (segredos R2_* no Supabase). Publicar só por `publicar_anuncio`
   (confere limite do plano, CRECI, foto e título). Vendido/alugado sai do portal sozinho. Endereço completo e preço sempre visíveis.

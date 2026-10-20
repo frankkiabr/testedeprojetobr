@@ -253,6 +253,7 @@ export type Database = {
           captado_em: string
           checklist_captacao: boolean[]
           checklist_marketing: boolean[]
+          codigo: string
           corretor_id: string
           finalidade: string
           id: string
@@ -268,6 +269,7 @@ export type Database = {
           captado_em?: string
           checklist_captacao?: boolean[]
           checklist_marketing?: boolean[]
+          codigo?: string
           corretor_id: string
           finalidade: string
           id?: string
@@ -283,6 +285,7 @@ export type Database = {
           captado_em?: string
           checklist_captacao?: boolean[]
           checklist_marketing?: boolean[]
+          codigo?: string
           corretor_id?: string
           finalidade?: string
           id?: string
@@ -1355,6 +1358,7 @@ export type Database = {
         Args: { p_confirmacao: string; p_imob: string }
         Returns: undefined
       }
+      gerar_codigo_imovel: { Args: never; Returns: string }
       imob_liberada: {
         Args: { p_status: string; p_teste_ate: string }
         Returns: boolean

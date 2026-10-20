@@ -32,7 +32,7 @@ import { brl, relTime } from "@/lib/format";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { useScope } from "../../session";
 import { Avatar, Card, ProgressBar, Segmented, Select } from "../../kit";
-import { btn, CheckItem, Drawer, EmptyState, formatPhone, SearchInput, waLink } from "../../forms";
+import { btn, CheckItem, Drawer, EmptyState, Field, formatPhone, inputCls, SearchInput, waLink } from "../../forms";
 import {
   CaptacaoFormModal,
   FinalidadeBadge,
@@ -72,6 +72,7 @@ function CaptacaoCard({ c, showCorretor, onOpen, i }: { c: Captacao; showCorreto
       <div className="p-4">
         <p className="font-display text-xl font-semibold tracking-tight">{valorLabel(c.finalidade, c.valor)}</p>
         <p className="mt-0.5 truncate text-sm font-medium">{captacaoTitulo(c)}</p>
+        {c.codigo && <p className="mt-0.5 font-mono text-[0.6875rem] font-semibold tracking-wide text-subtle">{c.codigo}</p>}
         <p className="mt-0.5 truncate text-xs text-muted">
           {captacaoBairro(c)} · {c.areaM2} m² · {prop?.nome}
         </p>
@@ -106,6 +107,66 @@ function comodos(captacaoId: string) {
 
 type AbaCaptacao = "imovel" | "captacao" | "marketing" | "anuncio";
 
+/** Editar os dados principais do imóvel captado: valor, área, unidade e cômodos. */
+function EditarDados({ c, categoria, onFim }: { c: Captacao; categoria: string; onFim: () => void }) {
+  const { updateCaptacao, salvarAnuncio } = useStore();
+  const an = anuncios.find((x) => x.captacaoId === c.id);
+  const comUnidade = categoria === "Apartamento" || categoria === "Sala comercial";
+  const [f, setF] = useState({
+    valor: String(c.valor),
+    area: String(c.areaM2),
+    unidade: c.unidade ?? "",
+    quartos: an?.quartos?.toString() ?? "",
+    suites: an?.suites?.toString() ?? "",
+    banheiros: an?.banheiros?.toString() ?? "",
+    vagas: an?.vagas?.toString() ?? "",
+  });
+  const n = (s: string) => Number(s.replace(/\./g, "").replace(",", ".").replace(/[^\d.]/g, "")) || 0;
+  const inteiro = (s: string) => (s.trim() === "" ? undefined : Math.min(50, Number(s.replace(/\D/g, "")) || 0));
+  const ok = n(f.valor) > 0 && n(f.area) > 0;
+  const campo = (k: keyof typeof f, label: string, numerico = true) => (
+    <Field label={label}>
+      <input
+        className={inputCls}
+        inputMode={numerico ? "decimal" : "text"}
+        value={f[k]}
+        onChange={(e) => setF({ ...f, [k]: e.target.value })}
+      />
+    </Field>
+  );
+  return (
+    <div className="space-y-4 rounded-2xl border border-line p-4">
+      <div className="grid grid-cols-2 gap-3">
+        {campo("valor", c.finalidade === "venda" ? "Valor de venda" : "Aluguel mensal")}
+        {campo("area", "Área (m²)")}
+        {comUnidade && <div className="col-span-2">{campo("unidade", categoria === "Sala comercial" ? "Número da sala" : "Número do apartamento", false)}</div>}
+      </div>
+      <div className="grid grid-cols-4 gap-3">
+        {campo("quartos", "Quartos")}
+        {campo("suites", "Suítes")}
+        {campo("banheiros", "Banheiros")}
+        {campo("vagas", "Vagas")}
+      </div>
+      <div className="flex justify-end gap-2">
+        <button onClick={onFim} className={btn.outline}>
+          Cancelar
+        </button>
+        <button
+          disabled={!ok}
+          className={btn.primary}
+          onClick={() => {
+            updateCaptacao(c.id, { valor: n(f.valor), areaM2: n(f.area), unidade: f.unidade.trim() || undefined });
+            salvarAnuncio(c.id, { quartos: inteiro(f.quartos), suites: inteiro(f.suites), banheiros: inteiro(f.banheiros), vagas: inteiro(f.vagas) }, "");
+            onFim();
+          }}
+        >
+          Salvar dados
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: () => void }) {
   const { toggleMarketing, toggleCaptacao } = useStore();
   const [aba, setAba] = useState<AbaCaptacao>("imovel");
@@ -113,7 +174,11 @@ function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: () => voi
   const [report, setReport] = useState(false);
   const [registrar, setRegistrar] = useState(false);
   const [informar, setInformar] = useState(false);
-  useEffect(() => setAba("imovel"), [id]);
+  const [editando, setEditando] = useState(false);
+  useEffect(() => {
+    setAba("imovel");
+    setEditando(false);
+  }, [id]);
   const c = id ? captacaoById(id) : undefined;
   const im = c ? imovelById(c.imovelId) : undefined;
   const prop = c ? proprietarioById(c.proprietarioId) : undefined;
@@ -132,7 +197,7 @@ function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: () => voi
 
   return (
     <>
-      <Drawer open={!!c} onClose={onClose} title={c && captacaoTitulo(c)} subtitle={c && `${c.finalidade === "venda" ? "Venda" : "Locação"} · captada ${relTime(c.captadoEm)}`}>
+      <Drawer open={!!c} onClose={onClose} title={c && captacaoTitulo(c)} subtitle={c && `${c.codigo ? `Cód. ${c.codigo} · ` : ""}${c.finalidade === "venda" ? "Venda" : "Locação"} · captada ${relTime(c.captadoEm)}`}>
         {c && im && (
           <div>
             {/* Abas fixas no topo enquanto a janela rola */}
@@ -200,6 +265,16 @@ function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: () => voi
                     )
                   )}
                 </div>
+
+                {editando ? (
+                  <EditarDados c={c} categoria={im.categoria} onFim={() => setEditando(false)} />
+                ) : (
+                  !fechada && (
+                    <button onClick={() => setEditando(true)} className="text-sm font-semibold text-accent">
+                      Editar dados do imóvel
+                    </button>
+                  )
+                )}
 
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div className="rounded-2xl bg-canvas p-3.5">
@@ -334,7 +409,7 @@ export default function Captacoes() {
       if (status === "fechadas" && c.status === "ativa") return false;
       if (finalidade && c.finalidade !== finalidade) return false;
       if (!q) return true;
-      return `${captacaoTitulo(c)} ${captacaoBairro(c)} ${captacaoCategoria(c)} ${proprietarioById(c.proprietarioId)?.nome ?? ""}`.toLowerCase().includes(q);
+      return `${c.codigo ?? ""} ${captacaoTitulo(c)} ${captacaoBairro(c)} ${captacaoCategoria(c)} ${proprietarioById(c.proprietarioId)?.nome ?? ""}`.toLowerCase().includes(q);
     });
   }, [all, status, finalidade, busca]);
 
@@ -342,7 +417,7 @@ export default function Captacoes() {
     <div className="space-y-5">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-wrap items-center gap-2">
-          <SearchInput value={busca} onChange={setBusca} placeholder="Buscar por imóvel, bairro ou proprietário..." />
+          <SearchInput value={busca} onChange={setBusca} placeholder="Buscar por código, imóvel, bairro ou proprietário..." />
           <Select
             label="Finalidade"
             value={finalidade}
@@ -375,14 +450,14 @@ export default function Captacoes() {
             ]}
           />
           <button onClick={() => setParam("novo", "1")} className={btn.accent}>
-            <Plus className="size-4" /> Nova captação
+            <Plus className="size-4" /> Novo imóvel
           </button>
         </div>
       </div>
 
       {list.length === 0 ? (
         <Card>
-          <EmptyState icon={<Plus className="size-6" />} title="Nenhuma captação encontrada" text="Ajuste a busca ou os filtros, ou cadastre uma nova captação." />
+          <EmptyState icon={<Plus className="size-6" />} title="Nenhuma captação encontrada" text="Ajuste a busca ou os filtros, ou cadastre um novo imóvel." />
         </Card>
       ) : (
         <motion.div layout className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">

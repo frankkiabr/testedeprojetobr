@@ -386,6 +386,17 @@ corretores.forEach((c, ci) => {
 
 leads.sort((a, b) => b.criadoEm.localeCompare(a.criadoEm));
 captacoes.sort((a, b) => b.captadoEm.localeCompare(a.captadoEm));
+// Códigos de exemplo (no banco, cada captação ganha um código único)
+captacoes.forEach((c, k) => {
+  const alfabeto = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
+  let n = 7919 * (k + 13);
+  let cod = "";
+  for (let i = 0; i < 6; i++) {
+    cod += alfabeto[n % alfabeto.length];
+    n = Math.floor(n / alfabeto.length) + 101 * (i + k + 1);
+  }
+  c.codigo = "FK-" + cod;
+});
 transacoes.sort((a, b) => b.data.localeCompare(a.data));
 
 /** Fechamentos que os corretores informaram e o administrador ainda precisa registrar. */

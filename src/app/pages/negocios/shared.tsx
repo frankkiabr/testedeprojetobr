@@ -28,7 +28,6 @@ import {
   corretoresAtivos,
   enderecoCompleto,
   imovelById,
-  imovelNome,
   proprietarioById,
   proprietariosOf,
   userById,
@@ -403,157 +402,287 @@ export function ImovelFormModal({
 
 // ---------- Nova captação ----------
 
+/** Mesmo endereço = mesmo imóvel (ex.: outro apartamento do mesmo prédio). */
+const chaveEndereco = (e: { logradouro: string; numero: string; cidade: string }) =>
+  [e.logradouro, e.numero, e.cidade].map((x) => x.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "")).join("|");
+
+/**
+ * NOVA CAPTAÇÃO = cadastro único do imóvel.
+ * O endereço é preenchido aqui mesmo (CEP e mapa); o "imóvel" (lugar físico) é criado por trás,
+ * ou reaproveitado quando o endereço já existe (outra unidade do mesmo prédio). O estudo de mercado continua igual.
+ */
 export function CaptacaoFormModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { addCaptacao, addProprietario } = useStore();
+  const { addCaptacao, addProprietario, addImovel, salvarAnuncio, setLocalImovel } = useStore();
   const { isAdmin, corretorId, setCorretorId } = useTargetCorretor(open);
+  const cidadePadrao = imobiliaria.cidade.split(",")[0]?.trim() ?? "";
+  const ufPadrao = imobiliaria.cidade.split(",")[1]?.trim() ?? "SP";
   const empty = () => ({
     finalidade: "venda" as Finalidade,
     categoria: "Apartamento" as CategoriaImovel,
-    imovelId: "",
+    nome: "",
+    cep: "",
+    logradouro: "",
+    numero: "",
+    bairro: "",
+    cidade: cidadePadrao,
+    uf: ufPadrao,
     unidade: "",
     area: "",
     valor: "",
-    modo: "existente" as "existente" | "novo",
+    quartos: "",
+    suites: "",
+    banheiros: "",
+    vagas: "",
+    modo: "novo" as "existente" | "novo",
     proprietarioId: "",
     propNome: "",
     propWhats: "",
   });
   const [f, setF] = useState(empty);
-  const [novoImovel, setNovoImovel] = useState(false);
+  const [ponto, setPonto] = useState<Ponto | null>(null);
+  const [buscando, setBuscando] = useState<"" | "cep" | "mapa">("");
+  const [avisoMapa, setAvisoMapa] = useState("");
   useEffect(() => {
-    if (open) setF(empty());
+    if (open) {
+      setF(empty());
+      setPonto(null);
+      setAvisoMapa("");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  const opcoesImovel = imoveis.filter((i) => i.categoria === f.categoria).sort((a, b) => imovelNome(a).localeCompare(imovelNome(b)));
   const props = useMemo(() => (corretorId ? proprietariosOf({ corretorId }) : []), [corretorId, open]); // eslint-disable-line react-hooks/exhaustive-deps
   const comUnidade = CATEGORIAS_COM_UNIDADE.includes(f.categoria);
   const valor = num(f.valor);
   const area = num(f.area);
+  const endereco = { logradouro: f.logradouro.trim(), numero: f.numero.trim(), bairro: f.bairro.trim(), cidade: f.cidade.trim(), uf: f.uf };
+  const enderecoOk = endereco.logradouro && endereco.numero && endereco.bairro && endereco.cidade && endereco.uf;
+  // Prédio/casa já cadastrado no mesmo endereço?
+  const existente = enderecoOk ? imoveis.find((i) => chaveEndereco(i.endereco) === chaveEndereco(endereco)) : undefined;
   const propOk = f.modo === "existente" ? !!f.proprietarioId : f.propNome.trim() && normalizePhone(f.propWhats).length >= 12;
-  const ok = corretorId && f.imovelId && valor > 0 && area > 0 && propOk && (!comUnidade || f.unidade.trim());
+  const ok = corretorId && enderecoOk && valor > 0 && area > 0 && propOk && (!comUnidade || f.unidade.trim()) && (!comUnidade || existente || f.nome.trim());
+  const inteiro = (s: string) => (s.trim() === "" ? undefined : Math.min(50, Math.max(0, Number(s.replace(/\D/g, "")) || 0)));
+
+  const mudarCep = async (v: string) => {
+    const cep = v.replace(/\D/g, "").slice(0, 8);
+    setF((x) => ({ ...x, cep }));
+    if (cep.length !== 8) return;
+    setBuscando("cep");
+    const r = await buscarCep(cep);
+    setBuscando("");
+    if (r) {
+      setF((x) => ({ ...x, logradouro: r.logradouro || x.logradouro, bairro: r.bairro || x.bairro, cidade: r.cidade, uf: r.uf || x.uf }));
+      setPonto(null);
+      setAvisoMapa("");
+    } else setAvisoMapa("CEP não encontrado. Preencha o endereço à mão.");
+  };
+
+  const localizarNoMapa = async () => {
+    setAvisoMapa("");
+    setBuscando("mapa");
+    const p = await localizar({ ...endereco, cep: f.cep || undefined });
+    setBuscando("");
+    if (p) setPonto(p);
+    else setAvisoMapa("Não encontramos este endereço no mapa. Confira rua, número e cidade.");
+  };
 
   const save = () => {
+    // 1) imóvel: reaproveita o do mesmo endereço ou cria um novo
+    let imovelId = existente?.id;
+    if (existente) {
+      if (ponto && existente.lat === undefined) setLocalImovel(existente.id, ponto.lat, ponto.lng);
+    } else {
+      imovelId = addImovel({
+        categoria: f.categoria,
+        nome: f.nome.trim() || undefined,
+        endereco,
+        cep: f.cep.length === 8 ? f.cep : undefined,
+        lat: ponto?.lat,
+        lng: ponto?.lng,
+      }).id;
+    }
+    // 2) proprietário
     const proprietarioId =
       f.modo === "existente" ? f.proprietarioId : addProprietario({ corretorId, nome: f.propNome.trim(), whatsapp: normalizePhone(f.propWhats) }).id;
-    addCaptacao({ corretorId, proprietarioId, imovelId: f.imovelId, unidade: f.unidade.trim() || undefined, finalidade: f.finalidade, valor, areaM2: area });
+    // 3) captação + cômodos (ficam no anúncio, prontos para quando for publicar)
+    const c = addCaptacao({ corretorId, proprietarioId, imovelId: imovelId!, unidade: f.unidade.trim() || undefined, finalidade: f.finalidade, valor, areaM2: area });
+    const comodos = { quartos: inteiro(f.quartos), suites: inteiro(f.suites), banheiros: inteiro(f.banheiros), vagas: inteiro(f.vagas) };
+    if (Object.values(comodos).some((x) => x !== undefined)) salvarAnuncio(c.id, comodos, "");
     onClose();
   };
 
+  const campoNum = (k: "quartos" | "suites" | "banheiros" | "vagas", label: string) => (
+    <Field label={label}>
+      <input className={inputCls} inputMode="numeric" value={f[k]} onChange={(e) => setF({ ...f, [k]: e.target.value.replace(/\D/g, "").slice(0, 2) })} />
+    </Field>
+  );
+
   return (
-    <>
-      <Modal
-        open={open}
-        onClose={onClose}
-        title="Nova captação"
-        subtitle="Uma oferta de um imóvel para venda ou locação."
-        footer={
-          <>
-            <button onClick={onClose} className={btn.outline}>
-              Cancelar
-            </button>
-            <button disabled={!ok} onClick={save} className={btn.primary}>
-              Cadastrar captação
-            </button>
-          </>
-        }
-      >
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="flex items-center justify-between sm:col-span-2">
-            <span className="text-xs font-semibold text-muted">Finalidade</span>
+    <Modal
+      open={open}
+      onClose={onClose}
+      title="Novo imóvel"
+      subtitle="Cadastre o imóvel captado de uma vez: endereço, dados e proprietário. Publicar no portal é opcional."
+      footer={
+        <>
+          <button onClick={onClose} className={btn.outline}>
+            Cancelar
+          </button>
+          <button disabled={!ok} onClick={save} className={btn.primary}>
+            Cadastrar imóvel
+          </button>
+        </>
+      }
+    >
+      <div className="grid gap-4 sm:grid-cols-6">
+        <div className="flex flex-wrap items-center justify-between gap-2 sm:col-span-6">
+          <span className="text-xs font-semibold text-muted">Finalidade</span>
+          <Segmented
+            id="cap-finalidade"
+            size="sm"
+            value={f.finalidade}
+            onChange={(v) => setF({ ...f, finalidade: v })}
+            options={[
+              { value: "venda", label: "Venda" },
+              { value: "locacao", label: "Locação" },
+            ]}
+          />
+        </div>
+        {isAdmin && (
+          <div className="sm:col-span-6">
+            <CorretorField
+              label="Corretor captador"
+              value={corretorId}
+              onChange={(v) => {
+                setCorretorId(v);
+                setF((x) => ({ ...x, proprietarioId: "" }));
+              }}
+            />
+          </div>
+        )}
+        <Field label="Categoria" className="sm:col-span-6">
+          <SelectField value={f.categoria} onChange={(v) => setF({ ...f, categoria: v as CategoriaImovel })} options={CATEGORIAS.map((c) => ({ value: c, label: c }))} />
+        </Field>
+
+        {/* Endereço */}
+        <p className="-mb-1 text-sm font-semibold sm:col-span-6">Endereço</p>
+        <Field label="CEP" className="sm:col-span-2" hint={buscando === "cep" ? "Buscando endereço..." : "Preenche o endereço sozinho."}>
+          <input
+            className={inputCls}
+            inputMode="numeric"
+            value={f.cep.length > 5 ? `${f.cep.slice(0, 5)}-${f.cep.slice(5)}` : f.cep}
+            onChange={(e) => mudarCep(e.target.value)}
+            placeholder="00000-000"
+          />
+        </Field>
+        <div className="hidden sm:col-span-4 sm:block" />
+        <Field label="Logradouro (tipo e nome)" className="sm:col-span-4">
+          <input className={inputCls} value={f.logradouro} onChange={(e) => setF({ ...f, logradouro: e.target.value })} placeholder="Ex.: Av. Senador Lemos" />
+        </Field>
+        <Field label="Número do prédio/casa" className="sm:col-span-2">
+          <input className={inputCls} value={f.numero} onChange={(e) => setF({ ...f, numero: e.target.value })} placeholder="78" />
+        </Field>
+        <Field label="Bairro" className="sm:col-span-6">
+          <input list="bairros-imovel" className={inputCls} value={f.bairro} onChange={(e) => setF({ ...f, bairro: e.target.value })} placeholder="Ex.: Umarizal" />
+          <datalist id="bairros-imovel">
+            {bairrosCadastrados().map((b) => (
+              <option key={b} value={b} />
+            ))}
+          </datalist>
+        </Field>
+        <Field label="Cidade" className="sm:col-span-4">
+          <input className={inputCls} value={f.cidade} onChange={(e) => setF({ ...f, cidade: e.target.value })} placeholder="Ex.: Belém" />
+        </Field>
+        <Field label="Estado" className="sm:col-span-2">
+          <SelectField value={f.uf} onChange={(v) => setF({ ...f, uf: v })} options={UFS.map((u) => ({ value: u, label: u }))} />
+        </Field>
+        {existente ? (
+          <p className="flex items-start gap-1.5 rounded-xl bg-accent-soft/60 px-3 py-2.5 text-xs text-accent-deep sm:col-span-6">
+            <Info className="mt-0.5 size-3.5 shrink-0" />
+            Este endereço já está cadastrado{existente.nome ? ` (${existente.nome})` : ""}. O imóvel será ligado a ele, como outra unidade do mesmo prédio.
+          </p>
+        ) : (
+          CATEGORIAS_COM_UNIDADE.includes(f.categoria) && (
+            <Field label="Nome do edifício" className="sm:col-span-6" hint="Ex.: Edifício Montpellier">
+              <input className={inputCls} value={f.nome} onChange={(e) => setF({ ...f, nome: e.target.value })} />
+            </Field>
+          )
+        )}
+        {comUnidade && (
+          <Field
+            label={f.categoria === "Sala comercial" ? "Número da sala" : "Número do apartamento"}
+            className="sm:col-span-6"
+            hint={f.categoria === "Sala comercial" ? "Ex.: 1204 (aparece como Sala 1204)" : "Ex.: 302 (aparece como Apto 302). Para cobertura ou studio, escreva: Cobertura 1801"}
+          >
+            <input className={inputCls} value={f.unidade} onChange={(e) => setF({ ...f, unidade: e.target.value })} />
+          </Field>
+        )}
+        <div className="space-y-2 sm:col-span-6">
+          {ponto ? (
+            <>
+              <Mapa lat={ponto.lat} lng={ponto.lng} onMover={setPonto} className="h-48" />
+              <p className="text-xs text-muted">Se o marcador não estiver no lugar certo, arraste-o até o imóvel.</p>
+            </>
+          ) : (
+            !existente?.lat && (
+              <button type="button" disabled={!enderecoOk || buscando === "mapa"} onClick={localizarNoMapa} className={`${btn.outline} w-full`}>
+                <MapPin className="size-4" /> {buscando === "mapa" ? "Localizando..." : "Localizar no mapa (opcional)"}
+              </button>
+            )
+          )}
+          {avisoMapa && <p className="text-xs font-medium text-amber-700">{avisoMapa}</p>}
+        </div>
+
+        {/* Dados do imóvel */}
+        <p className="-mb-1 text-sm font-semibold sm:col-span-6">Dados do imóvel</p>
+        <Field label="Área (m²)" className="sm:col-span-2">
+          <input className={inputCls} inputMode="decimal" value={f.area} onChange={(e) => setF({ ...f, area: e.target.value })} placeholder="Ex.: 92" />
+        </Field>
+        <Field
+          label={f.finalidade === "venda" ? "Valor de venda" : "Aluguel mensal"}
+          className="sm:col-span-4"
+          hint={valor ? valorLabel(f.finalidade, valor) + (area ? ` · ${brl(valor / area)}/m²` : "") : undefined}
+        >
+          <input className={inputCls} inputMode="numeric" value={f.valor} onChange={(e) => setF({ ...f, valor: e.target.value })} placeholder={f.finalidade === "venda" ? "Ex.: 850000" : "Ex.: 4200"} />
+        </Field>
+        <div className="grid grid-cols-4 gap-3 sm:col-span-6">
+          {campoNum("quartos", "Quartos")}
+          {campoNum("suites", "Suítes")}
+          {campoNum("banheiros", "Banheiros")}
+          {campoNum("vagas", "Vagas")}
+        </div>
+
+        {/* Proprietário */}
+        <div className="sm:col-span-6">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <span className="text-sm font-semibold">Proprietário</span>
             <Segmented
-              id="cap-finalidade"
+              id="prop-modo"
               size="sm"
-              value={f.finalidade}
-              onChange={(v) => setF({ ...f, finalidade: v })}
+              value={f.modo}
+              onChange={(v) => setF({ ...f, modo: v })}
               options={[
-                { value: "venda", label: "Venda" },
-                { value: "locacao", label: "Locação" },
+                { value: "novo", label: "Cadastrar novo" },
+                { value: "existente", label: "Escolher da lista" },
               ]}
             />
           </div>
-          {isAdmin && (
-            <div className="sm:col-span-2">
-              <CorretorField
-                label="Corretor captador"
-                value={corretorId}
-                onChange={(v) => {
-                  setCorretorId(v);
-                  setF((x) => ({ ...x, proprietarioId: "" }));
-                }}
-              />
-            </div>
-          )}
-          <Field label="Categoria">
-            <SelectField value={f.categoria} onChange={(v) => setF({ ...f, categoria: v as CategoriaImovel, imovelId: "" })} options={CATEGORIAS.map((c) => ({ value: c, label: c }))} />
-          </Field>
-          <Field label="Imóvel">
+          {f.modo === "existente" ? (
             <SelectField
-              value={f.imovelId}
-              onChange={(v) => setF({ ...f, imovelId: v })}
-              placeholder={opcoesImovel.length ? "Selecione" : "Nenhum cadastrado"}
-              options={opcoesImovel.map((i) => ({ value: i.id, label: `${imovelNome(i)} · ${i.endereco.bairro}` }))}
+              value={f.proprietarioId}
+              onChange={(v) => setF({ ...f, proprietarioId: v })}
+              placeholder={corretorId ? (props.length ? "Selecione o proprietário" : "Nenhum proprietário cadastrado") : "Escolha o corretor primeiro"}
+              options={props.map((p) => ({ value: p.id, label: p.nome }))}
             />
-          </Field>
-          <button type="button" onClick={() => setNovoImovel(true)} className="-mt-2 flex items-center gap-1.5 text-left text-xs font-semibold text-accent sm:col-span-2">
-            <Plus className="size-3.5" /> Não encontrou? Cadastrar {f.categoria === "Apartamento" ? "edifício" : f.categoria.toLowerCase()}
-          </button>
-          {comUnidade && (
-            <Field
-              label={f.categoria === "Sala comercial" ? "Número da sala" : "Número do apartamento"}
-              hint={f.categoria === "Sala comercial" ? "Ex.: 1204 (aparece como Sala 1204)" : "Ex.: 302 (aparece como Apto 302). Para cobertura ou studio, escreva: Cobertura 1801"}
-            >
-              <input className={inputCls} value={f.unidade} onChange={(e) => setF({ ...f, unidade: e.target.value })} />
-            </Field>
-          )}
-          <Field label="Área (m²)">
-            <input className={inputCls} inputMode="decimal" value={f.area} onChange={(e) => setF({ ...f, area: e.target.value })} placeholder="Ex.: 92" />
-          </Field>
-          <Field
-            label={f.finalidade === "venda" ? "Valor de venda" : "Aluguel mensal"}
-            className={comUnidade ? "sm:col-span-2" : ""}
-            hint={valor ? valorLabel(f.finalidade, valor) + (area ? ` · ${brl(valor / area)}/m²` : "") : undefined}
-          >
-            <input className={inputCls} inputMode="numeric" value={f.valor} onChange={(e) => setF({ ...f, valor: e.target.value })} placeholder={f.finalidade === "venda" ? "Ex.: 850000" : "Ex.: 4200"} />
-          </Field>
-
-          <div className="sm:col-span-2">
-            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-              <span className="text-xs font-semibold text-muted">Proprietário</span>
-              <Segmented
-                id="prop-modo"
-                size="sm"
-                value={f.modo}
-                onChange={(v) => setF({ ...f, modo: v })}
-                options={[
-                  { value: "existente", label: "Escolher da lista" },
-                  { value: "novo", label: "Cadastrar novo" },
-                ]}
-              />
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <input className={inputCls} value={f.propNome} onChange={(e) => setF({ ...f, propNome: e.target.value })} placeholder="Nome do proprietário" />
+              <input className={inputCls} inputMode="tel" value={f.propWhats} onChange={(e) => setF({ ...f, propWhats: e.target.value })} placeholder="WhatsApp com DDD" />
             </div>
-            <p className="mb-3 flex items-start gap-1.5 text-xs text-muted">
-              <Info className="mt-0.5 size-3.5 shrink-0" />
-              {f.modo === "existente"
-                ? "Use quando o proprietário já está na sua lista de Proprietários (por exemplo, ele já tem outro imóvel com você)."
-                : "Use quando é a primeira vez que você atende este proprietário. Ele será salvo em Proprietários."}
-            </p>
-            {f.modo === "existente" ? (
-              <SelectField
-                value={f.proprietarioId}
-                onChange={(v) => setF({ ...f, proprietarioId: v })}
-                placeholder={corretorId ? (props.length ? "Selecione o proprietário" : "Nenhum proprietário cadastrado") : "Escolha o corretor primeiro"}
-                options={props.map((p) => ({ value: p.id, label: p.nome }))}
-              />
-            ) : (
-              <div className="grid gap-3 sm:grid-cols-2">
-                <input className={inputCls} value={f.propNome} onChange={(e) => setF({ ...f, propNome: e.target.value })} placeholder="Nome do proprietário" />
-                <input className={inputCls} inputMode="tel" value={f.propWhats} onChange={(e) => setF({ ...f, propWhats: e.target.value })} placeholder="WhatsApp com DDD" />
-              </div>
-            )}
-          </div>
+          )}
         </div>
-      </Modal>
-      <ImovelFormModal open={novoImovel} onClose={() => setNovoImovel(false)} categoriaInicial={f.categoria} onCreated={(id) => setF((x) => ({ ...x, imovelId: id }))} />
-    </>
+      </div>
+    </Modal>
   );
 }
 

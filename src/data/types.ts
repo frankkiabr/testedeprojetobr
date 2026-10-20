@@ -275,6 +275,8 @@ export type Finalidade = "venda" | "locacao";
  */
 export type Captacao = {
   id: string;
+  /** Código único do imóvel em todo o sistema (ex.: FK-7Q3M2X), para busca interna e no portal. */
+  codigo?: string;
   corretorId: string;
   proprietarioId: string;
   imovelId: string;

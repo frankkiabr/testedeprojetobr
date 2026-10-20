@@ -98,7 +98,7 @@ export default function Overview() {
                 onClick={() => navigate("/app/negocios/captacoes?novo=1")}
                 className="inline-flex h-10 items-center gap-2 rounded-full border border-line-strong bg-bg px-4 text-sm font-semibold transition hover:bg-canvas active:scale-[0.98]"
               >
-                <Home className="size-4" /> Nova captação
+                <Home className="size-4" /> Novo imóvel
               </button>
               <button
                 onClick={() => navigate(isAdmin ? "/app/negocios/transacoes?nova=1" : "/app/negocios/transacoes?informar=1")}

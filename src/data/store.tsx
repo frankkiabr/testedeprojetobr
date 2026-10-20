@@ -161,6 +161,18 @@ function removerAvatarAntigo(url?: string) {
   if (url?.includes(marca)) supabase.storage.from("avatares").remove([url.split(marca)[1]]);
 }
 
+/** Código do imóvel (FK- + 6 letras/números sem os que confundem). O banco garante que é único. */
+function gerarCodigoImovel() {
+  const alfabeto = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
+  const n = crypto.getRandomValues(new Uint8Array(6));
+  return "FK-" + [...n].map((x) => alfabeto[x % alfabeto.length]).join("");
+}
+
+/** Atualiza os dados principais da captação (valor, área, unidade). */
+function dadosCaptacao(c: Captacao) {
+  return { valor: c.valor, area_m2: c.areaM2, unidade: c.unidade ?? null };
+}
+
 const salvarChecklists = (c: Captacao) =>
   gravar(() => supabase.from("captacoes").update({ checklist_captacao: c.checklistCaptacao, checklist_marketing: c.checklistMarketing }).eq("id", c.id));
 
@@ -310,6 +322,7 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       const c: Captacao = {
         ...input,
         id: uid("cp"),
+        codigo: gerarCodigoImovel(),
         status: "ativa",
         captadoEm: new Date().toISOString(),
         checklistCaptacao: CHECKLIST_CAPTACAO.map(() => false),
@@ -319,6 +332,7 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       gravar(() =>
         supabase.from("captacoes").insert({
           id: c.id,
+          codigo: c.codigo,
           imobiliaria_id: ctxDados.imobId,
           corretor_id: c.corretorId,
           proprietario_id: c.proprietarioId,
@@ -336,6 +350,16 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       bump();
       toast("Captação cadastrada.");
       return c;
+    },
+
+    /** Edita valor, área ou unidade da captação (aba Imóvel). */
+    updateCaptacao(id: string, patch: Partial<Pick<Captacao, "valor" | "areaM2" | "unidade">>) {
+      const c = captacoes.find((x) => x.id === id);
+      if (!c) return;
+      Object.assign(c, patch);
+      gravar(() => supabase.from("captacoes").update(dadosCaptacao(c)).eq("id", id));
+      bump();
+      toast("Dados do imóvel atualizados.");
     },
 
     toggleCaptacao(id: string, step: number) {
@@ -357,7 +381,7 @@ function createActions(bump: () => void, toast: (text: string) => void) {
     // ---------- Portal: anúncio da captação ----------
 
     /** Salva os dados do anúncio (rascunho ou publicado). */
-    salvarAnuncio(captacaoId: string, patch: Partial<Omit<Anuncio, "captacaoId" | "publicado" | "slug" | "fotos">>) {
+    salvarAnuncio(captacaoId: string, patch: Partial<Omit<Anuncio, "captacaoId" | "publicado" | "slug" | "fotos">>, aviso = "Anúncio salvo.") {
       const a = anuncioDe(captacaoId);
       Object.assign(a, patch);
       gravar(
@@ -380,7 +404,7 @@ function createActions(bump: () => void, toast: (text: string) => void) {
             .eq("captacao_id", captacaoId),
       );
       bump();
-      toast("Anúncio salvo.");
+      if (aviso) toast(aviso);
     },
 
     /** Publica ou tira do portal. Devolve o motivo, se o banco recusar (sem CRECI, limite do plano...). */
