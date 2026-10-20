@@ -24,7 +24,7 @@ export const Route = createFileRoute("/imoveis")({
 function Pagina() {
   const anuncios = Route.useLoaderData() ?? [];
   return (
-    <PortalShell>
+    <PortalShell rotulo="Imóveis">
       {/* Título da página fica só para o Google (o visitante vai direto à busca) */}
       <h1 className="sr-only">Imóveis à venda e para alugar</h1>
       {anuncios.length ? (

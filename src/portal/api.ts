@@ -31,6 +31,8 @@ export type CartaoAnuncio = {
   publicado_em?: string;
   /** Imobiliária (ou o corretor, no Solo) que anuncia. */
   anunciante?: string;
+  /** Corretor responsável (foto, nome e CRECI no cartão). */
+  corretor?: CorretorResumo;
 };
 
 export type CorretorResumo = {

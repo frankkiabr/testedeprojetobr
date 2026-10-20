@@ -33,7 +33,16 @@ export const creciTexto = (c: { creci: string | null; creci_uf: string | null })
   c.creci ? `CRECI ${c.creci}${c.creci_uf ? `-${c.creci_uf}` : ""}` : "";
 
 /** Moldura das páginas do portal: topo com a imobiliária (ou a Frankkia) e rodapé simples. */
-export function PortalShell({ imob, children }: { imob?: ImobResumo | null; children: ReactNode }) {
+export function PortalShell({
+  imob,
+  rotulo,
+  children,
+}: {
+  imob?: ImobResumo | null;
+  /** Nome da seção ao lado da marca Frankkia (ex.: "Imóveis"). */
+  rotulo?: string;
+  children: ReactNode;
+}) {
   // Trocou de página dentro do portal: volta ao topo e anima a entrada
   const caminho = useRouterState({ select: (s) => s.location.pathname });
   useEffect(() => {
@@ -70,6 +79,7 @@ export function PortalShell({ imob, children }: { imob?: ImobResumo | null; chil
             <a href="/" className="flex items-center gap-2">
               <LogoMark className="size-8 text-lg" />
               <Logo className="text-xl" />
+              {rotulo && <span className="ml-1 text-sm font-medium text-muted">{rotulo}</span>}
             </a>
           )}
           {caminho !== "/imoveis" && (
@@ -131,9 +141,6 @@ export function CartaoImovel({
           {preco(a.finalidade, a.valor)}
         </p>
         <p className="line-clamp-2 text-sm font-medium">{a.titulo}</p>
-        {anunciante && a.anunciante && (
-          <p className="truncate text-xs text-subtle">{a.anunciante}</p>
-        )}
         <p className="flex items-center gap-1.5 text-xs text-muted">
           <MapPin className="size-3.5 shrink-0" />
           {a.bairro}, {a.cidade} - {a.uf}
@@ -165,6 +172,22 @@ export function CartaoImovel({
             {a.codigo}
           </span>
         </div>
+        {a.corretor && (
+          <div className="mt-1 flex items-center gap-2.5 border-t border-line pt-3">
+            <FotoPessoa p={a.corretor} className="size-8 text-xs" />
+            <div className="min-w-0 leading-tight">
+              <p className="truncate text-xs font-semibold">{a.corretor.nome}</p>
+              <p className="truncate text-[0.6875rem] text-muted">
+                {[
+                  creciTexto(a.corretor),
+                  anunciante && a.anunciante !== a.corretor.nome ? a.anunciante : "",
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </Link>
   );
