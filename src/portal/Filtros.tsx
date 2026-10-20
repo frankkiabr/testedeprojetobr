@@ -112,7 +112,7 @@ function Opcoes({ valor, onChange }: { valor: number; onChange: (v: number) => v
           key={n}
           type="button"
           onClick={() => onChange(n)}
-          className={`h-10 min-w-10 flex-1 rounded-xl border px-2 text-sm font-medium transition ${
+          className={`h-10 min-w-9 rounded-xl border px-1.5 text-sm font-medium transition ${n === 0 ? "flex-[1.8]" : "flex-1"} ${
             valor === n ? "border-ink bg-ink text-bg" : "border-line bg-bg hover:border-line-strong"
           }`}
         >
@@ -186,18 +186,24 @@ export function ImoveisComFiltro({
   return (
     <div>
       <div className="mb-6 space-y-4 rounded-3xl border border-line p-5">
-        {busca && (
-          <label className="relative block">
-            <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted" />
-            <input
-              className="h-12 w-full rounded-2xl border border-line bg-canvas pl-11 pr-4 text-[0.9375rem] outline-none transition focus:border-accent focus:bg-bg"
-              placeholder="Buscar por código (FK-...), bairro, cidade ou imobiliária"
-              value={f.texto}
-              onChange={(e) => setF({ ...f, texto: e.target.value })}
-            />
-          </label>
-        )}
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {/* 1ª linha: busca (só na busca geral) e onde fica; 2ª linha: como é e quanto custa */}
+        <div
+          className={`grid gap-3 sm:grid-cols-3 ${busca ? "lg:grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))]" : ""}`}
+        >
+          {busca && (
+            <label className="block min-w-0 sm:col-span-3 lg:col-span-1">
+              <span className="mb-1.5 block text-xs font-semibold text-muted">Buscar</span>
+              <span className="relative block">
+                <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted" />
+                <input
+                  className={`${caixa} pl-10`}
+                  placeholder="Código (FK-...), bairro, cidade ou imobiliária"
+                  value={f.texto}
+                  onChange={(e) => setF({ ...f, texto: e.target.value })}
+                />
+              </span>
+            </label>
+          )}
           <Escolha
             rotulo="Estado"
             todos="Todos os estados"
@@ -219,6 +225,10 @@ export function ImoveisComFiltro({
             onChange={(bairro) => setF({ ...f, bairro })}
             opcoes={bairros.map((b) => ({ valor: b, texto: b }))}
           />
+        </div>
+        <div
+          className={`grid gap-3 sm:grid-cols-2 ${temVendaEAluguel ? "lg:grid-cols-5" : "lg:grid-cols-4"}`}
+        >
           <Escolha
             rotulo="Tipo de imóvel"
             todos="Todos os tipos"
@@ -238,8 +248,6 @@ export function ImoveisComFiltro({
               ]}
             />
           )}
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <div>
             <span className="mb-1.5 block text-xs font-semibold text-muted">Dormitórios</span>
             <Opcoes valor={f.quartos} onChange={(v) => setF({ ...f, quartos: v })} />
@@ -248,7 +256,7 @@ export function ImoveisComFiltro({
             <span className="mb-1.5 block text-xs font-semibold text-muted">Banheiros</span>
             <Opcoes valor={f.banheiros} onChange={(v) => setF({ ...f, banheiros: v })} />
           </div>
-          <div className="sm:col-span-2 lg:col-span-1">
+          <div>
             <span className="mb-1.5 block text-xs font-semibold text-muted">Preço (R$)</span>
             <div className="flex items-center gap-2">
               <input

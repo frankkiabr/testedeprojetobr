@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { buscarTodos } from "@/portal/api";
-import { Surge } from "@/portal/anim";
 import { ImoveisComFiltro } from "@/portal/Filtros";
 import { PortalShell } from "@/portal/ui";
 
@@ -26,14 +25,8 @@ function Pagina() {
   const anuncios = Route.useLoaderData() ?? [];
   return (
     <PortalShell>
-      <Surge y={16} className="mb-8">
-        <h1 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-          Encontre seu imóvel
-        </h1>
-        <p className="mt-2 text-muted">
-          Imóveis anunciados por imobiliárias e corretores credenciados.
-        </p>
-      </Surge>
+      {/* Título da página fica só para o Google (o visitante vai direto à busca) */}
+      <h1 className="sr-only">Imóveis à venda e para alugar</h1>
       {anuncios.length ? (
         <ImoveisComFiltro anuncios={anuncios} busca />
       ) : (
