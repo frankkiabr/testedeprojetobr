@@ -77,7 +77,7 @@ function TesteEncerrado() {
 
 /** Protege a área da imobiliária ("app") e o painel do criador ("admin"). */
 export function Guard({ area, children }: { area: "app" | "admin"; children: ReactNode }) {
-  const { modo, carregando, role, conta, erroDados, tentarDeNovo } = useSession();
+  const { modo, carregando, role, conta, erroDados, erroDetalhe, tentarDeNovo, sair } = useSession();
   const loc = useLocation();
 
   if (carregando) return <Carregando />;
@@ -87,8 +87,12 @@ export function Guard({ area, children }: { area: "app" | "admin"; children: Rea
         <div className="w-full max-w-md rounded-3xl border border-line bg-bg p-10 text-center">
           <h1 className="type-title !text-[1.75rem]">Não foi possível carregar seus dados</h1>
           <p className="mt-3 text-muted">Verifique sua conexão com a internet e tente de novo.</p>
+          {erroDetalhe && <p className="mt-4 rounded-xl bg-canvas px-3 py-2 font-mono text-[0.6875rem] text-subtle">Detalhe: {erroDetalhe}</p>}
           <button onClick={tentarDeNovo} className="mt-8 inline-flex h-12 items-center rounded-full bg-ink px-6 font-semibold text-bg transition hover:bg-ink/85">
             Tentar de novo
+          </button>
+          <button onClick={() => sair()} className="mt-4 flex w-full items-center justify-center gap-2 text-sm font-semibold text-muted hover:text-ink">
+            <LogOut className="size-4" /> Sair
           </button>
         </div>
       </div>

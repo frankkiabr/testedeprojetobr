@@ -31,7 +31,7 @@ import { captacaoTitulo, captacaoById, vagasLivres } from "./queries";
 import { enviarConvitePorEmail, mensagemErro } from "@/integrations/frankkia/client";
 import { comprimirFoto } from "@/lib/files";
 import { aoMudar, compromissoParaBanco, configurarGravacao, contexto as ctxDados, ehReal, enfileirar, falhou, gravar, leadParaBanco, novoId, supabase } from "./sync";
-import { acessosDemo, clientes, errosSistema, interessados, linkDemo, nomeDaTela, novaReferencia, pedidoAberto, pedidoById, pedidosUpgrade, PLANOS, todosChamados } from "./platform";
+import { acessosDemo, clientes, errosSistema, frankkiaUser, interessados, linkDemo, nomeDaTela, novaReferencia, pedidoAberto, pedidoById, pedidosUpgrade, PLANOS, todosChamados } from "./platform";
 import type {
   AcessoDemo,
   Anuncio,
@@ -917,7 +917,7 @@ function createActions(bump: () => void, toast: (text: string) => void) {
 
     /** Troca (ou remove, com null) a foto de perfil de quem está usando o sistema. Devolve um aviso, se falhar. */
     async setFotoPerfil(userId: string, arquivo: File | null): Promise<string | null> {
-      const u = userId === admin.id ? admin : (corretores.find((x) => x.id === userId) ?? null);
+      const u = userId === admin.id ? admin : userId === frankkiaUser.id ? frankkiaUser : (corretores.find((x) => x.id === userId) ?? null);
       const r = await trocarAvatar(arquivo, u, `${userId}`, async (url) => {
         const { error } = await supabase.from("perfis").update({ foto_url: url }).eq("id", userId);
         return error;

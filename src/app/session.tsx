@@ -37,6 +37,8 @@ type Ctx = {
   carregando: boolean;
   /** Os dados do banco não carregaram (ex.: sem internet). */
   erroDados: boolean;
+  /** Motivo técnico do erro ao carregar (mostrado em letra pequena). */
+  erroDetalhe: string;
   tentarDeNovo: () => void;
   role: Role;
   /** Só na demonstração: troca o perfil de exemplo. */
@@ -224,6 +226,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   // ---------- Dados das telas: do banco (login real) ou de exemplo (demonstração) ----------
   const [dadosProntos, setDadosProntos] = useState(false);
   const [erroDados, setErroDados] = useState(false);
+  const [erroDetalhe, setErroDetalhe] = useState("");
   const [, redesenhar] = useState(0);
   useEffect(() => aoMudar(() => redesenhar((n) => n + 1)), []);
 
@@ -242,8 +245,15 @@ export function SessionProvider({ children }: { children: ReactNode }) {
           papel: conta.papel,
           imobId: conta.imobiliaria?.id ?? null,
         });
-      } catch {
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : typeof e === "object" && e && "message" in e ? String((e as { message: unknown }).message) : String(e);
+        setErroDetalhe(msg.slice(0, 200));
         setErroDados(true);
+        // Registra o motivo no painel Frankkia (Erros), sem dados pessoais
+        supabase.rpc("registrar_erro", { p_mensagem: `Carregar dados (${conta.papel ?? "sem papel"}): ${msg}`, p_local: "login" }).then(
+          () => undefined,
+          () => undefined,
+        );
       } finally {
         setDadosProntos(true);
       }
@@ -291,6 +301,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         modo,
         carregando: carregando || (modo === "real" && !dadosProntos),
         erroDados,
+        erroDetalhe,
         tentarDeNovo: () => carregarDados(false),
         role,
         setRole,

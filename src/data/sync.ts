@@ -274,7 +274,15 @@ export async function carregarReal(conta: ContaDados) {
     const nomeAutor = new Map(perfis.map((p) => [p.id, p.nome || p.email]));
     if (minha !== geracao) return;
     aplicarDemo();
-    Object.assign(frankkiaUser, { id: conta.usuarioId, email: conta.email, nome: conta.nome || frankkiaUser.nome });
+    const eu = (await supabase.from("perfis").select("nome, foto_url").eq("id", conta.usuarioId).maybeSingle()).data;
+    const nomeFk = conta.nome || eu?.nome || "Equipe Frankkia";
+    Object.assign(frankkiaUser, {
+      id: conta.usuarioId,
+      email: conta.email,
+      nome: nomeFk,
+      iniciais: iniciaisDe(nomeFk, conta.email),
+      fotoUrl: u(eu?.foto_url ?? null),
+    });
     trocarLista(D.compromissos, agenda.map(paraCompromisso));
     trocarLista(
       P.clientes,

@@ -205,7 +205,7 @@ function UserMenu() {
               <button
                 onClick={async () => {
                   await sair();
-                  navigate("/");
+                  navigate("/login");
                 }}
                 className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm hover:bg-canvas">
                 <LogOut className="size-4 text-muted" /> Sair

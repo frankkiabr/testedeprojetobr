@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Link, NavLink, useLocation, useNavigate, useOutlet } from "react-router-dom";
-import { AlertOctagon, Building2, CalendarDays, ExternalLink, Inbox, LayoutGrid, LifeBuoy, LogOut, Menu, Rocket, X } from "lucide-react";
+import { AlertOctagon, Building2, Camera, CalendarDays, ExternalLink, Inbox, LayoutGrid, LifeBuoy, LogOut, Menu, Rocket, X } from "lucide-react";
 import { errosSistema, interessados, pedidosUpgrade, todosChamados } from "@/data/platform";
 import { useStore } from "@/data/store";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
@@ -73,13 +73,66 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         <button
           onClick={async () => {
             await sair();
-            navigate("/");
+            navigate("/login");
           }}
           className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-bg/60 hover:bg-white/5 hover:text-bg"
         >
           <LogOut className="size-[18px]" /> Sair
         </button>
       </div>
+    </div>
+  );
+}
+
+/** Foto da conta Frankkia no topo do painel: clique para trocar ou remover. */
+function FotoDoPainel() {
+  const { user } = useSession();
+  const { setFotoPerfil, toast } = useStore();
+  const entrada = useRef<HTMLInputElement>(null);
+  const [aberto, setAberto] = useState(false);
+  const [enviando, setEnviando] = useState(false);
+  const trocar = async (arquivo: File | null) => {
+    setAberto(false);
+    setEnviando(true);
+    const erro = await setFotoPerfil(user.id, arquivo);
+    setEnviando(false);
+    toast(erro ?? (arquivo ? "Foto de perfil atualizada." : "Foto de perfil removida."));
+  };
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setAberto(!aberto)}
+        title="Foto de perfil"
+        className="group relative rounded-full ring-offset-2 transition hover:ring-2 hover:ring-accent/40"
+      >
+        <Avatar user={user} className={`size-10 bg-ink text-[0.8125rem] text-bg ${enviando ? "opacity-50" : ""}`} />
+        <span className="absolute -bottom-0.5 -right-0.5 grid size-4 place-items-center rounded-full border-2 border-bg bg-ink text-bg">
+          <Camera className="size-2" />
+        </span>
+      </button>
+      {aberto && (
+        <div className="absolute right-0 top-12 z-50 w-48 overflow-hidden rounded-2xl border border-line bg-bg p-1.5 shadow-float">
+          <button onClick={() => entrada.current?.click()} className="w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-canvas">
+            {user.fotoUrl ? "Trocar foto" : "Adicionar foto"}
+          </button>
+          {user.fotoUrl && (
+            <button onClick={() => trocar(null)} className="w-full rounded-xl px-3 py-2 text-left text-sm text-rose-600 hover:bg-rose-50">
+              Remover foto
+            </button>
+          )}
+        </div>
+      )}
+      <input
+        ref={entrada}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const arq = e.target.files?.[0];
+          e.target.value = "";
+          if (arq) trocar(arq);
+        }}
+      />
     </div>
   );
 }
@@ -132,7 +185,7 @@ export function AdminLayout() {
               <RoleSwitcher />
             </div>
             <span className="hidden text-sm text-muted xl:block">{user.email}</span>
-            <Avatar user={user} className="size-10 bg-ink text-[0.8125rem] text-bg" />
+            <FotoDoPainel />
           </div>
         </header>
         {modo === "demo" && (
