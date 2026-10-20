@@ -14,6 +14,7 @@ import { Route as SplatRouteImport } from './routes/$'
 import { Route as ImoveisRouteImport } from './routes/imoveis'
 import { Route as CorretorSlugRouteImport } from './routes/corretor.$slug'
 import { Route as ImobiliariaSlugRouteImport } from './routes/imobiliaria.$slug'
+import { Route as ImoveisCidadeRouteImport } from './routes/imoveis_.$cidade'
 import { Route as ImovelSlugRouteImport } from './routes/imovel.$slug'
 
 const IndexRoute = IndexRouteImport.update({
@@ -41,6 +42,11 @@ const ImobiliariaSlugRoute = ImobiliariaSlugRouteImport.update({
   path: '/imobiliaria/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ImoveisCidadeRoute = ImoveisCidadeRouteImport.update({
+  id: '/imoveis_/$cidade',
+  path: '/imoveis/$cidade',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ImovelSlugRoute = ImovelSlugRouteImport.update({
   id: '/imovel/$slug',
   path: '/imovel/$slug',
@@ -53,6 +59,7 @@ export interface FileRoutesByFullPath {
   '/imoveis': typeof ImoveisRoute
   '/corretor/$slug': typeof CorretorSlugRoute
   '/imobiliaria/$slug': typeof ImobiliariaSlugRoute
+  '/imoveis/$cidade': typeof ImoveisCidadeRoute
   '/imovel/$slug': typeof ImovelSlugRoute
 }
 export interface FileRoutesByTo {
@@ -61,6 +68,7 @@ export interface FileRoutesByTo {
   '/imoveis': typeof ImoveisRoute
   '/corretor/$slug': typeof CorretorSlugRoute
   '/imobiliaria/$slug': typeof ImobiliariaSlugRoute
+  '/imoveis/$cidade': typeof ImoveisCidadeRoute
   '/imovel/$slug': typeof ImovelSlugRoute
 }
 export interface FileRoutesById {
@@ -70,6 +78,7 @@ export interface FileRoutesById {
   '/imoveis': typeof ImoveisRoute
   '/corretor/$slug': typeof CorretorSlugRoute
   '/imobiliaria/$slug': typeof ImobiliariaSlugRoute
+  '/imoveis_/$cidade': typeof ImoveisCidadeRoute
   '/imovel/$slug': typeof ImovelSlugRoute
 }
 export interface FileRouteTypes {
@@ -80,6 +89,7 @@ export interface FileRouteTypes {
     | '/imoveis'
     | '/corretor/$slug'
     | '/imobiliaria/$slug'
+    | '/imoveis/$cidade'
     | '/imovel/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -88,6 +98,7 @@ export interface FileRouteTypes {
     | '/imoveis'
     | '/corretor/$slug'
     | '/imobiliaria/$slug'
+    | '/imoveis/$cidade'
     | '/imovel/$slug'
   id:
     | '__root__'
@@ -96,6 +107,7 @@ export interface FileRouteTypes {
     | '/imoveis'
     | '/corretor/$slug'
     | '/imobiliaria/$slug'
+    | '/imoveis_/$cidade'
     | '/imovel/$slug'
   fileRoutesById: FileRoutesById
 }
@@ -105,6 +117,7 @@ export interface RootRouteChildren {
   ImoveisRoute: typeof ImoveisRoute
   CorretorSlugRoute: typeof CorretorSlugRoute
   ImobiliariaSlugRoute: typeof ImobiliariaSlugRoute
+  ImoveisCidadeRoute: typeof ImoveisCidadeRoute
   ImovelSlugRoute: typeof ImovelSlugRoute
 }
 
@@ -145,6 +158,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ImobiliariaSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/imoveis_/$cidade': {
+      id: '/imoveis_/$cidade'
+      path: '/imoveis/$cidade'
+      fullPath: '/imoveis/$cidade'
+      preLoaderRoute: typeof ImoveisCidadeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/imovel/$slug': {
       id: '/imovel/$slug'
       path: '/imovel/$slug'
@@ -161,6 +181,7 @@ const rootRouteChildren: RootRouteChildren = {
   ImoveisRoute: ImoveisRoute,
   CorretorSlugRoute: CorretorSlugRoute,
   ImobiliariaSlugRoute: ImobiliariaSlugRoute,
+  ImoveisCidadeRoute: ImoveisCidadeRoute,
   ImovelSlugRoute: ImovelSlugRoute,
 }
 export const routeTree = rootRouteImport

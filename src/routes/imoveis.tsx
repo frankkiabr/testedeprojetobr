@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { buscarTodos } from "@/portal/api";
 import { ImoveisComFiltro } from "@/portal/Filtros";
-import { PortalShell } from "@/portal/ui";
+import { CidadesComImoveis, PortalShell } from "@/portal/ui";
 
 const TITULO = "Imóveis à venda e para alugar · Frankkia";
 const DESCRICAO =
@@ -28,7 +28,10 @@ function Pagina() {
       {/* Título da página fica só para o Google (o visitante vai direto à busca) */}
       <h1 className="sr-only">Imóveis à venda e para alugar</h1>
       {anuncios.length ? (
-        <ImoveisComFiltro anuncios={anuncios} busca />
+        <>
+          <ImoveisComFiltro anuncios={anuncios} busca />
+          <CidadesComImoveis anuncios={anuncios} />
+        </>
       ) : (
         <div className="rounded-3xl bg-canvas p-10 text-center">
           <p className="font-semibold">Ainda não há imóveis anunciados</p>

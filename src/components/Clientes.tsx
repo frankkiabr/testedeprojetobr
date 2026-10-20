@@ -4,9 +4,11 @@ import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { buscarVitrine, type ItemVitrine } from "@/portal/api";
 
+const MINIMO = 3;
+
 /**
  * Quem já anuncia na Frankkia: imobiliárias e corretores (plano Solo) com imóveis publicados no portal.
- * Cada um leva à sua página pública. Sem nenhum anúncio publicado, a seção não aparece.
+ * Cada um leva à sua página pública. Só aparece a partir de 3 clientes anunciando.
  */
 export function Clientes() {
   const [itens, setItens] = useState<ItemVitrine[]>([]);
@@ -15,7 +17,8 @@ export function Clientes() {
       .then((r) => setItens(r ?? []))
       .catch(() => setItens([]));
   }, []);
-  if (!itens.length) return null;
+  // Prova social só com volume: com poucos clientes a seção mais atrapalha do que ajuda
+  if (itens.length < MINIMO) return null;
 
   return (
     <section id="clientes" className="pt-28 sm:pt-40">

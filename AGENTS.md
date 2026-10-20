@@ -77,6 +77,8 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
   TanStack (`src/routes/imovel.$slug.tsx` etc., código em `src/portal/`), renderizadas no servidor para o Google e a prévia
   do WhatsApp; nelas o `<App />` não é montado. Dados só pelas funções `portal_anuncio`, `portal_corretor`,
   `portal_imobiliaria`; o formulário usa `portal_contato`, que cria o lead (origem "Portal") do corretor do imóvel.
+- Busca do portal: `/imoveis` e por cidade `/imoveis/<cidade-uf>` (ex.: `/imoveis/belem-pa`, rota `src/routes/imoveis_.$cidade.tsx`),
+  dados de `portal_busca`. Home: seção "Seus imóveis na vitrine" (`src/components/Vitrine.tsx`); "Quem já usa" só com 3+ clientes.
 - Termos de Uso e Política de Privacidade: `/termos` e `/privacidade` (`src/pages/Legal.tsx`), com links no rodapé, no
   portal, no formulário de contato, na apresentação e no primeiro acesso.
 - CRECI: obrigatório para corretor de equipe (ou estagiário) e sempre para o dono da conta Solo (`checar_creci`, `aceitar_convite`).

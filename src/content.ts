@@ -106,17 +106,31 @@ export const features = {
   ] as { key: FeatureKey; title: string; tag?: string; text: string }[],
 };
 
+/** Seção "Seus imóveis na vitrine": o portal de imóveis como benefício de quem assina. */
+export const vitrine = {
+  eyebrow: "Portal Frankkia",
+  title: "Seus imóveis na vitrine.",
+  text: "Ao assinar, sua imobiliária ganha uma vitrine pública: cada imóvel captado vira um anúncio com fotos, mapa e contato direto, pronto para compartilhar.",
+  items: [
+    { title: "Página para cada imóvel, corretor e imobiliária", text: "Endereço próprio, fotos em destaque, filtros e o CRECI de quem anuncia." },
+    { title: "Aparece no Google", text: "As páginas chegam prontas para o Google ler, inclusive por cidade e bairro." },
+    { title: "Prévia bonita no WhatsApp", text: "Compartilhe o link e o cliente já vê a foto, o título e o preço do imóvel." },
+    { title: "Contato vira lead no CRM", text: "Quem pede informações cai direto no funil do corretor responsável." },
+  ],
+  cta: "Ver os imóveis",
+};
+
 export const pricing = {
   eyebrow: "Planos",
   title: "Planos para o tamanho da sua equipe.",
   text: "Planos mensais pela quantidade de corretores. O administrador da imobiliária não ocupa vaga.",
-  note: "Leads, captações, vendas, agenda, Academy e Marketing sem limite em todos os planos. O limite de anúncios vale só para imóveis publicados no portal, que chega em breve. Planos e condições sujeitos à disponibilidade comercial.",
+  note: "Leads, captações, vendas, agenda, Academy e Marketing sem limite em todos os planos. O limite de anúncios vale só para imóveis publicados no portal de imóveis da Frankkia. Planos e condições sujeitos à disponibilidade comercial.",
   cta: "Solicitar demonstração",
   plans: [
-    { name: "Equipe 5", seats: "1 administrador + até 5 corretores", equipe: "Até 5 corretores", price: "390", anuncios: "50 anúncios no portal (em breve), compartilhados pela equipe" },
-    { name: "Equipe 10", seats: "1 administrador + até 10 corretores", equipe: "Até 10 corretores", price: "650", anuncios: "100 anúncios no portal (em breve), compartilhados pela equipe", highlight: true },
-    { name: "Equipe 30", seats: "1 administrador + até 30 corretores", equipe: "Até 30 corretores", price: "1.800", anuncios: "300 anúncios no portal (em breve), compartilhados pela equipe" },
-    { name: "Equipe 60", seats: "1 administrador + até 60 corretores", equipe: "Até 60 corretores", price: "3.300", anuncios: "600 anúncios no portal (em breve), compartilhados pela equipe" },
+    { name: "Equipe 5", seats: "1 administrador + até 5 corretores", equipe: "Até 5 corretores", price: "390", anuncios: "50 anúncios no portal, compartilhados pela equipe" },
+    { name: "Equipe 10", seats: "1 administrador + até 10 corretores", equipe: "Até 10 corretores", price: "650", anuncios: "100 anúncios no portal, compartilhados pela equipe", highlight: true },
+    { name: "Equipe 30", seats: "1 administrador + até 30 corretores", equipe: "Até 30 corretores", price: "1.800", anuncios: "300 anúncios no portal, compartilhados pela equipe" },
+    { name: "Equipe 60", seats: "1 administrador + até 60 corretores", equipe: "Até 60 corretores", price: "3.300", anuncios: "600 anúncios no portal, compartilhados pela equipe" },
   ] as { name: string; seats: string; equipe: string; price: string; anuncios: string; highlight?: boolean }[],
   /** Plano para corretor autônomo: produto separado, sem equipe (não é um degrau dos planos de equipe). */
   solo: {
@@ -127,7 +141,7 @@ export const pricing = {
     seats: "1 corretor (sem equipe)",
     equipe: "Corretor autônomo (Solo)",
     price: "99",
-    anuncios: "15 anúncios no portal (em breve)",
+    anuncios: "15 anúncios no portal",
   },
 };
 
@@ -138,7 +152,7 @@ export const faq = {
   items: [
     {
       q: "O que é Frankkia?",
-      a: "A Frankkia é uma proposta de ecossistema de tecnologia para o mercado imobiliário, reunindo gestão, performance, capacitação e ferramentas comerciais. Esta primeira versão apresenta a plataforma por meio de interfaces demonstrativas.",
+      a: "A Frankkia é uma proposta de ecossistema de tecnologia para o mercado imobiliário, reunindo gestão, performance, capacitação e ferramentas comerciais. Inclui um portal público onde os imóveis das imobiliárias e corretores clientes são anunciados.",
     },
     {
       q: "Para quem a plataforma foi desenvolvida?",
@@ -150,7 +164,7 @@ export const faq = {
     },
     {
       q: "Como os corretores recebem acesso?",
-      a: "Na experiência planejada, a imobiliária poderá cadastrar gestores e corretores e disponibilizar acessos individuais. O cadastro e a autenticação ainda não estão disponíveis nesta versão demonstrativa.",
+      a: "O administrador da imobiliária convida cada corretor pelo e-mail. O corretor completa o cadastro (com o CRECI) e passa a ter acesso individual, vendo apenas os próprios clientes e negócios.",
     },
     {
       q: "Posso importar dados de planilhas?",
@@ -159,6 +173,18 @@ export const faq = {
     {
       q: "A Frankkia funciona para qualquer imobiliária?",
       a: "Sim. A proposta da Frankkia é atender imobiliárias de diferentes tamanhos e modelos de operação, independentemente de rede ou franquia. A marca é independente.",
+    },
+    {
+      q: "Os anúncios no portal têm custo extra?",
+      a: "Não. O portal está incluído em todos os planos. Cada plano tem um limite de imóveis publicados ao mesmo tempo (de 15 no Solo a 600 no Equipe 60), compartilhado pela equipe. O CRM continua sem limite.",
+    },
+    {
+      q: "Para quem vão os contatos dos anúncios?",
+      a: "Para o corretor responsável pelo imóvel. Quem pede informações pelo formulário entra direto como lead no funil dele, e o botão de WhatsApp abre a conversa com ele.",
+    },
+    {
+      q: "Vocês enviam os anúncios para Zap, OLX e VivaReal?",
+      a: "Esse envio automático está em desenvolvimento. Por enquanto, os anúncios ficam no portal da Frankkia e podem ser compartilhados por link.",
     },
     {
       q: "Como solicitar uma demonstração?",

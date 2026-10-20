@@ -137,11 +137,14 @@ const simples = (s: string) =>
 export function ImoveisComFiltro({
   anuncios,
   busca = false,
+  inicial,
 }: {
   anuncios: CartaoAnuncio[];
+  /** Filtro já escolhido ao abrir (ex.: páginas por cidade). */
+  inicial?: { uf?: string; cidade?: string; bairro?: string };
   busca?: boolean;
 }) {
-  const [f, setF] = useState<Filtro>(VAZIO);
+  const [f, setF] = useState<Filtro>({ ...VAZIO, ...inicial });
   const temVendaEAluguel = new Set(anuncios.map((a) => a.finalidade)).size > 1;
   const ativos = JSON.stringify({ ...f, ordem: "" }) !== JSON.stringify({ ...VAZIO, ordem: "" });
 

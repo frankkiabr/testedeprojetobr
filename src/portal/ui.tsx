@@ -26,6 +26,54 @@ export function telefoneBonito(tel?: string | null) {
     ? `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`
     : `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
 }
+/** Endereço da página da cidade no portal: "Belém", "PA" → "belem-pa". */
+export const slugCidade = (cidade: string, uf: string) =>
+  `${cidade} ${uf}`
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+/** Cidades com imóveis anunciados (para os atalhos "Imóveis por cidade"), da que tem mais para a que tem menos. */
+export function cidadesDe(anuncios: { cidade: string; uf: string }[]) {
+  const mapa = new Map<string, { cidade: string; uf: string; slug: string; total: number }>();
+  for (const a of anuncios) {
+    const slug = slugCidade(a.cidade, a.uf);
+    const c = mapa.get(slug) ?? { cidade: a.cidade, uf: a.uf, slug, total: 0 };
+    c.total++;
+    mapa.set(slug, c);
+  }
+  return [...mapa.values()].sort(
+    (a, b) => b.total - a.total || a.cidade.localeCompare(b.cidade, "pt-BR"),
+  );
+}
+
+/** Atalhos "Imóveis por cidade" (links para /imoveis/<cidade>), úteis para o cliente e para o Google. */
+export function CidadesComImoveis({ anuncios }: { anuncios: { cidade: string; uf: string }[] }) {
+  const cidades = cidadesDe(anuncios);
+  if (!cidades.length) return null;
+  return (
+    <nav aria-label="Imóveis por cidade" className="mt-14 border-t border-line pt-8">
+      <p className="text-sm font-semibold">Imóveis por cidade</p>
+      <ul className="mt-3 flex flex-wrap gap-2">
+        {cidades.map((c) => (
+          <li key={c.slug}>
+            <Link
+              to="/imoveis/$cidade"
+              params={{ cidade: c.slug }}
+              preload="intent"
+              className="inline-flex h-9 items-center gap-1.5 rounded-full border border-line px-3.5 text-sm transition hover:border-line-strong hover:bg-canvas"
+            >
+              {c.cidade} - {c.uf} <span className="text-subtle">{c.total}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
 export const linkWhats = (tel: string, texto: string) =>
   `https://wa.me/${tel}?text=${encodeURIComponent(texto)}`;
 
@@ -244,12 +292,13 @@ export function FotoPessoa({
 }
 
 /** Página não encontrada (anúncio retirado, vendido ou endereço errado). */
-export function NaoEncontrado({ texto }: { texto: string }) {
+export function NaoEncontrado({ texto, children }: { texto: string; children?: ReactNode }) {
   return (
     <PortalShell>
       <div className="mx-auto max-w-md py-24 text-center">
         <p className="font-display text-2xl font-semibold tracking-tight">Página indisponível</p>
         <p className="mt-2 text-muted">{texto}</p>
+        {children}
         <a
           href="/"
           className="mt-6 inline-flex h-11 items-center rounded-full bg-ink px-5 text-sm font-semibold text-bg"

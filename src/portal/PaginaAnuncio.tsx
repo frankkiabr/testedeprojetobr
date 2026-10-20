@@ -342,7 +342,12 @@ function FormContato({ slug, codigo }: { slug: string; codigo: string }) {
       </button>
       <p className="text-center text-[0.6875rem] text-subtle">
         Seus dados vão só para o corretor deste imóvel. Veja a{" "}
-        <a href="/privacidade" target="_blank" rel="noreferrer" className="underline hover:text-muted">
+        <a
+          href="/privacidade"
+          target="_blank"
+          rel="noreferrer"
+          className="underline hover:text-muted"
+        >
           Política de Privacidade
         </a>
         .

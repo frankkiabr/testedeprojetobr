@@ -1,5 +1,12 @@
 import { lazy, Suspense, type ReactNode } from "react";
-import { ClientOnly, createRootRoute, HeadContent, Outlet, Scripts, useRouterState } from "@tanstack/react-router";
+import {
+  ClientOnly,
+  createRootRoute,
+  HeadContent,
+  Outlet,
+  Scripts,
+  useRouterState,
+} from "@tanstack/react-router";
 import appCss from "../index.css?url";
 
 /**
@@ -13,11 +20,11 @@ const App = lazy(() => import("../App"));
  * Exceção: as páginas públicas do portal (/imoveis, /imovel, /corretor, /imobiliaria) vêm prontas do servidor
  * (src/routes/imovel.$slug.tsx etc.), para o Google e a prévia de links do WhatsApp.
  */
-const PORTAL = /^\/(imoveis\/?$|(imovel|corretor|imobiliaria)\/)/;
+const PORTAL = /^\/(imoveis(\/|$)|(imovel|corretor|imobiliaria)\/)/;
 
 const TITULO = "Frankkia — Seu universo imobiliário, em um só lugar.";
 const DESCRICAO =
-  "Gestão, performance, capacitação e ferramentas comerciais conectadas em uma única plataforma para imobiliárias e corretores.";
+  "Gestão, performance, capacitação e portal de imóveis em uma única plataforma para imobiliárias e corretores. Encontre imóveis à venda e para alugar.";
 
 export const Route = createRootRoute({
   head: () => ({

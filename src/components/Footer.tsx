@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Check, Copy, LogIn, Mail } from "lucide-react";
+import { Check, Copy, LogIn, Mail, Search } from "lucide-react";
 import { nav, site } from "@/content";
 import { EASE_OUT_EXPO, scrollToId } from "@/lib/scroll";
 import { Logo } from "./ui";
+import { buscarTodos } from "@/portal/api";
+import { cidadesDe } from "@/portal/ui";
 
 export function Footer({ onSearch }: { onSearch: () => void }) {
   const [copied, setCopied] = useState(false);
@@ -20,6 +22,14 @@ export function Footer({ onSearch }: { onSearch: () => void }) {
   };
 
   const sections = [{ id: "top", label: "Início" }, ...nav];
+
+  // Atalhos do portal: as cidades com mais imóveis anunciados
+  const [cidades, setCidades] = useState<ReturnType<typeof cidadesDe>>([]);
+  useEffect(() => {
+    buscarTodos()
+      .then((l) => setCidades(cidadesDe(l ?? []).slice(0, 5)))
+      .catch(() => setCidades([]));
+  }, []);
 
   return (
     <footer id="contato" className="mt-28 px-3 pb-3 sm:mt-40 sm:px-4 sm:pb-4">
@@ -38,7 +48,7 @@ export function Footer({ onSearch }: { onSearch: () => void }) {
               <p className="mt-4 max-w-[30rem] text-bg/60 sm:text-lg">{site.description}</p>
             </motion.div>
 
-            <nav className="grid grid-cols-2 gap-8 text-[0.9375rem] lg:pt-2">
+            <nav className="grid grid-cols-2 gap-8 text-[0.9375rem] sm:grid-cols-3 lg:pt-2">
               <div>
                 <h3 className="type-eyebrow text-bg/60">Plataforma</h3>
                 <ul className="mt-4 space-y-3">
@@ -53,6 +63,24 @@ export function Footer({ onSearch }: { onSearch: () => void }) {
                         className="text-bg/80 transition-colors hover:text-bg"
                       >
                         {s.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <h3 className="type-eyebrow text-bg/60">Imóveis</h3>
+                <ul className="mt-4 space-y-3">
+                  <li>
+                    <a href="/imoveis" className="inline-flex items-center gap-2 text-bg/80 transition-colors hover:text-bg">
+                      <Search className="size-4" />
+                      Buscar imóveis
+                    </a>
+                  </li>
+                  {cidades.map((c) => (
+                    <li key={c.slug}>
+                      <a href={`/imoveis/${c.slug}`} className="text-bg/80 transition-colors hover:text-bg">
+                        {c.cidade} - {c.uf}
                       </a>
                     </li>
                   ))}

@@ -6,6 +6,7 @@ import { Ecosystem } from "@/components/Ecosystem";
 import { Features } from "@/components/Features";
 import { Pricing } from "@/components/Pricing";
 import { Clientes } from "@/components/Clientes";
+import { Vitrine } from "@/components/Vitrine";
 import { Faq } from "@/components/Faq";
 import { Footer } from "@/components/Footer";
 import { ChatBar } from "@/components/ChatBar";
@@ -23,6 +24,7 @@ export default function Landing() {
         <Hero />
         <Ecosystem />
         <Features />
+        <Vitrine />
         <Clientes />
         <Pricing />
         <Faq />
