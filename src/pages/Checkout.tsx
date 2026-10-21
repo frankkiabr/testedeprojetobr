@@ -72,8 +72,14 @@ export default function Checkout() {
       window.location.href = r.url;
       return;
     }
+    // Já assinava: a troca foi feita na mesma assinatura (cobrou só a diferença)
+    if (r.atualizado) {
+      window.location.href = `/checkout/${pedido.id}?pagamento=ok`;
+      return;
+    }
     setProcessando(false);
     if (r.erro === "STRIPE_NAO_CONFIGURADA") setSemStripe(true);
+    else if (r.erro === "PAGAMENTO_RECUSADO") setErroPagamento("O cartão da assinatura recusou a cobrança da diferença. Atualize o cartão e tente de novo.");
     else if (r.erro === "PEDIDO_JA_PAGO") recarregarDados();
     else setErroPagamento("Não foi possível abrir o pagamento agora. Tente de novo em instantes.");
   };
@@ -141,7 +147,7 @@ export default function Checkout() {
               </div>
             </dl>
             <p className="mt-6 text-xs leading-relaxed text-bg/50">
-              Na versão final, a Stripe pode cobrar só a diferença proporcional deste mês e passar a cobrar o novo valor a partir do próximo ciclo.
+              Se você já tem uma assinatura, a troca é feita nela mesma: a Stripe cobra agora só a diferença proporcional, no cartão já cadastrado, e o novo valor vale a partir da próxima cobrança.
             </p>
           </div>
         </motion.div>

@@ -12,3 +12,6 @@ verify_jwt = false
 
 [functions.fotos-r2]
 verify_jwt = false
+
+[functions.aplicar-reducao]
+verify_jwt = false

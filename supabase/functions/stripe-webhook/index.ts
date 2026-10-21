@@ -43,6 +43,27 @@ Deno.serve(async (req) => {
           const { error } = await db.rpc("aplicar_upgrade", { p_pedido: pedidoId });
           if (error) console.error("Liberação automática falhou", error);
         }
+        // Guarda a assinatura: os próximos upgrades e reduções atualizam esta mesma (nada de cobrança dupla)
+        if (pago && s.subscription && s.customer && s.metadata?.imobiliaria_id) {
+          const imob = s.metadata.imobiliaria_id;
+          const nova = typeof s.subscription === "string" ? s.subscription : s.subscription.id;
+          const { data: antiga } = await db.from("assinaturas_stripe").select("assinatura").eq("imobiliaria_id", imob).maybeSingle();
+          // Se por algum motivo já havia outra assinatura ativa, ela é encerrada para não cobrar duas vezes
+          if (antiga?.assinatura && antiga.assinatura !== nova) {
+            try {
+              await stripe.subscriptions.cancel(antiga.assinatura, { prorate: true });
+            } catch (e) {
+              console.error("Não foi possível encerrar a assinatura antiga", e);
+            }
+          }
+          await db.from("assinaturas_stripe").upsert({
+            imobiliaria_id: imob,
+            cliente: typeof s.customer === "string" ? s.customer : s.customer.id,
+            assinatura: nova,
+            ciclo: s.metadata?.ciclo === "anual" ? "anual" : "mensal",
+            atualizado_em: new Date().toISOString(),
+          });
+        }
       }
     }
   }

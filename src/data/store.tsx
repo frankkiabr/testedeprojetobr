@@ -28,7 +28,7 @@ import {
   trilhas,
 } from "./demo";
 import { captacaoTitulo, captacaoById, vagasLivres } from "./queries";
-import { enviarConvitePorEmail, mensagemErro } from "@/integrations/frankkia/client";
+import { aplicarReducaoNaStripe, enviarConvitePorEmail, mensagemErro } from "@/integrations/frankkia/client";
 import { comprimirFoto } from "@/lib/files";
 import { aoMudar, compromissoParaBanco, configurarGravacao, contexto as ctxDados, ehReal, enfileirar, falhou, gravar, leadParaBanco, novoId, supabase } from "./sync";
 import { acessosDemo, clientes, errosSistema, frankkiaUser, interessados, linkDemo, nomeDaTela, novaReferencia, pedidoAberto, pedidoById, pedidosUpgrade, PLANOS, todosChamados } from "./platform";
@@ -877,15 +877,18 @@ function createActions(bump: () => void, toast: (text: string) => void) {
     async aplicarReducao(id: string): Promise<string | null> {
       const p = pedidosUpgrade.find((x) => x.id === id);
       if (!p) return null;
+      let aviso = "";
       if (ehReal()) {
-        const { error } = await supabase.rpc("aplicar_reducao", { p_pedido: id });
-        if (error) return mensagemErro(error);
+        // Banco + assinatura da Stripe (o novo valor vale a partir da próxima cobrança)
+        const r = await aplicarReducaoNaStripe(id);
+        if (r.erro) return mensagemErro({ message: r.erro });
+        if (r.stripe === "falhou") aviso = " Atenção: a Stripe não atualizou o valor; ajuste no painel da Stripe.";
       }
       Object.assign(p, { liberado: true, liberadoEm: new Date().toISOString(), pagamento: "confirmado" });
       const c = clientes.find((x) => x.id === p.imobiliariaId);
       if (c) Object.assign(c, { plano: p.planoNovo, limiteCorretores: PLANOS[p.planoNovo].limite });
       bump();
-      toast(`Plano trocado para ${p.planoNovo}.`);
+      toast(`Plano trocado para ${p.planoNovo}.${aviso}`);
       return null;
     },
 
