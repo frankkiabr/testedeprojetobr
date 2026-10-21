@@ -42,6 +42,7 @@ import { useSession } from "../session";
 import { AnimatedNumber, Avatar, Badge, Card, CardHeader, PageHeader, ProgressBar, stagger } from "../kit";
 import { waLink } from "../forms";
 import { UpgradeNudge } from "../upgrade";
+import { PrimeirosPassos } from "../PrimeirosPassos";
 
 function MiniStat({ label, value, format, hint }: { label: string; value: number; format: (n: number) => string; hint?: string }) {
   return (
@@ -80,6 +81,8 @@ export default function Overview() {
 
   return (
     <div className="space-y-6">
+      {/* Dono da conta: itens básicos para começar (some quando tudo estiver feito) */}
+      <PrimeirosPassos />
       <motion.div {...stagger(0)}>
         <PageHeader
           title={`${greeting()}, ${firstName}`}
