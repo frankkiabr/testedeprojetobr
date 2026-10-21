@@ -1,5 +1,12 @@
 # Pendências da Frankkia
 
+## Integrações
+
+**Falta:**
+- Google Agenda de verdade (hoje "Conectar Google Agenda" é só simulação; precisa de projeto no Google Cloud).
+- Zap Imóveis, OLX Imóveis e VivaReal: trazer dados de mercado para o Estudo de mercado (e enviar os anúncios do portal).
+- Ao excluir uma imobiliária, cancelar a assinatura dela na Stripe automaticamente.
+
 ## Revisão de segurança
 
 **Falta:** fazer a revisão de segurança (/security-review) junto com o Claude — combinado para depois (semana de 26/10/2026).
