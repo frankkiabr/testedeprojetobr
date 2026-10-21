@@ -33,6 +33,7 @@ export default function Equipe() {
   const { modo, conta } = useSession();
   const [email, setEmail] = useState("");
   const [erro, setErro] = useState("");
+  const [pedidos, setPedidos] = useState<string[]>([]);
   const [confirm, setConfirm] = useState<Usuario | null>(null);
   const [showInativos, setShowInativos] = useState(false);
   const [link, setLink] = useState<string | null>(null);
@@ -253,14 +254,23 @@ export default function Equipe() {
                             <p className="truncate text-sm font-semibold">{c.nome}</p>
                             <p className="truncate text-xs text-muted">{c.email}</p>
                           </div>
-                          <button
-                            onClick={async () => {
-                              const e = await eq.setAtivo(c.id, true);
-                              setErro(e ?? "");
-                            }}
-                            disabled={cheio} className={`${btn.outline} h-8 px-3 text-xs disabled:opacity-40`}>
-                            Reativar
-                          </button>
+                          {/* Reativar é com a Frankkia (evita revezar corretores numa mesma vaga) */}
+                          {pedidos.includes(c.id) ? (
+                            <span className="text-xs font-semibold text-verified">Pedido enviado</span>
+                          ) : (
+                            <button
+                              onClick={async () => {
+                                const e = await eq.pedirReativacao(c.id, `Pedido de reativação de ${c.nome} (${c.email}).`);
+                                setErro(e ?? "");
+                                if (!e) setPedidos((p) => [...p, c.id]);
+                              }}
+                              disabled={cheio}
+                              title={cheio ? "Todas as vagas do plano estão em uso" : "A equipe Frankkia recebe o pedido como chamado"}
+                              className={`${btn.outline} h-8 px-3 text-xs disabled:opacity-40`}
+                            >
+                              Pedir reativação
+                            </button>
+                          )}
                         </Row>
                       ))}
                     </motion.ul>
@@ -296,7 +306,7 @@ export default function Equipe() {
       >
         <p className="text-sm text-muted">
           <span className="font-semibold text-ink">{confirm?.nome}</span> não vai mais conseguir entrar na plataforma. Os leads, imóveis e vendas registrados por ele continuam
-          salvos no histórico da imobiliária, e você pode reativar o acesso depois.
+          salvos no histórico da imobiliária. Para reativar depois, é só pedir à equipe Frankkia (a vaga precisa estar livre no plano).
         </p>
       </Modal>
 

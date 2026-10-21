@@ -203,6 +203,10 @@ export type PedidoUpgrade = {
   liberadoEm?: string;
   /** Referência do pagamento (na versão real, o id da sessão da Stripe) */
   referencia: string;
+  /** mensal ou anual (12 meses pelo preço de 10) */
+  ciclo: "mensal" | "anual";
+  /** upgrade (paga e libera) ou redução (troca para um plano menor, aplicada pela Frankkia) */
+  tipo: "upgrade" | "reducao";
 };
 
 export type ErroSistema = {

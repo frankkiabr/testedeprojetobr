@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { AtSign, BadgeCheck, Bell, Building2, Camera, Check, CreditCard, GraduationCap, Mail, Rocket, UserRound } from "lucide-react";
-import { pricing, site } from "@/content";
+import { pricing } from "@/content";
 import { imobiliaria, UFS } from "@/data/demo";
-import { ehSolo, PLANOS } from "@/data/platform";
+import { ehSolo, pedidoAberto, PLANOS } from "@/data/platform";
 import { vagasUsadas } from "@/data/queries";
 import { useStore } from "@/data/store";
 import type { PlanoNome } from "@/data/types";
@@ -11,9 +11,11 @@ import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { useScope, useSession } from "../session";
 import { mensagemErro, supabase } from "@/integrations/frankkia/client";
 import { Avatar, Card, PageHeader, ProgressBar, Segmented, stagger } from "../kit";
-import { btn, DateInput, Field, formatPhone, inputCls, normalizePhone, SelectField } from "../forms";
+import { btn, DateInput, Field, formatPhone, inputCls, Modal, normalizePhone, SelectField } from "../forms";
 import { PedidoUpgradeStatus, useIrParaPagamento } from "../upgrade";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
+import { CicloToggle } from "@/components/CicloToggle";
+import { mensalNoAnual, reais, totalAnual, valorPlano, type Ciclo } from "@/lib/planos";
 import { linkDaRede, REDES, redesLimpas, textoDaRede } from "@/lib/redes";
 
 type Aba = "imobiliaria" | "plano" | "perfil" | "notificacoes";
@@ -70,8 +72,78 @@ function ImobiliariaForm() {
   );
 }
 
+/** Troca para um plano menor: só se os corretores ativos + convites cabem no plano novo (o banco confere de novo). */
+function ReducaoModal({ plano, onClose }: { plano: PlanoNome | null; onClose: () => void }) {
+  const { solicitarReducao } = useStore();
+  const [erro, setErro] = useState("");
+  const [enviando, setEnviando] = useState(false);
+  useEffect(() => setErro(""), [plano]);
+  if (!plano) return null;
+  const usadas = vagasUsadas();
+  const limite = PLANOS[plano].limite;
+  const sobra = usadas - limite;
+  return (
+    <Modal
+      open={!!plano}
+      onClose={onClose}
+      title={`Trocar para o plano ${plano}`}
+      subtitle={`Hoje: ${imobiliaria.plano} · ${usadas} de ${imobiliaria.limiteCorretores} vagas em uso.`}
+      footer={
+        <>
+          <button onClick={onClose} className={btn.outline}>
+            Cancelar
+          </button>
+          <button
+            disabled={sobra > 0 || enviando}
+            className={btn.primary}
+            onClick={async () => {
+              setEnviando(true);
+              const e = await solicitarReducao(plano);
+              setEnviando(false);
+              if (e) setErro(e);
+              else onClose();
+            }}
+          >
+            {enviando ? "Enviando..." : "Pedir a troca"}
+          </button>
+        </>
+      }
+    >
+      {sobra > 0 ? (
+        <div className="space-y-3 text-sm">
+          <p className="rounded-2xl bg-amber-50 p-4 text-amber-900">
+            O plano {plano} tem <strong>{limite} vagas</strong>, e hoje há <strong>{usadas}</strong> corretores ativos ou convidados. Desative{" "}
+            <strong>{sobra}</strong> {sobra === 1 ? "corretor" : "corretores"} (ou cancele convites) antes de pedir a troca.
+          </p>
+          <p className="text-muted">
+            Corretores desativados não perdem nada: vendas, captações e resultados continuam no histórico e no ranking. Para reativar depois, é só pedir à
+            equipe Frankkia (a vaga precisa estar livre no plano).
+          </p>
+          <Link to="/app/equipe" onClick={onClose} className="inline-block font-semibold text-accent">
+            Ir para Equipe →
+          </Link>
+        </div>
+      ) : (
+        <div className="space-y-3 text-sm text-muted">
+          <p>
+            Sua equipe cabe no plano {plano} ({usadas} de {limite} vagas). A equipe Frankkia confirma a troca e o novo valor (
+            <strong className="text-ink">R$ {pricing.plans.find((p) => p.name === plano)?.price}/mês</strong>) passa a valer na próxima cobrança.
+          </p>
+          <p>Nada é apagado: todos os dados e resultados da equipe continuam guardados.</p>
+        </div>
+      )}
+      {erro && <p className="mt-3 text-sm text-rose-600">{erro}</p>}
+    </Modal>
+  );
+}
+
 function Plano() {
   const irParaPagamento = useIrParaPagamento();
+  const { addChamado, toast } = useStore();
+  const { user } = useScope();
+  const [ciclo, setCiclo] = useState<Ciclo>("mensal");
+  const [reducao, setReducao] = useState<PlanoNome | null>(null);
+  const emAndamento = !!pedidoAberto(imobiliaria.id);
   const usadas = vagasUsadas();
   const solo = ehSolo(imobiliaria.plano);
   const atual = pricing.plans.find((p) => p.name === imobiliaria.plano) ?? pricing.solo;
@@ -113,51 +185,63 @@ function Plano() {
 
       {solo ? (
         <Section title="Sua operação cresceu?" subtitle="O plano Solo é para quem trabalha sozinho. Se você abriu uma imobiliária e vai ter corretores, a Frankkia muda sua conta para um plano de equipe e mantém todos os seus dados.">
-          <a
-            href={`mailto:${site.email}?subject=${encodeURIComponent(`Virar imobiliária - ${imobiliaria.nome}`)}&body=${encodeURIComponent(
-              `Olá! Sou ${imobiliaria.nome}, do plano Solo, e gostaria de mudar para um plano de equipe.`,
-            )}`}
+          <button
             className={btn.accent}
+            onClick={() => {
+              addChamado({
+                autorId: user.id,
+                assunto: "Virar imobiliária (sair do plano Solo)",
+                categoria: "Plano",
+                mensagem: `Olá! Sou ${imobiliaria.nome}, do plano Solo, e gostaria de mudar para um plano de equipe.`,
+              });
+              toast("Pedido enviado à equipe Frankkia. Acompanhe em Ajuda → Chamados.");
+            }}
           >
-            <Mail className="size-4" /> Falar com a Frankkia
-          </a>
+            <Mail className="size-4" /> Pedir à Frankkia
+          </button>
         </Section>
       ) : (
       <Section title="Mudar de plano" subtitle="Escolha o plano e pague por cartão, PIX ou boleto. As vagas extras são liberadas após a confirmação do pagamento.">
+        <div className="mb-4 flex justify-center sm:justify-start">
+          <CicloToggle ciclo={ciclo} onChange={setCiclo} />
+        </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {pricing.plans.map((p) => {
             const current = p.name === imobiliaria.plano;
+            const mensal = valorPlano(p.price);
             return (
               <div key={p.name} className={`flex flex-col rounded-2xl border p-5 ${current ? "border-accent bg-accent-soft/50" : "border-line"}`}>
                 <p className="font-display text-lg font-semibold">{p.name}</p>
                 <p className="text-sm text-muted">{p.seats}</p>
                 <p className="mt-4 font-display text-2xl font-semibold">
-                  R$ {p.price}
+                  R$ {ciclo === "anual" ? reais(mensalNoAnual(mensal)) : p.price}
                   <span className="text-sm font-normal text-muted">/mês</span>
                 </p>
+                <p className="h-4 text-xs text-muted">{ciclo === "anual" && `R$ ${reais(totalAnual(mensal))} por ano`}</p>
                 {current ? (
                   <span className="mt-4 inline-flex h-10 items-center justify-center gap-2 rounded-full bg-accent text-sm font-semibold text-white">
                     <Check className="size-4" /> Plano atual
                   </span>
                 ) : PLANOS[p.name as PlanoNome].limite > imobiliaria.limiteCorretores ? (
-                  <button onClick={() => irParaPagamento(p.name as PlanoNome)} className={`${btn.accent} mt-4`}>
+                  <button onClick={() => irParaPagamento(p.name as PlanoNome, ciclo)} className={`${btn.accent} mt-4`}>
                     <Rocket className="size-4" /> Fazer upgrade
                   </button>
                 ) : (
-                  <a
-                    href={`mailto:${site.email}?subject=${encodeURIComponent(`Mudança de plano - ${imobiliaria.nome}`)}&body=${encodeURIComponent(
-                      `Olá! Gostaria de mudar o plano da ${imobiliaria.nome} de ${imobiliaria.plano} para ${p.name}.`,
-                    )}`}
-                    className={`${btn.outline} mt-4`}
+                  <button
+                    onClick={() => setReducao(p.name as PlanoNome)}
+                    disabled={emAndamento}
+                    title={emAndamento ? "Já existe um pedido de plano em andamento" : undefined}
+                    className={`${btn.outline} mt-4 disabled:opacity-40`}
                   >
-                    <Mail className="size-4" /> Solicitar
-                  </a>
+                    Trocar para este
+                  </button>
                 )}
               </div>
             );
           })}
         </div>
         <p className="mt-4 text-xs text-subtle">{pricing.note}</p>
+        <ReducaoModal plano={reducao} onClose={() => setReducao(null)} />
       </Section>
       )}
     </div>

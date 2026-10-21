@@ -10,7 +10,7 @@ import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { Badge, Card, PageHeader, Segmented, stagger } from "../kit";
 import { btn, EmptyState, Modal } from "../forms";
 
-type Filtro = "liberar" | "pagamento" | "concluidos" | "todos";
+type Filtro = "liberar" | "pagamento" | "reducoes" | "concluidos" | "todos";
 
 const PAGAMENTO: Record<PedidoUpgrade["pagamento"], { label: string; tone: "verified" | "warn" | "danger" | "neutral" }> = {
   confirmado: { label: "Pagamento confirmado", tone: "verified" },
@@ -22,20 +22,22 @@ const METODO = { cartao: { label: "Cartão", icon: CreditCard }, pix: { label: "
 
 /** Pedidos de upgrade de todas as imobiliárias. Pagamento confirmado → botão para liberar o plano. */
 export default function Upgrades() {
-  const { liberarUpgrade, confirmarPagamentoManual } = useStore();
+  const { liberarUpgrade, confirmarPagamentoManual, aplicarReducao, toast } = useStore();
   const navigate = useNavigate();
   const [filtro, setFiltro] = useState<Filtro>("liberar");
   const [confirmar, setConfirmar] = useState<PedidoUpgrade | null>(null);
 
-  const aLiberar = pedidosUpgrade.filter((p) => p.pagamento === "confirmado" && !p.liberado);
-  const emPagamento = pedidosUpgrade.filter((p) => !p.liberado && (p.pagamento === "pendente" || p.pagamento === "aguardando"));
+  const aLiberar = pedidosUpgrade.filter((p) => p.tipo === "upgrade" && p.pagamento === "confirmado" && !p.liberado);
+  const emPagamento = pedidosUpgrade.filter((p) => p.tipo === "upgrade" && !p.liberado && (p.pagamento === "pendente" || p.pagamento === "aguardando"));
+  // Troca para um plano menor: não tem pagamento, a Frankkia confere as vagas e aplica
+  const reducoes = pedidosUpgrade.filter((p) => p.tipo === "reducao" && !p.liberado && p.pagamento !== "cancelado");
   const concluidos = pedidosUpgrade.filter((p) => p.liberado || p.pagamento === "cancelado");
-  const lista = { liberar: aLiberar, pagamento: emPagamento, concluidos, todos: pedidosUpgrade }[filtro];
+  const lista = { liberar: aLiberar, pagamento: emPagamento, reducoes, concluidos, todos: pedidosUpgrade }[filtro];
 
   return (
     <div className="space-y-5">
       <motion.div {...stagger(0)}>
-        <PageHeader title="Pedidos de upgrade" subtitle="Imobiliárias que escolheram um plano maior. Libere o novo plano assim que o pagamento for confirmado." />
+        <PageHeader title="Pedidos de upgrade" subtitle="Imobiliárias que escolheram um plano maior (libere após o pagamento) ou pediram para trocar por um plano menor (aplique a troca)." />
       </motion.div>
 
       <motion.div {...stagger(1)} className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
@@ -46,6 +48,7 @@ export default function Upgrades() {
           options={[
             { value: "liberar", label: `Prontos para liberar (${aLiberar.length})` },
             { value: "pagamento", label: `Aguardando pagamento (${emPagamento.length})` },
+            { value: "reducoes", label: `Trocas para plano menor (${reducoes.length})` },
             { value: "concluidos", label: "Concluídos" },
             { value: "todos", label: "Todos" },
           ]}
@@ -78,7 +81,10 @@ export default function Upgrades() {
                         </button>
                         <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted">
                           {p.planoAtual} <ArrowRight className="size-3.5" /> <span className="font-semibold text-ink">{p.planoNovo}</span>
-                          <span>· {extras > 0 ? `+${extras} vagas` : "contratação do plano"} · {brl(p.valorMensal)}/mês</span>
+                          <span>
+                            · {p.tipo === "reducao" ? `redução: ${extras} vagas` : extras > 0 ? `+${extras} vagas` : "contratação do plano"} · {brl(p.valorMensal)}/mês
+                            {p.ciclo === "anual" && <span className="ml-1 font-semibold text-verified">· anual</span>}
+                          </span>
                         </p>
                         <p className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-subtle">
                           Pedido {relTime(p.criadoEm)}
@@ -107,7 +113,19 @@ export default function Upgrades() {
                             {PAGAMENTO[p.pagamento].label}
                           </Badge>
                         )}
-                        {(p.pagamento === "aguardando" || p.pagamento === "pendente") && !p.liberado && (
+                        {p.tipo === "reducao" && !p.liberado && p.pagamento !== "cancelado" && (
+                          <button
+                            onClick={async () => {
+                              const e = await aplicarReducao(p.id);
+                              if (e) toast(e);
+                            }}
+                            title="Confere se os corretores ativos cabem no plano novo e aplica a troca"
+                            className={btn.accent}
+                          >
+                            <CheckCircle2 className="size-4" /> Aplicar troca
+                          </button>
+                        )}
+                        {p.tipo === "upgrade" && (p.pagamento === "aguardando" || p.pagamento === "pendente") && !p.liberado && (
                           <button
                             onClick={() => confirmarPagamentoManual(p.id)}
                             title="Use quando receber o pagamento por fora (PIX, transferência), enquanto a Stripe não está ligada"

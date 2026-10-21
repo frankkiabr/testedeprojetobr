@@ -1,9 +1,33 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Check, Megaphone, UserRound, Users } from "lucide-react";
 import { pricing } from "@/content";
 import { useNavigate } from "react-router-dom";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { Button } from "./ui";
+import { CicloToggle } from "./CicloToggle";
+import { mensalNoAnual, reais, totalAnual, valorPlano, type Ciclo } from "@/lib/planos";
+
+/** Preço do cartão: no anual mostra quanto sai por mês e o total cobrado no ano. */
+function Preco({ preco, ciclo, escuro = false }: { preco: string; ciclo: Ciclo; escuro?: boolean }) {
+  const mensal = valorPlano(preco);
+  return (
+    <div>
+      <p className="flex items-start gap-1.5">
+        <span className={`mt-2 text-lg font-medium ${escuro ? "text-bg/70" : "text-muted"}`}>R$</span>
+        <span className="font-display text-[3rem] font-medium leading-none tracking-[-0.04em]">{ciclo === "anual" ? reais(mensalNoAnual(mensal)) : preco}</span>
+        <span className={`mt-auto pb-1.5 text-sm ${escuro ? "text-bg/60" : "text-muted"}`}>/mês</span>
+      </p>
+      <p className={`mt-2 h-4 text-xs ${escuro ? "text-bg/60" : "text-muted"}`}>
+        {ciclo === "anual" && (
+          <>
+            <span className="line-through opacity-70">R$ {preco}</span> · R$ {reais(totalAnual(mensal))} por ano
+          </>
+        )}
+      </p>
+    </div>
+  );
+}
 
 export function Pricing() {
   const navigate = useNavigate();
@@ -13,6 +37,7 @@ export function Pricing() {
     navigate(`/apresentacao?equipe=${encodeURIComponent(equipe)}`);
   };
   const solo = pricing.solo;
+  const [ciclo, setCiclo] = useState<Ciclo>("mensal");
 
   return (
     <section id="planos" className="pt-28 sm:pt-40">
@@ -27,6 +52,9 @@ export function Pricing() {
           <p className="type-eyebrow text-accent">{pricing.eyebrow}</p>
           <h2 className="type-title mt-3">{pricing.title}</h2>
           <p className="mx-auto mt-4 max-w-[34rem] text-muted sm:text-lg">{pricing.text}</p>
+          <div className="mt-8 flex justify-center">
+            <CicloToggle ciclo={ciclo} onChange={setCiclo} />
+          </div>
         </motion.header>
 
         <ul className="mt-12 grid gap-4 sm:mt-16 sm:grid-cols-2 lg:grid-cols-4">
@@ -47,11 +75,9 @@ export function Pricing() {
                 )}
                 <div className="relative flex h-full flex-col">
                   <p className="type-subtitle">{p.name}</p>
-                  <p className="mt-8 flex items-start gap-1.5">
-                    <span className={`mt-2 text-lg font-medium ${dark ? "text-bg/70" : "text-muted"}`}>R$</span>
-                    <span className="font-display text-[3rem] font-medium leading-none tracking-[-0.04em]">{p.price}</span>
-                    <span className={`mt-auto pb-1.5 text-sm ${dark ? "text-bg/60" : "text-muted"}`}>/mês</span>
-                  </p>
+                  <div className="mt-8">
+                    <Preco preco={p.price} ciclo={ciclo} escuro={dark} />
+                  </div>
                   <ul className={`mt-6 space-y-2.5 text-sm ${dark ? "text-bg/75" : "text-muted"}`}>
                     <li className="flex items-start gap-2">
                       <Users className="mt-0.5 size-4 shrink-0" />
@@ -105,11 +131,7 @@ export function Pricing() {
               </span>
             </p>
           </div>
-          <p className="flex items-start gap-1.5">
-            <span className="mt-2 text-lg font-medium text-muted">R$</span>
-            <span className="font-display text-[3rem] font-medium leading-none tracking-[-0.04em]">{solo.price}</span>
-            <span className="mt-auto pb-1.5 text-sm text-muted">/mês</span>
-          </p>
+          <Preco preco={solo.price} ciclo={ciclo} />
           <Button
             href={`/apresentacao?equipe=${encodeURIComponent(solo.equipe)}`}
             variant="outline"

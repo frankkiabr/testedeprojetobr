@@ -217,6 +217,8 @@ export const pedidosUpgrade: PedidoUpgrade[] = clientes
       pagoEm: i === 0 ? daysAgo(0.29) : undefined,
       liberado: false,
       referencia: ref(),
+      ciclo: i === 0 ? "anual" : "mensal",
+      tipo: "upgrade",
     };
   });
 

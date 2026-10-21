@@ -36,6 +36,7 @@ import { AdminOnly } from "@/app/pages/AdminOnly";
 import { AdminLayout } from "@/app/admin/AdminLayout";
 import AdminOverview from "@/app/admin/Overview";
 import Imobiliarias from "@/app/admin/Imobiliarias";
+import CorretoresPainel from "@/app/admin/Corretores";
 import Chamados from "@/app/admin/Chamados";
 import Erros from "@/app/admin/Erros";
 
@@ -115,6 +116,7 @@ export default function App() {
                 <Route index element={<AdminOverview />} />
                 <Route path="agenda" element={<AgendaAdmin />} />
                 <Route path="imobiliarias" element={<Imobiliarias />} />
+                <Route path="corretores" element={<CorretoresPainel />} />
                 <Route path="interessados" element={<Interessados />} />
                 <Route path="upgrades" element={<Upgrades />} />
                 <Route path="chamados" element={<Chamados />} />

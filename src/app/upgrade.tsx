@@ -13,15 +13,19 @@ import { brl, relTime } from "@/lib/format";
 import { btn, Modal } from "./forms";
 import { ProgressBar } from "./kit";
 import { useSession } from "./session";
+import { CicloToggle } from "@/components/CicloToggle";
+import { mensalNoAnual, totalAnual, type Ciclo } from "@/lib/planos";
 
 const ORDEM: PlanoNome[] = PLANOS_EQUIPE;
-export const proximoPlano = (): PlanoNome | null => ORDEM[ORDEM.indexOf(imobiliaria.plano) + 1] ?? null;
+export const proximoPlano = (): PlanoNome | null =>
+  ORDEM[ORDEM.indexOf(imobiliaria.plano) + 1] ?? null;
 
 /** Leva direto ao pagamento do plano escolhido. */
 export function useIrParaPagamento() {
   const { criarPedidoUpgrade } = useStore();
   const navigate = useNavigate();
-  return (plano: PlanoNome) => navigate(`/checkout/${criarPedidoUpgrade(plano)}`);
+  return (plano: PlanoNome, ciclo: Ciclo = "mensal") =>
+    navigate(`/checkout/${criarPedidoUpgrade(plano, ciclo)}`);
 }
 
 export function UpgradeModal({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -29,8 +33,13 @@ export function UpgradeModal({ open, onClose }: { open: boolean; onClose: () => 
   const { modo, conta } = useSession();
   // No teste grátis, dá para contratar o próprio plano do teste (ou um maior)
   const emTeste = modo === "real" && conta?.imobiliaria?.status === "teste";
-  const opcoes = ORDEM.filter((p) => (emTeste ? PLANOS[p].limite >= imobiliaria.limiteCorretores : PLANOS[p].limite > imobiliaria.limiteCorretores));
+  const opcoes = ORDEM.filter((p) =>
+    emTeste
+      ? PLANOS[p].limite >= imobiliaria.limiteCorretores
+      : PLANOS[p].limite > imobiliaria.limiteCorretores,
+  );
   const [plano, setPlano] = useState<PlanoNome | null>(opcoes[0] ?? null);
+  const [ciclo, setCiclo] = useState<Ciclo>("mensal");
   useEffect(() => {
     if (open) setPlano(opcoes[0] ?? null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -52,7 +61,7 @@ export function UpgradeModal({ open, onClose }: { open: boolean; onClose: () => 
               disabled={!plano}
               onClick={() => {
                 onClose();
-                if (plano) irParaPagamento(plano);
+                if (plano) irParaPagamento(plano, ciclo);
               }}
               className={btn.accent}
             >
@@ -64,6 +73,9 @@ export function UpgradeModal({ open, onClose }: { open: boolean; onClose: () => 
     >
       {opcoes.length ? (
         <div className="space-y-3">
+          <div className="flex justify-center pb-1">
+            <CicloToggle ciclo={ciclo} onChange={setCiclo} />
+          </div>
           {opcoes.map((p) => {
             const info = pricing.plans.find((x) => x.name === p)!;
             const sel = plano === p;
@@ -73,7 +85,9 @@ export function UpgradeModal({ open, onClose }: { open: boolean; onClose: () => 
                 onClick={() => setPlano(p)}
                 className={`flex w-full items-center gap-4 rounded-2xl border-2 p-4 text-left transition ${sel ? "border-accent bg-accent-soft/50" : "border-line hover:border-line-strong"}`}
               >
-                <span className={`grid size-6 shrink-0 place-items-center rounded-full border-2 ${sel ? "border-accent bg-accent text-white" : "border-line-strong"}`}>
+                <span
+                  className={`grid size-6 shrink-0 place-items-center rounded-full border-2 ${sel ? "border-accent bg-accent text-white" : "border-line-strong"}`}
+                >
                   {sel && <Check className="size-3.5" strokeWidth={3} />}
                 </span>
                 <div className="flex-1">
@@ -81,21 +95,33 @@ export function UpgradeModal({ open, onClose }: { open: boolean; onClose: () => 
                   <p className="text-sm text-muted">
                     {info.seats} ·{" "}
                     <span className="font-semibold text-verified">
-                      {PLANOS[p].limite > imobiliaria.limiteCorretores ? `+${PLANOS[p].limite - imobiliaria.limiteCorretores} vagas` : "o mesmo do seu teste"}
+                      {PLANOS[p].limite > imobiliaria.limiteCorretores
+                        ? `+${PLANOS[p].limite - imobiliaria.limiteCorretores} vagas`
+                        : "o mesmo do seu teste"}
                     </span>
                   </p>
                 </div>
-                <p className="font-display text-xl font-semibold">
-                  {brl(PLANOS[p].preco)}
-                  <span className="text-xs font-normal text-muted">/mês</span>
-                </p>
+                <div className="text-right">
+                  <p className="font-display text-xl font-semibold">
+                    {brl(ciclo === "anual" ? mensalNoAnual(PLANOS[p].preco) : PLANOS[p].preco)}
+                    <span className="text-xs font-normal text-muted">/mês</span>
+                  </p>
+                  {ciclo === "anual" && (
+                    <p className="text-xs text-muted">{brl(totalAnual(PLANOS[p].preco))} por ano</p>
+                  )}
+                </div>
               </button>
             );
           })}
-          <p className="text-xs text-subtle">Pagamento por cartão, PIX ou boleto. As novas vagas são liberadas assim que o pagamento é confirmado. {pricing.note}</p>
+          <p className="text-xs text-subtle">
+            Pagamento por cartão, PIX ou boleto. As novas vagas são liberadas assim que o pagamento
+            é confirmado. {pricing.note}
+          </p>
         </div>
       ) : (
-        <p className="text-sm text-muted">Você já está no maior plano. Para equipes acima de 60 corretores, fale com a Frankkia.</p>
+        <p className="text-sm text-muted">
+          Você já está no maior plano. Para equipes acima de 60 corretores, fale com a Frankkia.
+        </p>
       )}
     </Modal>
   );
@@ -108,22 +134,53 @@ export function PedidoUpgradeStatus({ compact = false }: { compact?: boolean }) 
   const p = pedidoAberto(imobiliaria.id);
   if (!p) return null;
 
-  const cfg = {
-    aguardando: { icon: CreditCard, cor: "bg-accent-soft text-accent-deep", titulo: "Pagamento não concluído", texto: `Upgrade para ${p.planoNovo} aguardando pagamento.` },
-    pendente: { icon: Clock, cor: "bg-amber-100 text-amber-800", titulo: "Pagamento em compensação", texto: `Upgrade para ${p.planoNovo}: boleto em compensação (até 3 dias úteis).` },
-    confirmado: { icon: CheckCircle2, cor: "bg-verified-soft text-verified", titulo: "Pagamento confirmado", texto: `Upgrade para ${p.planoNovo}: aguardando a liberação pela equipe Frankkia.` },
-    cancelado: { icon: Clock, cor: "", titulo: "", texto: "" },
-  }[p.pagamento];
+  const reducao = p.tipo === "reducao";
+  const cfg = reducao
+    ? {
+        icon: Clock,
+        cor: "bg-canvas text-ink",
+        titulo: "Troca de plano solicitada",
+        texto: `Troca de ${p.planoAtual} para ${p.planoNovo}: aguardando a confirmação da equipe Frankkia.`,
+      }
+    : {
+        aguardando: {
+          icon: CreditCard,
+          cor: "bg-accent-soft text-accent-deep",
+          titulo: "Pagamento não concluído",
+          texto: `Upgrade para ${p.planoNovo} aguardando pagamento.`,
+        },
+        pendente: {
+          icon: Clock,
+          cor: "bg-amber-100 text-amber-800",
+          titulo: "Pagamento em compensação",
+          texto: `Upgrade para ${p.planoNovo}: boleto em compensação (até 3 dias úteis).`,
+        },
+        confirmado: {
+          icon: CheckCircle2,
+          cor: "bg-verified-soft text-verified",
+          titulo: "Pagamento confirmado",
+          texto: `Upgrade para ${p.planoNovo}: aguardando a liberação pela equipe Frankkia.`,
+        },
+        cancelado: { icon: Clock, cor: "", titulo: "", texto: "" },
+      }[p.pagamento];
   const Icon = cfg.icon;
 
   if (compact)
     return (
       <button
-        onClick={() => (p.pagamento === "aguardando" ? navigate(`/checkout/${p.id}`) : navigate("/app/configuracoes?aba=plano"))}
+        onClick={() =>
+          p.pagamento === "aguardando" && !reducao
+            ? navigate(`/checkout/${p.id}`)
+            : navigate("/app/configuracoes?aba=plano")
+        }
         className={`flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left text-[0.6875rem] font-semibold ${cfg.cor}`}
       >
         <Icon className="size-3.5 shrink-0" />
-        <span className="truncate">{p.pagamento === "aguardando" ? `Concluir pagamento do ${p.planoNovo}` : cfg.titulo}</span>
+        <span className="truncate">
+          {p.pagamento === "aguardando" && !reducao
+            ? `Concluir pagamento do ${p.planoNovo}`
+            : cfg.titulo}
+        </span>
       </button>
     );
 
@@ -136,7 +193,7 @@ export function PedidoUpgradeStatus({ compact = false }: { compact?: boolean }) 
           {cfg.texto} Pedido criado {relTime(p.criadoEm)}.
         </p>
       </div>
-      {p.pagamento === "aguardando" && (
+      {p.pagamento === "aguardando" && !reducao && (
         <button onClick={() => navigate(`/checkout/${p.id}`)} className={btn.primary}>
           Concluir pagamento <ArrowRight className="size-4" />
         </button>
@@ -146,7 +203,13 @@ export function PedidoUpgradeStatus({ compact = false }: { compact?: boolean }) 
 }
 
 /** Cartão de incentivo: aparece quando o uso do plano passa de `aPartirDe` (0 a 1). */
-export function UpgradeNudge({ aPartirDe = 0.7, compact = false }: { aPartirDe?: number; compact?: boolean }) {
+export function UpgradeNudge({
+  aPartirDe = 0.7,
+  compact = false,
+}: {
+  aPartirDe?: number;
+  compact?: boolean;
+}) {
   useStore();
   const [open, setOpen] = useState(false);
   const uso = usoDoPlano();
@@ -170,12 +233,21 @@ export function UpgradeNudge({ aPartirDe = 0.7, compact = false }: { aPartirDe?:
           className="relative overflow-hidden rounded-3xl bg-linear-to-br from-accent to-accent-deep p-6 text-white"
         >
           <Sparkles className="absolute -right-4 -top-4 size-28 text-white/10" />
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/70">{cheio ? "Plano cheio" : "Sua equipe está crescendo"}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/70">
+            {cheio ? "Plano cheio" : "Sua equipe está crescendo"}
+          </p>
           <p className="mt-2 font-display text-xl font-semibold leading-snug">
-            {cheio ? "Todas as vagas estão em uso." : `${Math.round(uso * 100)}% das vagas já estão em uso.`} Libere mais {PLANOS[prox].limite - imobiliaria.limiteCorretores} vagas com o plano {prox}.
+            {cheio
+              ? "Todas as vagas estão em uso."
+              : `${Math.round(uso * 100)}% das vagas já estão em uso.`}{" "}
+            Libere mais {PLANOS[prox].limite - imobiliaria.limiteCorretores} vagas com o plano{" "}
+            {prox}.
           </p>
           <ProgressBar value={uso} className="mt-4 h-1.5 bg-white/20 [&>div]:bg-white" />
-          <button onClick={() => setOpen(true)} className="mt-5 inline-flex h-10 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-accent-deep transition hover:bg-white/90">
+          <button
+            onClick={() => setOpen(true)}
+            className="mt-5 inline-flex h-10 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-accent-deep transition hover:bg-white/90"
+          >
             <Rocket className="size-4" /> Ver planos
           </button>
         </motion.div>

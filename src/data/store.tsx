@@ -794,12 +794,12 @@ function createActions(bump: () => void, toast: (text: string) => void) {
     // ---------- Upgrade de plano (pagamento + liberação) ----------
 
     /** Cria (ou atualiza) o pedido de upgrade da imobiliária e devolve o id para ir ao pagamento. */
-    criarPedidoUpgrade(plano: PlanoNome) {
+    criarPedidoUpgrade(plano: PlanoNome, ciclo: PedidoUpgrade["ciclo"] = "mensal") {
       let p = pedidoAberto(imobiliaria.id);
-      if (p && p.pagamento === "aguardando") {
-        Object.assign(p, { planoNovo: plano, valorMensal: PLANOS[plano].preco });
+      if (p && p.pagamento === "aguardando" && p.tipo === "upgrade") {
+        Object.assign(p, { planoNovo: plano, valorMensal: PLANOS[plano].preco, ciclo });
         const id = p.id;
-        gravar(() => supabase.from("pedidos_upgrade").update({ plano_novo: plano, valor_mensal: PLANOS[plano].preco }).eq("id", id));
+        gravar(() => supabase.from("pedidos_upgrade").update({ plano_novo: plano, valor_mensal: PLANOS[plano].preco, ciclo }).eq("id", id));
       } else if (!p) {
         p = {
           id: uid("up"),
@@ -811,6 +811,8 @@ function createActions(bump: () => void, toast: (text: string) => void) {
           pagamento: "aguardando",
           liberado: false,
           referencia: ehReal() ? `FK-${Date.now().toString(36).toUpperCase()}` : novaReferencia(),
+          ciclo,
+          tipo: "upgrade",
         };
         pedidosUpgrade.unshift(p);
         const n = p;
@@ -825,11 +827,78 @@ function createActions(bump: () => void, toast: (text: string) => void) {
             liberado: false,
             referencia: n.referencia,
             criado_por: ctxDados.userId,
+            ciclo: n.ciclo,
           }),
         );
       }
       bump();
       return p.id;
+    },
+
+    /** Pede a troca para um plano menor (a Frankkia aplica). Devolve o erro, ou null. */
+    async solicitarReducao(plano: PlanoNome): Promise<string | null> {
+      if (ehReal()) {
+        const { data, error } = await supabase.rpc("solicitar_reducao", { p_plano: plano });
+        if (error) return mensagemErro(error);
+        pedidosUpgrade.unshift({
+          id: data as string,
+          imobiliariaId: imobiliaria.id,
+          planoAtual: imobiliaria.plano,
+          planoNovo: plano,
+          valorMensal: PLANOS[plano].preco,
+          criadoEm: new Date().toISOString(),
+          pagamento: "aguardando",
+          liberado: false,
+          referencia: String(data).slice(0, 8).toUpperCase(),
+          ciclo: "mensal",
+          tipo: "reducao",
+        });
+      } else {
+        pedidosUpgrade.unshift({
+          id: uid("up"),
+          imobiliariaId: imobiliaria.id,
+          planoAtual: imobiliaria.plano,
+          planoNovo: plano,
+          valorMensal: PLANOS[plano].preco,
+          criadoEm: new Date().toISOString(),
+          pagamento: "aguardando",
+          liberado: false,
+          referencia: novaReferencia(),
+          ciclo: "mensal",
+          tipo: "reducao",
+        });
+      }
+      bump();
+      toast(`Pedido enviado: troca para o plano ${plano}. A equipe Frankkia confirma em breve.`);
+      return null;
+    },
+
+    /** Frankkia: aplica a troca para um plano menor (o banco confere as vagas de novo). */
+    async aplicarReducao(id: string): Promise<string | null> {
+      const p = pedidosUpgrade.find((x) => x.id === id);
+      if (!p) return null;
+      if (ehReal()) {
+        const { error } = await supabase.rpc("aplicar_reducao", { p_pedido: id });
+        if (error) return mensagemErro(error);
+      }
+      Object.assign(p, { liberado: true, liberadoEm: new Date().toISOString(), pagamento: "confirmado" });
+      const c = clientes.find((x) => x.id === p.imobiliariaId);
+      if (c) Object.assign(c, { plano: p.planoNovo, limiteCorretores: PLANOS[p.planoNovo].limite });
+      bump();
+      toast(`Plano trocado para ${p.planoNovo}.`);
+      return null;
+    },
+
+    /** Frankkia: reativa o acesso de um corretor (a regra de vagas do plano continua valendo). */
+    async reativarCorretor(imobId: string, usuarioId: string): Promise<string | null> {
+      if (!ehReal()) {
+        toast("Corretor reativado.");
+        return null;
+      }
+      const { error } = await supabase.rpc("reativar_corretor", { p_imob: imobId, p_usuario: usuarioId });
+      if (error) return mensagemErro(error);
+      toast("Corretor reativado.");
+      return null;
     },
 
     /** Frankkia: confirma à mão um pagamento recebido (PIX, transferência...) enquanto a Stripe não está ligada. */

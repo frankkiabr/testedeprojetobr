@@ -21,6 +21,8 @@ export type Equipe = {
   reenviar: (id: string) => Promise<{ link: string; enviado: boolean } | null>;
   cancelar: (id: string) => Promise<void>;
   setAtivo: (usuarioId: string, ativo: boolean) => Promise<string | null>;
+  /** Corretor desativado: pede a reativação à Frankkia (vira um chamado). */
+  pedirReativacao: (usuarioId: string, motivo: string) => Promise<string | null>;
 };
 
 const linkDe = (token: string) => `${window.location.origin}/convite/${token}`;
@@ -100,6 +102,7 @@ export function useEquipe(): Equipe {
         store.setCorretorAtivo(id, ativo);
         return null;
       },
+      pedirReativacao: async () => null,
     };
   }
 
@@ -142,6 +145,12 @@ export function useEquipe(): Equipe {
       await carregar();
       recarregarDados();
       return error ? mensagemErro(error) : null;
+    },
+    pedirReativacao: async (usuarioId, motivo) => {
+      const { error } = await supabase.rpc("pedir_reativacao", { p_usuario: usuarioId, p_motivo: motivo });
+      if (error) return mensagemErro(error);
+      recarregarDados();
+      return null;
     },
   };
 }

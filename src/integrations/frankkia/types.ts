@@ -942,6 +942,7 @@ export type Database = {
       }
       pedidos_upgrade: {
         Row: {
+          ciclo: string
           criado_em: string
           criado_por: string | null
           id: string
@@ -954,9 +955,11 @@ export type Database = {
           plano_atual: string
           plano_novo: string
           referencia: string | null
+          tipo: string
           valor_mensal: number
         }
         Insert: {
+          ciclo?: string
           criado_em?: string
           criado_por?: string | null
           id?: string
@@ -969,9 +972,11 @@ export type Database = {
           plano_atual: string
           plano_novo: string
           referencia?: string | null
+          tipo?: string
           valor_mensal: number
         }
         Update: {
+          ciclo?: string
           criado_em?: string
           criado_por?: string | null
           id?: string
@@ -984,6 +989,7 @@ export type Database = {
           plano_atual?: string
           plano_novo?: string
           referencia?: string | null
+          tipo?: string
           valor_mensal?: number
         }
         Relationships: [
@@ -1330,6 +1336,7 @@ export type Database = {
         }
         Returns: string
       }
+      aplicar_reducao: { Args: { p_pedido: string }; Returns: undefined }
       aplicar_upgrade: { Args: { p_pedido: string }; Returns: undefined }
       compartilha_imobiliaria: { Args: { p_usuario: string }; Returns: boolean }
       criar_imobiliaria: {
@@ -1398,6 +1405,20 @@ export type Database = {
           valor: number
         }[]
       }
+      painel_corretores: {
+        Args: never
+        Returns: {
+          ativo: boolean
+          desde: string
+          email: string
+          imobiliaria: string
+          imobiliaria_id: string
+          nome: string
+          papel: string
+          plano: string
+          usuario_id: string
+        }[]
+      }
       painel_imobiliarias: {
         Args: never
         Returns: {
@@ -1421,6 +1442,10 @@ export type Database = {
         }[]
       }
       pasta_imobiliaria: { Args: { p_nome: string }; Returns: string }
+      pedir_reativacao: {
+        Args: { p_motivo: string; p_usuario: string }
+        Returns: string
+      }
       pertence: { Args: { p_imob: string }; Returns: boolean }
       pode_editar_captacao: { Args: { p_captacao: string }; Returns: boolean }
       pode_mexer_avatar: { Args: { p_nome: string }; Returns: boolean }
@@ -1463,6 +1488,10 @@ export type Database = {
           vgv: number
         }[]
       }
+      reativar_corretor: {
+        Args: { p_imob: string; p_usuario: string }
+        Returns: undefined
+      }
       redes_validas: { Args: { r: Json }; Returns: boolean }
       registrar_erro: {
         Args: { p_local: string; p_mensagem: string }
@@ -1481,6 +1510,7 @@ export type Database = {
         Returns: string
       }
       slugificar: { Args: { p: string }; Returns: string }
+      solicitar_reducao: { Args: { p_plano: string }; Returns: string }
       uso_supabase: {
         Args: never
         Returns: {

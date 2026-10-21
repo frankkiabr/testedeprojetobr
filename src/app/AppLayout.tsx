@@ -4,7 +4,6 @@ import { Link, NavLink, useLocation, useNavigate, useOutlet } from "react-router
 import {
   AlertTriangle,
   BarChart3,
-  Bell,
   BookOpen,
   Briefcase,
   CalendarDays,
@@ -30,6 +29,7 @@ import { useSession } from "./session";
 import { Avatar, ProgressBar } from "./kit";
 import { Toaster } from "./forms";
 import { UpgradeModal, UpgradeNudge } from "./upgrade";
+import { Notificacoes } from "./Notificacoes";
 
 const MENU = [
   { to: "visao-geral", label: "Visão geral", icon: LayoutGrid },
@@ -282,10 +282,7 @@ export function AppLayout() {
               <RoleSwitcher />
             </div>
             <span className="hidden text-sm text-muted xl:block">{nomeImob}</span>
-            <button aria-label="Notificações" className="relative grid size-10 place-items-center rounded-full text-muted hover:bg-canvas hover:text-ink">
-              <Bell className="size-[18px]" />
-              <span className="absolute right-2.5 top-2.5 size-2 rounded-full bg-accent ring-2 ring-bg" />
-            </button>
+            <Notificacoes />
             <UserMenu />
           </div>
         </header>

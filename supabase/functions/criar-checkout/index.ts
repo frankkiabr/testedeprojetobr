@@ -30,6 +30,13 @@ Deno.serve(async (req) => {
       .maybeSingle();
     if (membro?.papel !== "admin") return json({ erro: "APENAS_ADMIN" }, 403);
     if (pedido.pagamento !== "aguardando" || pedido.liberado) return json({ erro: "PEDIDO_JA_PAGO" }, 409);
+    if (pedido.tipo === "reducao") return json({ erro: "PEDIDO_SEM_PAGAMENTO" }, 409);
+
+    // Preço oficial do plano (nunca o que veio do navegador). Anual = 12 meses pelo preço de 10, cobrado por ano.
+    const { data: plano } = await db.from("planos").select("preco").eq("nome", pedido.plano_novo).maybeSingle();
+    if (!plano) return json({ erro: "PLANO_INVALIDO" }, 400);
+    const anual = pedido.ciclo === "anual";
+    const centavos = Math.round(Number(plano.preco) * (anual ? 10 : 1) * 100);
 
     const stripe = new Stripe(chave);
     const nomeImob = (pedido.imobiliarias as { nome: string } | null)?.nome ?? "";
@@ -46,9 +53,9 @@ Deno.serve(async (req) => {
           quantity: 1,
           price_data: {
             currency: "brl",
-            unit_amount: Math.round(Number(pedido.valor_mensal) * 100),
-            recurring: { interval: "month" },
-            product_data: { name: `Frankkia ${pedido.plano_novo}`, description: nomeImob || undefined },
+            unit_amount: centavos,
+            recurring: { interval: anual ? "year" : "month" },
+            product_data: { name: `Frankkia ${pedido.plano_novo}${anual ? " (anual)" : ""}`, description: nomeImob || undefined },
           },
         },
       ],

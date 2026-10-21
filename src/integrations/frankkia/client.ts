@@ -125,6 +125,10 @@ export function mensagemErro(e: unknown): string {
     [/CRECI_OBRIGATORIO/, "Informe o CRECI ou marque que é estagiário(a)."],
     [/APENAS_FRANKKIA/, "Só a equipe Frankkia pode fazer isso."],
     [/APENAS_ADMIN/, "Só o administrador pode fazer isso."],
+    [/REATIVACAO_PELA_FRANKKIA/, "A reativação de corretores é feita pela equipe Frankkia. Use \"Pedir reativação\"."],
+    [/MEMBRO_DESATIVADO/, "Este corretor está desativado. Peça a reativação à equipe Frankkia em Equipe → Acessos desativados."],
+    [/VAGAS_EM_USO/, "Há mais corretores ativos (ou convidados) do que o plano escolhido permite. Desative alguns em Equipe antes de trocar."],
+    [/PEDIDO_ABERTO/, "Já existe um pedido de plano em andamento."],
     [/Failed to fetch|NetworkError/i, "Sem conexão com o servidor. Verifique sua internet."],
   ];
   return mapa.find(([re]) => re.test(msg))?.[1] ?? "Algo deu errado. Tente novamente.";

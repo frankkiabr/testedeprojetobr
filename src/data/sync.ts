@@ -233,6 +233,8 @@ const paraPedido = (p: Row<"pedidos_upgrade">): PedidoUpgrade => ({
   liberado: p.liberado,
   liberadoEm: u(p.liberado_em),
   referencia: p.referencia ?? p.id.slice(0, 8).toUpperCase(),
+  ciclo: (p.ciclo as PedidoUpgrade["ciclo"]) ?? "mensal",
+  tipo: (p.tipo as PedidoUpgrade["tipo"]) ?? "upgrade",
 });
 
 // ---------- Carregar tudo do banco ----------

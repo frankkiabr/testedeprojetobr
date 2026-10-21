@@ -7,6 +7,7 @@ import { pedidoById, PLANOS } from "@/data/platform";
 import { useStore } from "@/data/store";
 import type { PedidoUpgrade } from "@/data/types";
 import { brl } from "@/lib/format";
+import { DESCONTO_ANUAL, totalAnual } from "@/lib/planos";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { Logo } from "@/components/ui";
 import { Segmented } from "@/app/kit";
@@ -101,6 +102,9 @@ export default function Checkout() {
   };
 
   const vagasExtras = PLANOS[pedido.planoNovo].limite - PLANOS[pedido.planoAtual].limite;
+  const anual = pedido.ciclo === "anual";
+  // Anual: 12 meses pelo preço de 10, cobrado de uma vez
+  const cobranca = anual ? `${brl(totalAnual(pedido.valorMensal))}/ano` : `${brl(pedido.valorMensal)}/mês`;
   const finalizado = pedido.pagamento !== "aguardando";
 
   return (
@@ -125,8 +129,15 @@ export default function Checkout() {
                 </dd>
               </div>
               <div className="flex justify-between border-t border-white/10 pt-3 text-base">
-                <dt className="font-semibold">Total mensal</dt>
-                <dd className="font-display text-2xl font-semibold">{brl(pedido.valorMensal)}</dd>
+                <dt className="font-semibold">{anual ? "Total anual" : "Total mensal"}</dt>
+                <dd className="text-right">
+                  <span className="font-display text-2xl font-semibold">{brl(anual ? totalAnual(pedido.valorMensal) : pedido.valorMensal)}</span>
+                  {anual && (
+                    <span className="block text-xs text-bg/60">
+                      12 meses pelo preço de 10 (-{DESCONTO_ANUAL}%) · em vez de {brl(pedido.valorMensal * 12)}
+                    </span>
+                  )}
+                </dd>
               </div>
             </dl>
             <p className="mt-6 text-xs leading-relaxed text-bg/50">
@@ -177,7 +188,7 @@ export default function Checkout() {
                 </p>
                 {erroPagamento && <p className="mt-4 rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700">{erroPagamento}</p>}
                 <button disabled={processando} onClick={pagarComStripe} className={`${btn.accent} mt-6 h-12 w-full`}>
-                  {processando ? "Abrindo a Stripe..." : `Pagar ${brl(pedido.valorMensal)}/mês com cartão`}
+                  {processando ? "Abrindo a Stripe..." : `Pagar ${cobranca} com cartão`}
                   {!processando && <ArrowRight className="size-4" />}
                 </button>
                 <button onClick={() => store.cancelarPedidoUpgrade(pedido.id)} className={`${btn.outline} mt-2 w-full`}>

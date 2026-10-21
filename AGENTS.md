@@ -82,6 +82,12 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
 - Termos de Uso e Política de Privacidade: `/termos` e `/privacidade` (`src/pages/Legal.tsx`), com links no rodapé, no
   portal, no formulário de contato, na apresentação e no primeiro acesso.
 - CRECI: obrigatório para corretor de equipe (ou estagiário) e sempre para o dono da conta Solo (`checar_creci`, `aceitar_convite`).
+- Plano anual: 12 meses pelo preço de 10 (-17%, `src/lib/planos.ts`); `pedidos_upgrade.ciclo` (mensal/anual) e `tipo`
+  (upgrade/reducao). O preço vem sempre da tabela `planos` (gatilho `preco_do_pedido`; a função `criar-checkout` cobra por ano no anual).
+- Plano menor: `solicitar_reducao` (só se ativos + convites cabem no plano novo) → a Frankkia aplica em Upgrades (`aplicar_reducao`).
+- Reativar corretor desativado é só com a Frankkia (`proteger_reativacao`): o administrador usa "Pedir reativação" (`pedir_reativacao`,
+  vira chamado) e a Frankkia reativa em Painel → Corretores (`painel_corretores`, `reativar_corretor`).
+- Visão geral: "Primeiros passos" (`src/app/PrimeirosPassos.tsx`) e sino de avisos (`src/app/Notificacoes.tsx`), calculados dos dados.
 - Interessados: `/apresentacao` e o formulário do site gravam em `interessados` (visitante só envia; só a Frankkia lê).
 - Demonstração: NÃO é pública. Só abre por `/demo/<código>` liberado pela Frankkia (`acessos_demo`, com validade;
   `validar_demo`). Não recoloque botões de demonstração na tela de login.
