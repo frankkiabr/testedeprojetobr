@@ -1,8 +1,7 @@
 // Envia por e-mail (Resend) o link de primeiro acesso de um convite.
 // Pode enviar: o administrador da imobiliária do convite, ou a equipe Frankkia.
 import { admin, cors, json, origemSegura, usuarioDoPedido } from "../_shared/comum.ts";
-
-const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+import { emailFrankkia, esc } from "../_shared/email.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
@@ -36,15 +35,14 @@ Deno.serve(async (req) => {
     const imob = (convite.imobiliarias as { nome: string } | null)?.nome ?? "sua imobiliária";
     const link = `${base}/convite/${token}`;
     const papel = convite.papel === "admin" ? "administrador(a)" : "corretor(a)";
-    const html = `
-<div style="font-family:Inter,Arial,sans-serif;max-width:520px;margin:0 auto;padding:32px;color:#0f1a33">
-  <p style="font-size:22px;font-weight:700;margin:0 0 24px">frankkia</p>
-  <h1 style="font-size:24px;margin:0 0 12px">Você foi convidado(a) para a ${esc(imob)}</h1>
-  <p style="font-size:15px;line-height:1.6;color:#4a5570">Crie seu acesso à Frankkia como ${papel}. Leva menos de 2 minutos.</p>
-  <p style="margin:28px 0"><a href="${link}" style="background:#0f1a33;color:#fff;text-decoration:none;padding:14px 26px;border-radius:999px;font-weight:600;display:inline-block">Criar meu acesso</a></p>
-  <p style="font-size:13px;color:#8a93a8">Se o botão não funcionar, copie este endereço no navegador:<br>${esc(link)}</p>
-  <p style="font-size:13px;color:#8a93a8;margin-top:28px">Frankkia — Seu universo imobiliário, em um só lugar.</p>
-</div>`;
+    const html = emailFrankkia({
+      previa: "Crie seu acesso em menos de 2 minutos.",
+      etiqueta: "Convite",
+      titulo: `Você foi convidado(a) para a ${esc(imob)}`,
+      texto: `Crie seu acesso à Frankkia como ${papel}. Leva menos de 2 minutos: é só completar seu cadastro e criar uma senha.`,
+      botao: { rotulo: "Criar meu acesso", link: esc(link) },
+      nota: "Tenha em mãos seu WhatsApp e, se for corretor(a), o número do CRECI.",
+    });
 
     const r = await fetch("https://api.resend.com/emails", {
       method: "POST",

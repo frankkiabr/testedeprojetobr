@@ -288,6 +288,53 @@ export type Database = {
           },
         ]
       }
+      avisos_email: {
+        Row: {
+          chave: string
+          criado_em: string
+          dados: Json
+          enviado_em: string | null
+          erro: string | null
+          id: string
+          imobiliaria_id: string | null
+          para: string
+          tentativas: number
+          tipo: string
+        }
+        Insert: {
+          chave: string
+          criado_em?: string
+          dados?: Json
+          enviado_em?: string | null
+          erro?: string | null
+          id?: string
+          imobiliaria_id?: string | null
+          para: string
+          tentativas?: number
+          tipo: string
+        }
+        Update: {
+          chave?: string
+          criado_em?: string
+          dados?: Json
+          enviado_em?: string | null
+          erro?: string | null
+          id?: string
+          imobiliaria_id?: string | null
+          para?: string
+          tentativas?: number
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "avisos_email_imobiliaria_id_fkey"
+            columns: ["imobiliaria_id"]
+            isOneToOne: false
+            referencedRelation: "imobiliarias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       captacoes: {
         Row: {
           area_m2: number
@@ -1436,6 +1483,7 @@ export type Database = {
         }
         Returns: string
       }
+      agendar_avisos_teste: { Args: never; Returns: undefined }
       aplicar_reducao: { Args: { p_pedido: string }; Returns: undefined }
       aplicar_upgrade: { Args: { p_pedido: string }; Returns: undefined }
       compartilha_imobiliaria: { Args: { p_usuario: string }; Returns: boolean }
@@ -1464,6 +1512,15 @@ export type Database = {
           imobiliaria_id: string
           token: string
         }[]
+      }
+      enfileirar_aviso: {
+        Args: {
+          p_chave: string
+          p_dados?: Json
+          p_imob: string
+          p_tipo: string
+        }
+        Returns: undefined
       }
       estudo_mercado: {
         Args: { p_imob: string }
