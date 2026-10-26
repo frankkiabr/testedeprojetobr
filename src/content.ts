@@ -208,9 +208,9 @@ export const demo = {
 
 /** Contato comercial: para onde a página de captura (/conheca-a-frankkia) e a página Sobre levam. */
 export const contato = {
-  /** Só números, com DDI 55 e DDD. Troque aqui quando o número oficial estiver pronto. */
-  whatsapp: "5591999999999",
-  whatsappExibir: "(91) 99999-9999",
+  /** Só números, com DDI 55 e DDD. */
+  whatsapp: "5591980959265",
+  whatsappExibir: "(91) 98095-9265",
   responsavel: "Luiz Horizonte",
   primeiroNome: "Luiz",
 };

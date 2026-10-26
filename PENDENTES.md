@@ -18,14 +18,14 @@ textos do plano anual, renovação automática, prazo do teste (7 dias), arrepen
 pagamento, transferência internacional, cláusula de operador, prazos de guarda, encarregado e campo CRECI-J (Configurações).
 **Falta (depende do dono):**
 - Abrir o CNPJ (provável ME no Simples; confirmar com contador) e pôr nome/razão social, CPF ou CNPJ e endereço no rodapé e nos Termos.
-- Trocar o WhatsApp provisório (91) 99999-9999 em `contato` (`src/content.ts`).
 - Revisão de um advogado (inclusive a regra de reembolso).
+- Teste com uma compra real na Stripe (o teste com o cartão 4242 foi no modo de teste) — opcional.
 - Depois do CNPJ: guardar os registros de acesso por 6 meses (Marco Civil, art. 15).
 
 ## Cadastro pelo site (/cadastro)
 
 **Feito:** a pessoa cria a conta sozinha e entra em teste grátis (`criar_conta_teste`, ajustes em `config_cadastro`).
-**Falta:** verificar o domínio frankkia.com no Resend e usá-lo como SMTP do Supabase (sem isso o e-mail de confirmação só chega
+**Falta:** concluir a verificação do domínio frankkia.com no Resend (adicionado em 27/10/2026; faltam os registros DNS) e usá-lo como SMTP do Supabase (sem isso o e-mail de confirmação só chega
 para a equipe do projeto).
 
 ## E-mails do login (convites, confirmação, nova senha)
