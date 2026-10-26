@@ -114,6 +114,25 @@ export async function abrirPagamentoStripe(pedidoId: string): Promise<{ url?: st
   return { erro: motivo ?? "FALHA_STRIPE" };
 }
 
+/** Administrador: cancelar (no fim do período pago), manter (desfaz o cancelamento) ou abrir a página de cartão e faturas. */
+export async function acaoAssinatura(
+  imobiliariaId: string,
+  acao: "cancelar" | "manter" | "portal",
+): Promise<{ url?: string; ok?: boolean; erro?: string }> {
+  const { data, error } = await supabase.functions.invoke("assinatura", { body: { imobiliariaId, acao, origem: window.location.origin } });
+  const d = data as { url?: string; ok?: boolean; erro?: string } | null;
+  if (d?.url || d?.ok) return d;
+  let motivo = d?.erro;
+  if (!motivo && error && "context" in error) {
+    try {
+      motivo = ((await (error as { context: Response }).context.json()) as { erro?: string }).erro;
+    } catch {
+      /* sem detalhes */
+    }
+  }
+  return { erro: motivo ?? "FALHA_STRIPE" };
+}
+
 /** Frankkia: aplica a troca para um plano menor no banco e na assinatura da Stripe. */
 export async function aplicarReducaoNaStripe(pedidoId: string): Promise<{ erro?: string; stripe?: "atualizada" | "sem_assinatura" | "falhou" }> {
   const { data, error } = await supabase.functions.invoke("aplicar-reducao", { body: { pedidoId } });
@@ -144,6 +163,8 @@ export function mensagemErro(e: unknown): string {
     [/EMAIL_DIFERENTE_DO_CONVITE/, "Você entrou com um e-mail diferente do convite."],
     [/CRECI_OBRIGATORIO/, "Informe o CRECI ou marque que é estagiário(a)."],
     [/APENAS_FRANKKIA/, "Só a equipe Frankkia pode fazer isso."],
+    [/SEM_ASSINATURA/, "Esta conta ainda não tem assinatura na Stripe."],
+    [/STRIPE_NAO_CONFIGURADA|FALHA_STRIPE/, "Não foi possível falar com a Stripe agora. Tente de novo em alguns minutos."],
     [/APENAS_ADMIN/, "Só o administrador pode fazer isso."],
     [/REATIVACAO_PELA_FRANKKIA/, "A reativação de corretores é feita pela equipe Frankkia. Use \"Pedir reativação\"."],
     [/MEMBRO_DESATIVADO/, "Este corretor está desativado. Peça a reativação à equipe Frankkia em Equipe → Acessos desativados."],

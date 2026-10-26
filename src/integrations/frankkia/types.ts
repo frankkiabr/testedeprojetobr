@@ -188,23 +188,32 @@ export type Database = {
         Row: {
           assinatura: string
           atualizado_em: string
+          cancela_em: string | null
           ciclo: string
           cliente: string
           imobiliaria_id: string
+          proxima_cobranca: string | null
+          situacao: string
         }
         Insert: {
           assinatura: string
           atualizado_em?: string
+          cancela_em?: string | null
           ciclo?: string
           cliente: string
           imobiliaria_id: string
+          proxima_cobranca?: string | null
+          situacao?: string
         }
         Update: {
           assinatura?: string
           atualizado_em?: string
+          cancela_em?: string | null
           ciclo?: string
           cliente?: string
           imobiliaria_id?: string
+          proxima_cobranca?: string | null
+          situacao?: string
         }
         Relationships: [
           {
@@ -1491,6 +1500,15 @@ export type Database = {
         Returns: boolean
       }
       liberar_upgrade: { Args: { p_pedido: string }; Returns: undefined }
+      minha_assinatura: {
+        Args: { p_imob: string }
+        Returns: {
+          cancela_em: string
+          ciclo: string
+          proxima_cobranca: string
+          situacao: string
+        }[]
+      }
       minhas_participacoes: {
         Args: { p_imob: string }
         Returns: {
@@ -1596,6 +1614,15 @@ export type Database = {
         Returns: undefined
       }
       redes_validas: { Args: { r: Json }; Returns: boolean }
+      registrar_assinatura: {
+        Args: {
+          p_assinatura: string
+          p_cancela: string
+          p_proxima: string
+          p_situacao: string
+        }
+        Returns: undefined
+      }
       registrar_erro: {
         Args: { p_local: string; p_mensagem: string }
         Returns: undefined

@@ -16,7 +16,25 @@ import { supabase } from "@/integrations/frankkia/client";
  */
 export type Modo = "real" | "demo" | "nenhuma";
 
-export type ImobiliariaConta = { id: string; nome: string; plano: string; limite: number; status: string; testeAte: string | null };
+/** Assinatura na Stripe (só para o administrador da conta). */
+export type AssinaturaConta = {
+  situacao: "ativa" | "pagamento_recusado" | "cancelamento_agendado" | "encerrada";
+  ciclo: string;
+  proximaCobranca: string | null;
+  cancelaEm: string | null;
+};
+export type ImobiliariaConta = {
+  id: string;
+  nome: string;
+  plano: string;
+  limite: number;
+  status: string;
+  testeAte: string | null;
+  assinatura: AssinaturaConta | null;
+};
+
+/** Assinatura encerrada (cancelada ou sem pagamento): o administrador pode contratar de novo. */
+export const assinaturaEncerrada = (i: ImobiliariaConta | null | undefined) => !!i && i.status === "suspensa" && i.assinatura?.situacao === "encerrada";
 
 /** Teste grátis vencido: a imobiliária fica bloqueada até contratar um plano. */
 export const testeEncerrado = (i: ImobiliariaConta | null | undefined) =>
@@ -175,6 +193,8 @@ async function carregarConta(u: User): Promise<Conta> {
   const nome = perfil.data?.nome || (u.user_metadata?.nome as string) || "";
   const m = membros.data?.[0];
   const i = m?.imobiliarias as { id: string; nome: string; plano: string; limite_corretores: number; status: string; teste_ate: string | null } | null | undefined;
+  // Situação da assinatura na Stripe: só o administrador vê (para os avisos e o botão de cancelar)
+  const a = i && m?.papel === "admin" ? (await supabase.rpc("minha_assinatura", { p_imob: i.id })).data?.[0] : undefined;
   return {
     usuarioId: u.id,
     email,
@@ -182,7 +202,19 @@ async function carregarConta(u: User): Promise<Conta> {
     iniciais: perfil.data?.iniciais || iniciaisDe(nome, email),
     frankkia: !!fk.data,
     papel: (m?.papel as "admin" | "corretor" | undefined) ?? null,
-    imobiliaria: i ? { id: i.id, nome: i.nome, plano: i.plano, limite: i.limite_corretores, status: i.status, testeAte: i.teste_ate } : null,
+    imobiliaria: i
+      ? {
+          id: i.id,
+          nome: i.nome,
+          plano: i.plano,
+          limite: i.limite_corretores,
+          status: i.status,
+          testeAte: i.teste_ate,
+          assinatura: a
+            ? { situacao: a.situacao as AssinaturaConta["situacao"], ciclo: a.ciclo, proximaCobranca: a.proxima_cobranca, cancelaEm: a.cancela_em }
+            : null,
+        }
+      : null,
   };
 }
 

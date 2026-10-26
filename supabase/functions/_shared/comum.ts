@@ -1,5 +1,6 @@
 // Peças comuns das funções do servidor (rodam no Supabase, nunca no navegador).
 import { createClient } from "npm:@supabase/supabase-js@2.49.4";
+import type Stripe from "npm:stripe@17.7.0";
 
 export const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -32,4 +33,18 @@ export function origemSegura(origem: unknown) {
     /* inválido */
   }
   return null;
+}
+
+/** Situação da assinatura para a Frankkia (argumentos da função registrar_assinatura do banco). */
+export function situacaoDaAssinatura(sub: Stripe.Subscription) {
+  const data = (s?: number | null) => (s ? new Date(s * 1000).toISOString() : null);
+  const fimDoPeriodo = sub.current_period_end ?? (sub.items.data[0] as { current_period_end?: number } | undefined)?.current_period_end;
+  const encerrada = ["canceled", "incomplete_expired", "unpaid"].includes(sub.status);
+  const recusada = ["past_due", "incomplete"].includes(sub.status);
+  const agendado = !encerrada && (sub.cancel_at_period_end || !!sub.cancel_at);
+  return {
+    p_situacao: encerrada ? "encerrada" : recusada ? "pagamento_recusado" : agendado ? "cancelamento_agendado" : "ativa",
+    p_proxima: encerrada || agendado ? null : data(fimDoPeriodo),
+    p_cancela: agendado ? data(sub.cancel_at ?? fimDoPeriodo) : null,
+  };
 }

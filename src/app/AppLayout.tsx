@@ -7,6 +7,7 @@ import {
   BookOpen,
   Briefcase,
   CalendarDays,
+  CreditCard,
   HelpCircle,
   LayoutGrid,
   LineChart,
@@ -30,6 +31,7 @@ import { Avatar, ProgressBar } from "./kit";
 import { Toaster } from "./forms";
 import { UpgradeModal, UpgradeNudge } from "./upgrade";
 import { Notificacoes } from "./Notificacoes";
+import { acaoAssinatura, mensagemErro } from "@/integrations/frankkia/client";
 
 const MENU = [
   { to: "visao-geral", label: "Visão geral", icon: LayoutGrid },
@@ -236,6 +238,20 @@ export function AppLayout() {
   const [planos, setPlanos] = useState(false);
   const fimTeste = modo === "real" && conta?.imobiliaria?.status === "teste" && conta.imobiliaria.testeAte ? new Date(conta.imobiliaria.testeAte).getTime() : null;
   const diasDeTeste = fimTeste ? Math.max(1, Math.ceil((fimTeste - Date.now()) / 864e5)) : null;
+  // Renovação recusada: a Stripe tenta de novo por alguns dias; o administrador atualiza o cartão
+  const { toast } = useStore();
+  const pagamentoRecusado = modo === "real" && role === "admin" && conta?.imobiliaria?.assinatura?.situacao === "pagamento_recusado";
+  const [abrindoCartao, setAbrindoCartao] = useState(false);
+  const atualizarCartao = async () => {
+    if (!conta?.imobiliaria) return;
+    setAbrindoCartao(true);
+    const r = await acaoAssinatura(conta.imobiliaria.id, "portal");
+    if (r.url) window.location.href = r.url;
+    else {
+      setAbrindoCartao(false);
+      toast(mensagemErro(r.erro));
+    }
+  };
 
   return (
     <div className="min-h-screen bg-canvas/50">
@@ -299,6 +315,20 @@ export function AppLayout() {
           </div>
         )}
         {role === "admin" && <UpgradeModal open={planos} onClose={() => setPlanos(false)} />}
+
+        {pagamentoRecusado && (
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 bg-amber-500 px-4 py-2.5 text-center text-sm font-medium text-white">
+            <CreditCard className="size-4 shrink-0" />
+            O pagamento da renovação foi recusado. Atualize o cartão para não perder o acesso.
+            <button
+              onClick={atualizarCartao}
+              disabled={abrindoCartao}
+              className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-amber-700 transition hover:bg-white/90 disabled:opacity-60"
+            >
+              {abrindoCartao ? "Abrindo..." : "Atualizar cartão"}
+            </button>
+          </div>
+        )}
 
         {suspensa && (
           <div className="flex items-center justify-center gap-2 bg-rose-600 px-4 py-2.5 text-center text-sm font-medium text-white">

@@ -1,7 +1,9 @@
-// Aviso automático da Stripe: quando o pagamento é aprovado, o pedido fica "Pagamento confirmado"
-// e o novo plano é liberado na hora (mais vagas; fim do teste grátis).
+// Aviso automático da Stripe:
+// - pagamento aprovado: o pedido fica "Pagamento confirmado" e o novo plano é liberado na hora;
+// - renovação recusada, cancelamento agendado ou assinatura encerrada: a situação da assinatura e
+//   da imobiliária é atualizada (função registrar_assinatura no banco).
 import Stripe from "npm:stripe@17.7.0";
-import { admin } from "../_shared/comum.ts";
+import { admin, situacaoDaAssinatura } from "../_shared/comum.ts";
 
 const cripto = Stripe.createSubtleCryptoProvider();
 
@@ -61,11 +63,36 @@ Deno.serve(async (req) => {
             cliente: typeof s.customer === "string" ? s.customer : s.customer.id,
             assinatura: nova,
             ciclo: s.metadata?.ciclo === "anual" ? "anual" : "mensal",
+            situacao: "ativa",
+            cancela_em: null,
             atualizado_em: new Date().toISOString(),
           });
+          await registrarAssinatura(stripe, db, nova);
         }
       }
     }
   }
+
+  // Renovações e cancelamentos: sempre relê a assinatura na Stripe (o formato dos avisos muda entre versões)
+  if (evento.type.startsWith("customer.subscription.")) {
+    const assinatura = evento.data.object as Stripe.Subscription;
+    await registrarAssinatura(stripe, db, assinatura.id);
+  }
+  if (evento.type === "invoice.paid" || evento.type === "invoice.payment_failed") {
+    const fatura = evento.data.object as Stripe.Invoice & { parent?: { subscription_details?: { subscription?: string } } };
+    const ref = fatura.subscription ?? fatura.parent?.subscription_details?.subscription;
+    const id = typeof ref === "string" ? ref : ref?.id;
+    if (id) await registrarAssinatura(stripe, db, id);
+  }
   return new Response(JSON.stringify({ recebido: true }), { headers: { "Content-Type": "application/json" } });
 });
+
+async function registrarAssinatura(stripe: Stripe, db: ReturnType<typeof admin>, id: string) {
+  try {
+    const sub = await stripe.subscriptions.retrieve(id);
+    const { error } = await db.rpc("registrar_assinatura", { p_assinatura: id, ...situacaoDaAssinatura(sub) });
+    if (error) console.error("Não foi possível registrar a assinatura", error);
+  } catch (e) {
+    console.error("Não foi possível ler a assinatura", e);
+  }
+}

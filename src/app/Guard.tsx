@@ -4,7 +4,7 @@ import { Hourglass, LogOut, Rocket, ShieldAlert } from "lucide-react";
 import { Logo } from "@/components/ui";
 import { pedidoAberto } from "@/data/platform";
 import { useStore } from "@/data/store";
-import { inicioDe, lerErroCadastro, testeEncerrado, useSession } from "./session";
+import { assinaturaEncerrada, inicioDe, lerErroCadastro, testeEncerrado, useSession } from "./session";
 import { mensagemErro } from "@/integrations/frankkia/client";
 import { PedidoUpgradeStatus, UpgradeModal } from "./upgrade";
 
@@ -45,8 +45,8 @@ function SemAcesso() {
   );
 }
 
-/** Fim do teste grátis: o administrador contrata um plano; o corretor é avisado. Os dados ficam guardados. */
-function TesteEncerrado() {
+/** Fim do teste grátis (ou da assinatura): o administrador contrata um plano; o corretor é avisado. Os dados ficam guardados. */
+function TesteEncerrado({ assinatura = false }: { assinatura?: boolean }) {
   const { conta, sair } = useSession();
   const [planos, setPlanos] = useState(false);
   const admin = conta?.papel === "admin";
@@ -61,11 +61,13 @@ function TesteEncerrado() {
         <span className="mx-auto mt-8 grid size-14 place-items-center rounded-2xl bg-accent-soft text-accent">
           <Hourglass className="size-6" />
         </span>
-        <h1 className="type-title mt-6 !text-[1.75rem]">O teste grátis terminou</h1>
+        <h1 className="type-title mt-6 !text-[1.75rem]">{assinatura ? "Sua assinatura foi encerrada" : "O teste grátis terminou"}</h1>
         <p className="mt-3 text-muted">
-          {admin
-            ? `Gostou da Frankkia? Contrate um plano para a ${conta?.imobiliaria?.nome} continuar usando. Tudo o que vocês cadastraram continua guardado.`
-            : `O período de teste da ${conta?.imobiliaria?.nome} terminou. Assim que o administrador contratar um plano, seu acesso volta com todos os seus dados.`}
+          {assinatura
+            ? `A assinatura da ${conta?.imobiliaria?.nome} foi cancelada ou não teve o pagamento aprovado. Contrate um plano para voltar a usar: tudo o que vocês cadastraram continua guardado.`
+            : admin
+              ? `Gostou da Frankkia? Contrate um plano para a ${conta?.imobiliaria?.nome} continuar usando. Tudo o que vocês cadastraram continua guardado.`
+              : `O período de teste da ${conta?.imobiliaria?.nome} terminou. Assim que o administrador contratar um plano, seu acesso volta com todos os seus dados.`}
         </p>
         {admin && pedido && <div className="mt-6 text-left">{<PedidoUpgradeStatus />}</div>}
         {admin && !pedido && (
@@ -111,5 +113,6 @@ export function Guard({ area, children }: { area: "app" | "admin"; children: Rea
   if (role === "frankkia") return <Navigate to="/admin" replace />;
   if (modo === "real" && !conta?.papel) return <SemAcesso />;
   if (modo === "real" && testeEncerrado(conta?.imobiliaria)) return <TesteEncerrado />;
+  if (modo === "real" && assinaturaEncerrada(conta?.imobiliaria)) return <TesteEncerrado assinatura />;
   return <>{children}</>;
 }

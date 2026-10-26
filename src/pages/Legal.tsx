@@ -136,7 +136,7 @@ export function Termos() {
                 Pagamentos são processados pela Stripe. A Frankkia não recebe nem guarda os dados completos do seu cartão.
               </li>
               <li>
-                Você pode cancelar a qualquer momento pelo e-mail {email}. O cancelamento interrompe as próximas renovações e o acesso continua até
+                Você pode cancelar a qualquer momento pela própria plataforma (Configurações → Plano) ou pelo e-mail {email}. O cancelamento interrompe as próximas renovações e o acesso continua até
                 o fim do período já pago.
               </li>
               <li>O plano Solo atende um único corretor. Para formar equipe, a conta passa a um plano de equipe com a Frankkia.</li>

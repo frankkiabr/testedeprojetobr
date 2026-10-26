@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { AtSign, BadgeCheck, Bell, Building2, Camera, Check, CreditCard, GraduationCap, Mail, Rocket, UserRound } from "lucide-react";
-import { pricing } from "@/content";
+import { pricing, site } from "@/content";
 import { imobiliaria, UFS } from "@/data/demo";
 import { ehSolo, pedidoAberto, PLANOS } from "@/data/platform";
 import { vagasUsadas } from "@/data/queries";
@@ -9,7 +9,7 @@ import { useStore } from "@/data/store";
 import type { PlanoNome } from "@/data/types";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { useScope, useSession } from "../session";
-import { mensagemErro, supabase } from "@/integrations/frankkia/client";
+import { acaoAssinatura, mensagemErro, supabase } from "@/integrations/frankkia/client";
 import { Avatar, Card, PageHeader, ProgressBar, Segmented, stagger } from "../kit";
 import { btn, DateInput, Field, formatPhone, inputCls, Modal, normalizePhone, SelectField } from "../forms";
 import { PedidoUpgradeStatus, useIrParaPagamento } from "../upgrade";
@@ -150,8 +150,9 @@ function Plano() {
   const usadas = vagasUsadas();
   const solo = ehSolo(imobiliaria.plano);
   const atual = pricing.plans.find((p) => p.name === imobiliaria.plano) ?? pricing.solo;
-  const proxima = new Date();
-  proxima.setMonth(proxima.getMonth() + 1, 10);
+  const { modo, conta } = useSession();
+  const assinatura = modo === "real" ? conta?.imobiliaria?.assinatura : null;
+  const dia = (iso: string) => new Date(iso).toLocaleDateString("pt-BR");
   return (
     <div className="space-y-6">
       <div className="relative overflow-hidden rounded-3xl bg-ink p-6 text-bg sm:p-8">
@@ -179,7 +180,11 @@ function Plano() {
               {atual.price}
               <span className="text-lg text-bg/60">/mês</span>
             </p>
-            <p className="mt-1 text-sm text-bg/60">Próxima cobrança em {proxima.toLocaleDateString("pt-BR")}</p>
+            {assinatura?.cancelaEm ? (
+              <p className="mt-1 text-sm text-bg/60">Assinatura termina em {dia(assinatura.cancelaEm)}</p>
+            ) : assinatura?.proximaCobranca ? (
+              <p className="mt-1 text-sm text-bg/60">Próxima cobrança em {dia(assinatura.proximaCobranca)}</p>
+            ) : null}
           </div>
         </div>
       </div>
@@ -247,7 +252,102 @@ function Plano() {
         <ReducaoModal plano={reducao} onClose={() => setReducao(null)} />
       </Section>
       )}
+
+      {assinatura && <AssinaturaSecao />}
     </div>
+  );
+}
+
+/** Cartão, faturas e cancelamento da assinatura (só existe depois do primeiro pagamento pela Stripe). */
+function AssinaturaSecao() {
+  const { conta, recarregar } = useSession();
+  const { toast } = useStore();
+  const imob = conta?.imobiliaria;
+  const a = imob?.assinatura;
+  const [confirmar, setConfirmar] = useState(false);
+  const [enviando, setEnviando] = useState<"cancelar" | "manter" | "portal" | null>(null);
+  if (!imob || !a) return null;
+  const dia = (iso: string) => new Date(iso).toLocaleDateString("pt-BR");
+  const fim = a.cancelaEm ?? a.proximaCobranca;
+
+  const agir = async (acao: "cancelar" | "manter" | "portal") => {
+    setEnviando(acao);
+    const r = await acaoAssinatura(imob.id, acao);
+    if (r.url) {
+      window.location.href = r.url;
+      return;
+    }
+    setEnviando(null);
+    if (r.erro) return toast(mensagemErro(r.erro));
+    setConfirmar(false);
+    await recarregar();
+    toast(acao === "cancelar" ? "Assinatura cancelada. O acesso continua até o fim do período pago." : "Pronto! Sua assinatura continua ativa.");
+  };
+
+  return (
+    <Section
+      title="Assinatura e pagamento"
+      subtitle={`Cobrança ${a.ciclo === "anual" ? "anual" : "mensal"} no cartão, pela Stripe. A assinatura renova sozinha até você cancelar.`}
+    >
+      {a.situacao === "pagamento_recusado" && (
+        <p className="mb-4 rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-800">
+          O pagamento da última renovação foi recusado. Atualize o cartão: a Stripe tenta cobrar de novo nos próximos dias.
+        </p>
+      )}
+      {a.situacao === "cancelamento_agendado" && a.cancelaEm && (
+        <p className="mb-4 rounded-xl bg-canvas px-3 py-2 text-sm text-muted">
+          Você cancelou a assinatura. O acesso continua até <span className="font-semibold text-ink">{dia(a.cancelaEm)}</span> e não haverá nova
+          cobrança. Mudou de ideia? Dá para manter a assinatura até essa data.
+        </p>
+      )}
+      <div className="flex flex-wrap gap-2">
+        <button className={btn.outline} disabled={!!enviando} onClick={() => agir("portal")}>
+          <CreditCard className="size-4" /> {enviando === "portal" ? "Abrindo..." : "Cartão e faturas"}
+        </button>
+        {a.situacao === "cancelamento_agendado" ? (
+          <button className={btn.accent} disabled={!!enviando} onClick={() => agir("manter")}>
+            <Check className="size-4" /> {enviando === "manter" ? "Salvando..." : "Manter assinatura"}
+          </button>
+        ) : (
+          <button
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold text-rose-700 transition hover:bg-rose-50"
+            disabled={!!enviando}
+            onClick={() => setConfirmar(true)}
+          >
+            Cancelar assinatura
+          </button>
+        )}
+      </div>
+
+      <Modal
+        open={confirmar}
+        onClose={() => setConfirmar(false)}
+        title="Cancelar a assinatura?"
+        subtitle={fim ? `O acesso continua até ${dia(fim)} e não haverá nova cobrança.` : "Não haverá nova cobrança."}
+        footer={
+          <>
+            <button className={btn.outline} onClick={() => setConfirmar(false)}>
+              Voltar
+            </button>
+            <button
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-rose-600 px-4 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:opacity-60"
+              disabled={!!enviando}
+              onClick={() => agir("cancelar")}
+            >
+              {enviando === "cancelar" ? "Cancelando..." : "Cancelar assinatura"}
+            </button>
+          </>
+        }
+      >
+        <div className="space-y-3 text-sm text-muted">
+          <p>Os dados da {imob.nome} continuam guardados. Para voltar depois, é só contratar um plano de novo.</p>
+          <p>
+            Contratou há menos de 7 dias? Você pode pedir o <span className="font-semibold text-ink">reembolso integral</span> pelo e-mail{" "}
+            {site.email} (direito de arrependimento).
+          </p>
+        </div>
+      </Modal>
+    </Section>
   );
 }
 

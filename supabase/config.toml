@@ -15,3 +15,6 @@ verify_jwt = false
 
 [functions.aplicar-reducao]
 verify_jwt = false
+
+[functions.assinatura]
+verify_jwt = false
