@@ -356,7 +356,8 @@ export type Interessado = {
   telefone: string;
   equipe?: string;
   mensagem?: string;
-  origem: "site" | "login" | "pagina";
+  /** "cadastro" = criou a conta sozinho pelo site e já está no teste grátis. */
+  origem: "site" | "login" | "pagina" | "cadastro";
   status: StatusInteressado;
   observacao?: string;
   criadoEm: string;

@@ -9,16 +9,19 @@ import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { Badge, Card, CardHeader, PageHeader, Segmented, stagger } from "../kit";
 import { btn, EmptyState, Field, formatPhone, inputCls, Modal, SelectField, waLink } from "../forms";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
+import { contato } from "@/content";
 
 type Filtro = "abertos" | "todos";
 
 const primeiroNome = (n: string) => n.trim().split(/\s+/)[0];
 const msgContato = (i: Interessado) =>
-  `Olá, ${primeiroNome(i.nome)}! Aqui é da Frankkia. Recebemos seu pedido de apresentação para a ${i.imobiliaria}. Qual o melhor dia e horário para conversarmos?`;
+  i.origem === "cadastro"
+    ? `Olá, ${primeiroNome(i.nome)}! Aqui é o ${contato.primeiroNome}, da Frankkia. Vi que você começou o teste grátis da ${i.imobiliaria}. Posso te ajudar a configurar?`
+    : `Olá, ${primeiroNome(i.nome)}! Aqui é da Frankkia. Recebemos seu pedido de apresentação para a ${i.imobiliaria}. Qual o melhor dia e horário para conversarmos?`;
 const msgDemo = (nome: string, link: string, dias: number) =>
   `Olá, ${primeiroNome(nome)}! Liberamos para você uma demonstração da Frankkia, válida por ${dias} dias: ${link}`;
 
-/** Donos de imobiliária que pediram uma apresentação + links de demonstração liberados. */
+/** Pedidos de apresentação, contas de teste criadas pelo site e links de demonstração liberados. */
 export default function Interessados() {
   const store = useStore();
   const [filtro, setFiltro] = useState<Filtro>("abertos");
@@ -42,7 +45,7 @@ export default function Interessados() {
       <motion.div {...stagger(0)}>
         <PageHeader
           title="Interessados"
-          subtitle="Donos de imobiliária que pediram uma apresentação. Responda pelo WhatsApp em até 24 horas."
+          subtitle="Pedidos de apresentação e contas de teste criadas pelo site. Responda pelo WhatsApp em até 24 horas."
           actions={
             <button onClick={() => setLiberar({ nome: "" })} className={btn.outline}>
               <Plus className="size-4" /> Link de demonstração
@@ -69,7 +72,7 @@ export default function Interessados() {
             <EmptyState
               icon={<Inbox className="size-6" />}
               title="Nenhum pedido por aqui"
-              text="Quando alguém pedir uma apresentação pelo site ou pela tela de login, aparece aqui."
+              text="Quando alguém pedir uma apresentação ou criar uma conta de teste pelo site, aparece aqui."
             />
           ) : (
             <ul>
@@ -85,13 +88,14 @@ export default function Interessados() {
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="font-semibold">{i.nome}</p>
                       <Badge tone={STATUS_INTERESSADO[i.status].tone}>{STATUS_INTERESSADO[i.status].label}</Badge>
+                      {i.origem === "cadastro" && <Badge tone="verified">Teste grátis</Badge>}
                     </div>
                     <p className="mt-0.5 text-sm text-muted">
                       {i.imobiliaria}
                       {i.equipe ? ` · ${i.equipe}` : ""}
                     </p>
                     <p className="mt-1 text-xs text-subtle">
-                      {formatPhone(i.telefone)} · {i.email} · pedido {relTime(i.criadoEm)}
+                      {formatPhone(i.telefone)} · {i.email} · {i.origem === "cadastro" ? "conta criada" : "pedido"} {relTime(i.criadoEm)}
                     </p>
                     {i.mensagem && <p className="mt-2 rounded-xl bg-canvas px-3 py-2 text-sm text-muted">“{i.mensagem}”</p>}
                   </div>
@@ -108,12 +112,15 @@ export default function Interessados() {
                     <a href={`mailto:${i.email}`} className={`${btn.outline} h-9 px-3 text-xs`}>
                       <Mail className="size-3.5" /> E-mail
                     </a>
-                    <button
-                      onClick={() => setLiberar({ nome: `${i.nome} · ${i.imobiliaria}`, telefone: i.telefone, interessadoId: i.id })}
-                      className={`${btn.outline} h-9 px-3 text-xs`}
-                    >
-                      <MonitorPlay className="size-3.5" /> Liberar demonstração
-                    </button>
+                    {/* Quem criou conta pelo site já usa a Frankkia de verdade: não precisa de demonstração */}
+                    {i.origem !== "cadastro" && (
+                      <button
+                        onClick={() => setLiberar({ nome: `${i.nome} · ${i.imobiliaria}`, telefone: i.telefone, interessadoId: i.id })}
+                        className={`${btn.outline} h-9 px-3 text-xs`}
+                      >
+                        <MonitorPlay className="size-3.5" /> Liberar demonstração
+                      </button>
+                    )}
                     <div className="w-44">
                       <SelectField
                         value={i.status}
