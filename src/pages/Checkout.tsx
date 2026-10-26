@@ -188,7 +188,12 @@ export default function Checkout() {
                   <CreditCard className="mt-0.5 size-5 shrink-0 text-accent" />
                   <span>
                     Você vai para a <span className="font-semibold">página segura da Stripe</span> para digitar o cartão. A Frankkia nunca vê nem guarda o número do
-                    cartão. A cobrança é mensal e pode ser cancelada quando quiser.
+                    cartão. {anual ? "A cobrança é anual e renova sozinha a cada 12 meses" : "A cobrança é mensal e renova sozinha a cada mês"}, até
+                    você cancelar. Ao pagar, você concorda com os{" "}
+                    <a href="/termos" target="_blank" rel="noreferrer" className="underline">
+                      Termos de Uso
+                    </a>
+                    .
                   </span>
                 </p>
                 {erroPagamento && <p className="mt-4 rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700">{erroPagamento}</p>}

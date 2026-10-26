@@ -115,7 +115,7 @@ export function Navbar() {
                 ))}
               </ul>
               <div className="flex items-center gap-2">
-                {/* Imóveis (para clientes) e demonstração (para corretores e imobiliárias). Entrar fica no rodapé: "Acessar plataforma". */}
+                {/* Imóveis (para clientes) e teste grátis (para corretores e imobiliárias). Entrar fica no rodapé: "Acessar plataforma". */}
                 <a
                   href="/imoveis"
                   className="group/button inline-flex h-10 items-center gap-2 rounded-full bg-accent px-4 text-sm font-semibold text-white transition-[background-color,transform] hover:bg-accent-deep active:scale-[0.98]"
@@ -124,10 +124,10 @@ export function Navbar() {
                   <ArrowRight className="size-4 transition-transform duration-200 group-hover/button:translate-x-0.5" />
                 </a>
                 <Link
-                  to="/apresentacao"
+                  to="/cadastro"
                   className="group/button inline-flex h-10 items-center gap-2 rounded-full bg-bg px-4 text-sm font-semibold text-ink transition-transform active:scale-[0.98]"
                 >
-                  Solicitar demonstração
+                  Teste grátis
                   <ArrowRight className="size-4 transition-transform duration-200 group-hover/button:translate-x-0.5" />
                 </Link>
               </div>

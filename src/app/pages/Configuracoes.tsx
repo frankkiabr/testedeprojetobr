@@ -45,7 +45,7 @@ function ImobiliariaForm() {
         <button
           className={btn.primary}
           disabled={!f.nome.trim()}
-          onClick={() => updateImobiliaria({ nome: f.nome.trim(), cnpj: f.cnpj, email: f.email, telefone: normalizePhone(f.telefone), cidade: f.cidade })}
+          onClick={() => updateImobiliaria({ nome: f.nome.trim(), cnpj: f.cnpj, creciJ: f.creciJ, email: f.email, telefone: normalizePhone(f.telefone), cidade: f.cidade })}
         >
           Salvar alterações
         </button>
@@ -57,6 +57,9 @@ function ImobiliariaForm() {
         </Field>
         <Field label="CNPJ">
           <input className={inputCls} value={f.cnpj} onChange={(e) => setF({ ...f, cnpj: e.target.value })} />
+        </Field>
+        <Field label="CRECI da imobiliária (CRECI-J)" hint="Aparece nos anúncios do portal, como exige o conselho.">
+          <input className={inputCls} value={f.creciJ} onChange={(e) => setF({ ...f, creciJ: e.target.value })} placeholder="Ex.: 12345-J" />
         </Field>
         <Field label="Cidade">
           <input className={inputCls} value={f.cidade} onChange={(e) => setF({ ...f, cidade: e.target.value })} />

@@ -4,7 +4,8 @@ import { Hourglass, LogOut, Rocket, ShieldAlert } from "lucide-react";
 import { Logo } from "@/components/ui";
 import { pedidoAberto } from "@/data/platform";
 import { useStore } from "@/data/store";
-import { inicioDe, testeEncerrado, useSession } from "./session";
+import { inicioDe, lerErroCadastro, testeEncerrado, useSession } from "./session";
+import { mensagemErro } from "@/integrations/frankkia/client";
 import { PedidoUpgradeStatus, UpgradeModal } from "./upgrade";
 
 /** Tela neutra enquanto a sessão é verificada (evita piscar a tela de login). */
@@ -13,6 +14,8 @@ export const Carregando = () => <div className="min-h-screen bg-canvas/50" />;
 /** Conta criada, mas sem acesso ativo a nenhuma imobiliária (desativada ou convite ainda não aceito). */
 function SemAcesso() {
   const { conta, sair } = useSession();
+  // Cadastro pelo site recusado no primeiro login (ex.: teste grátis já usado)
+  const [erroCadastro] = useState(() => lerErroCadastro());
   return (
     <div className="grid min-h-screen place-items-center bg-canvas/60 px-4">
       <div className="w-full max-w-md rounded-3xl border border-line bg-bg p-10 text-center">
@@ -23,10 +26,14 @@ function SemAcesso() {
           <ShieldAlert className="size-6" />
         </span>
         <h1 className="type-title mt-6 !text-[1.75rem]">Sem acesso no momento</h1>
-        <p className="mt-3 text-muted">
-          A conta <span className="font-semibold text-ink">{conta?.email}</span> não está ligada a nenhuma imobiliária ativa. Peça um convite (ou a
-          reativação do seu acesso) ao administrador da sua imobiliária.
-        </p>
+        {erroCadastro ? (
+          <p className="mt-3 text-muted">Não foi possível criar a sua conta de teste: {mensagemErro(erroCadastro)}</p>
+        ) : (
+          <p className="mt-3 text-muted">
+            A conta <span className="font-semibold text-ink">{conta?.email}</span> não está ligada a nenhuma imobiliária ativa. Peça um convite (ou a
+            reativação do seu acesso) ao administrador da sua imobiliária.
+          </p>
+        )}
         <button
           onClick={() => sair()}
           className="mt-8 inline-flex h-12 items-center gap-2 rounded-full bg-ink px-6 font-semibold text-bg transition hover:bg-ink/85"

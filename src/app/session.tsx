@@ -118,8 +118,48 @@ async function aceitarConvitePendente(u: User) {
   }
 }
 
+/** Cadastro pelo site (/cadastro) com confirmação de e-mail: a conta de teste é criada no primeiro login. */
+async function criarContaPendente(u: User) {
+  const c = u.user_metadata?.cadastro as Record<string, string> | undefined;
+  if (!c) return;
+  const { error } = await supabase.rpc("criar_conta_teste", {
+    p_plano: c.plano ?? "",
+    p_imobiliaria: c.imobiliaria ?? "",
+    p_cidade: c.cidade ?? "",
+    p_nome: c.nome ?? "",
+    p_telefone: c.telefone ?? "",
+    p_creci: c.creci ?? "",
+    p_creci_uf: c.creci_uf ?? "",
+  } as never);
+  // criada ou recusada de vez: não tenta de novo (o motivo aparece na tela de login)
+  if (!error || !/Failed to fetch|NetworkError|EMAIL_NAO_CONFIRMADO/i.test(error.message)) {
+    await supabase.auth.updateUser({ data: { cadastro: null } });
+  }
+  if (error) guardarErroCadastro(error.message);
+}
+
+/** Motivo de um cadastro recusado no primeiro login, para a tela mostrar. */
+const CHAVE_ERRO_CADASTRO = "frankkia:erro-cadastro";
+function guardarErroCadastro(msg: string) {
+  try {
+    sessionStorage.setItem(CHAVE_ERRO_CADASTRO, msg);
+  } catch {
+    /* armazenamento indisponível */
+  }
+}
+export function lerErroCadastro() {
+  try {
+    const m = sessionStorage.getItem(CHAVE_ERRO_CADASTRO);
+    sessionStorage.removeItem(CHAVE_ERRO_CADASTRO);
+    return m;
+  } catch {
+    return null;
+  }
+}
+
 async function carregarConta(u: User): Promise<Conta> {
   await aceitarConvitePendente(u);
+  await criarContaPendente(u);
   const [perfil, membros, fk] = await Promise.all([
     supabase.from("perfis").select("nome, iniciais, email").eq("id", u.id).maybeSingle(),
     supabase

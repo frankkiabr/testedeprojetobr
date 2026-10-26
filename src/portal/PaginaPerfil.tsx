@@ -104,7 +104,7 @@ export function PaginaImobiliaria({ i }: { i: ImobiliariaPublica }) {
             {i.nome}
           </h1>
           <p className="mt-1 text-sm text-muted">
-            {[i.cidade, contagem(i.anuncios.length)].filter(Boolean).join(" · ")}
+            {[i.creci_j ? `CRECI-J ${i.creci_j}` : "", i.cidade, contagem(i.anuncios.length)].filter(Boolean).join(" · ")}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">

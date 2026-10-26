@@ -140,6 +140,12 @@ export default function Captura() {
               {captura.cta}
             </BotaoWhatsApp>
             </div>
+            <p className="text-sm text-muted">
+              Prefere começar sozinho?{" "}
+              <Link to="/cadastro" className="font-semibold text-ink underline underline-offset-4 hover:text-accent">
+                Teste grátis
+              </Link>
+            </p>
             <ul className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm text-muted">
               {captura.garantias.map((g) => (
                 <li key={g} className="flex items-center gap-1.5">

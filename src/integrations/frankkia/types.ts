@@ -184,6 +184,38 @@ export type Database = {
           },
         ]
       }
+      assinaturas_stripe: {
+        Row: {
+          assinatura: string
+          atualizado_em: string
+          ciclo: string
+          cliente: string
+          imobiliaria_id: string
+        }
+        Insert: {
+          assinatura: string
+          atualizado_em?: string
+          ciclo?: string
+          cliente: string
+          imobiliaria_id: string
+        }
+        Update: {
+          assinatura?: string
+          atualizado_em?: string
+          ciclo?: string
+          cliente?: string
+          imobiliaria_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assinaturas_stripe_imobiliaria_id_fkey"
+            columns: ["imobiliaria_id"]
+            isOneToOne: true
+            referencedRelation: "imobiliarias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       aulas: {
         Row: {
           arquivo_nome: string
@@ -440,6 +472,27 @@ export type Database = {
           },
         ]
       }
+      config_cadastro: {
+        Row: {
+          aberto: boolean
+          id: boolean
+          limite_dia: number
+          teste_dias: number
+        }
+        Insert: {
+          aberto?: boolean
+          id?: boolean
+          limite_dia?: number
+          teste_dias?: number
+        }
+        Update: {
+          aberto?: boolean
+          id?: boolean
+          limite_dia?: number
+          teste_dias?: number
+        }
+        Relationships: []
+      }
       convites: {
         Row: {
           aceito_por: string | null
@@ -603,6 +656,7 @@ export type Database = {
           cidade: string | null
           cliente_desde: string
           cnpj: string | null
+          creci_j: string | null
           criado_em: string
           email: string | null
           id: string
@@ -621,6 +675,7 @@ export type Database = {
           cidade?: string | null
           cliente_desde?: string
           cnpj?: string | null
+          creci_j?: string | null
           criado_em?: string
           email?: string | null
           id?: string
@@ -639,6 +694,7 @@ export type Database = {
           cidade?: string | null
           cliente_desde?: string
           cnpj?: string | null
+          creci_j?: string | null
           criado_em?: string
           email?: string | null
           id?: string
@@ -1162,6 +1218,41 @@ export type Database = {
           },
         ]
       }
+      testes_gratis: {
+        Row: {
+          creci: string | null
+          criado_em: string
+          email: string
+          id: string
+          imobiliaria_id: string | null
+          telefone: string
+        }
+        Insert: {
+          creci?: string | null
+          criado_em?: string
+          email: string
+          id?: string
+          imobiliaria_id?: string | null
+          telefone: string
+        }
+        Update: {
+          creci?: string | null
+          criado_em?: string
+          email?: string
+          id?: string
+          imobiliaria_id?: string | null
+          telefone?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "testes_gratis_imobiliaria_id_fkey"
+            columns: ["imobiliaria_id"]
+            isOneToOne: false
+            referencedRelation: "imobiliarias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transacao_detalhes: {
         Row: {
           cliente: string | null
@@ -1339,6 +1430,18 @@ export type Database = {
       aplicar_reducao: { Args: { p_pedido: string }; Returns: undefined }
       aplicar_upgrade: { Args: { p_pedido: string }; Returns: undefined }
       compartilha_imobiliaria: { Args: { p_usuario: string }; Returns: boolean }
+      criar_conta_teste: {
+        Args: {
+          p_cidade: string
+          p_creci: string
+          p_creci_uf: string
+          p_imobiliaria: string
+          p_nome: string
+          p_plano: string
+          p_telefone: string
+        }
+        Returns: string
+      }
       criar_imobiliaria: {
         Args: {
           p_admin_email: string
@@ -1511,6 +1614,7 @@ export type Database = {
       }
       slugificar: { Args: { p: string }; Returns: string }
       solicitar_reducao: { Args: { p_plano: string }; Returns: string }
+      tem_assinatura: { Args: { p_imob: string }; Returns: boolean }
       uso_supabase: {
         Args: never
         Returns: {

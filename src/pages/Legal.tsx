@@ -2,7 +2,7 @@ import { useEffect, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
-import { site } from "@/content";
+import { criador, site } from "@/content";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { Logo } from "@/components/ui";
 
@@ -11,7 +11,7 @@ import { Logo } from "@/components/ui";
  * Textos-base escritos para a Frankkia (plataforma + portal). Antes de divulgar em larga escala,
  * vale a revisão de um advogado e completar os dados da empresa (razão social, CNPJ e endereço).
  */
-const ATUALIZACAO = "20 de outubro de 2026";
+const ATUALIZACAO = "27 de outubro de 2026";
 
 type Secao = { titulo: string; texto: ReactNode };
 
@@ -124,14 +124,37 @@ export function Termos() {
             <ul>
               <li>Os planos, preços e limites (vagas de corretores e anúncios no portal) são os informados no site no momento da contratação.</li>
               <li>
-                O período de teste grátis, quando oferecido, tem a duração combinada com a Frankkia. Ao fim do teste, o acesso aos dados fica
-                suspenso até a contratação de um plano.
+                Quem cria a conta pelo site tem <strong>7 dias de teste grátis</strong>, sem cartão (contas criadas pela equipe Frankkia podem ter
+                outro prazo, informado no convite). Ao fim do teste, nada é cobrado automaticamente: o acesso aos dados fica suspenso até a
+                contratação de um plano, e os dados continuam guardados.
               </li>
               <li>
-                Pagamentos são processados pela Stripe. A Frankkia não recebe nem guarda os dados completos do seu cartão. A assinatura é mensal e
-                pode ser cancelada a qualquer momento, valendo até o fim do período já pago.
+                A assinatura pode ser <strong>mensal</strong> ou <strong>anual</strong> (12 meses pelo preço de 10, cobrados de uma vez). Ela{" "}
+                <strong>renova automaticamente</strong> ao fim de cada período, no mesmo cartão, até ser cancelada.
+              </li>
+              <li>
+                Pagamentos são processados pela Stripe. A Frankkia não recebe nem guarda os dados completos do seu cartão.
+              </li>
+              <li>
+                Você pode cancelar a qualquer momento pelo e-mail {email}. O cancelamento interrompe as próximas renovações e o acesso continua até
+                o fim do período já pago.
               </li>
               <li>O plano Solo atende um único corretor. Para formar equipe, a conta passa a um plano de equipe com a Frankkia.</li>
+            </ul>
+          ),
+        },
+        {
+          titulo: "Direito de arrependimento e reembolso",
+          texto: (
+            <ul>
+              <li>
+                Você pode desistir da contratação em até <strong>7 dias</strong> a partir do primeiro pagamento, com <strong>reembolso integral</strong>,
+                pelo e-mail {email}. O valor é devolvido no mesmo cartão usado no pagamento.
+              </li>
+              <li>
+                Depois desse prazo, o cancelamento vale para as próximas renovações: não há reembolso proporcional do período em andamento (mensal
+                ou anual), e o acesso continua até o fim do período já pago.
+              </li>
             </ul>
           ),
         },
@@ -143,7 +166,10 @@ export function Termos() {
                 Quem publica um anúncio declara que tem <strong>autorização do proprietário</strong> para anunciar o imóvel e que as informações
                 (preço, endereço, fotos, medidas e características) são verdadeiras e atualizadas.
               </li>
-              <li>Os anúncios mostram o nome e o CRECI do corretor responsável, como exige a regulamentação profissional.</li>
+              <li>
+                Os anúncios mostram o nome e o CRECI do corretor responsável e, quando informado, o CRECI da imobiliária (CRECI-J), como exige a
+                regulamentação profissional.
+              </li>
               <li>
                 É proibido publicar conteúdo falso, enganoso, ofensivo, discriminatório, que viole direitos de terceiros (inclusive direitos
                 autorais de fotos) ou que não se refira a um imóvel real disponível.
@@ -215,7 +241,8 @@ export function Termos() {
           texto: (
             <p>
               Estes Termos podem ser atualizados; mudanças relevantes serão avisadas na plataforma. Aplicam-se as leis brasileiras, incluindo o
-              Código de Defesa do Consumidor quando cabível. Fale com a gente pelo e-mail {email}.
+              Código de Defesa do Consumidor e o Decreto nº 7.962/2013 (comércio eletrônico) quando cabíveis. A Frankkia é mantida por{" "}
+              {criador.nome}. Fale com a gente pelo e-mail {email}.
             </p>
           ),
         },
@@ -246,7 +273,9 @@ export function Privacidade() {
               </li>
               <li>
                 <strong>Dados que a imobiliária cadastra</strong> na plataforma (leads, clientes, proprietários, negócios): a imobiliária (ou o
-                corretor Solo) é a controladora, e a Frankkia é a operadora, tratando os dados apenas para prestar o serviço.
+                corretor Solo) é a controladora, e a Frankkia é a operadora. Como operadora, a Frankkia trata esses dados apenas para prestar o
+                serviço e segundo as instruções da imobiliária, não os usa para outros fins, avisa a imobiliária se houver um incidente de segurança
+                que os envolva e, quando a conta é encerrada, exclui os dados ou entrega uma cópia a pedido da imobiliária.
               </li>
               <li>
                 <strong>Contatos recebidos pelo portal</strong>: vão para o corretor responsável pelo anúncio, que passa a ser o controlador desses
@@ -292,6 +321,11 @@ export function Privacidade() {
                 <li>OpenStreetMap e Google Maps: exibição de mapas e busca de endereço. ViaCEP: busca do endereço pelo CEP.</li>
                 <li>WhatsApp: quando você toca em um botão de WhatsApp, a conversa acontece no aplicativo, sob a política da Meta.</li>
               </ul>
+              <p>
+                Alguns desses fornecedores (Cloudflare, Stripe, Resend e Google) processam ou guardam dados em servidores fora do Brasil. Nesses
+                casos, a transferência internacional acontece para prestar o serviço que você contratou e com as garantias contratuais de proteção de
+                dados oferecidas por eles, conforme o art. 33 da LGPD.
+              </p>
               <p>Também podemos compartilhar dados quando a lei ou uma autoridade competente exigir.</p>
             </>
           ),
@@ -309,10 +343,16 @@ export function Privacidade() {
         {
           titulo: "Por quanto tempo guardamos",
           texto: (
-            <p>
-              Mantemos os dados enquanto a conta estiver ativa. Após o encerramento, guardamos apenas o necessário para cumprir obrigações legais e
-              fiscais e para a defesa de direitos, e depois excluímos ou anonimizamos. Anúncios retirados do portal deixam de ser exibidos na hora.
-            </p>
+            <ul>
+              <li>Dados da conta e da imobiliária: enquanto a conta estiver ativa ou em teste.</li>
+              <li>
+                Depois do encerramento (ou do fim de um teste grátis não contratado): até <strong>90 dias</strong>, para permitir a reativação ou a
+                entrega de uma cópia; depois disso, os dados são excluídos ou anonimizados.
+              </li>
+              <li>Registros de pagamento e de faturamento: pelo prazo exigido pela legislação fiscal (em geral, 5 anos).</li>
+              <li>Pedidos de apresentação feitos no site: até 12 meses após o último contato.</li>
+              <li>Anúncios retirados do portal deixam de ser exibidos na hora.</li>
+            </ul>
           ),
         },
         {
@@ -361,8 +401,8 @@ export function Privacidade() {
           titulo: "Contato e alterações",
           texto: (
             <p>
-              O canal para assuntos de privacidade (encarregado de dados) é o e-mail {email}. Esta Política pode ser atualizada; a data no topo da
-              página indica a versão em vigor.
+              O encarregado pelo tratamento de dados pessoais é {criador.nome}, pelo e-mail {email}. Esta Política pode ser atualizada; a data no
+              topo da página indica a versão em vigor.
             </p>
           ),
         },

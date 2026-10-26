@@ -475,6 +475,7 @@ export async function carregarReal(conta: ContaDados) {
     id: i.id,
     nome: i.nome,
     cnpj: i.cnpj ?? "",
+    creciJ: i.creci_j ?? "",
     email: i.email ?? "",
     telefone: i.telefone ?? "",
     cidade: i.cidade ?? "",

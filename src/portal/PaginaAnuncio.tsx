@@ -183,7 +183,9 @@ export default function PaginaAnuncio({ a, url }: { a: AnuncioPublico; url: stri
                 )}
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold">{a.imobiliaria.nome}</p>
-                  <p className="text-xs text-muted">Ver todos os imóveis</p>
+                  <p className="text-xs text-muted">
+                    {a.imobiliaria.creci_j ? `CRECI-J ${a.imobiliaria.creci_j} · ` : ""}Ver todos os imóveis
+                  </p>
                 </div>
                 <ArrowRight className="size-4 shrink-0 text-subtle transition group-hover:translate-x-0.5 group-hover:text-ink" />
               </Link>

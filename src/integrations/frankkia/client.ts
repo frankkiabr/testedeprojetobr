@@ -148,6 +148,13 @@ export function mensagemErro(e: unknown): string {
     [/REATIVACAO_PELA_FRANKKIA/, "A reativação de corretores é feita pela equipe Frankkia. Use \"Pedir reativação\"."],
     [/MEMBRO_DESATIVADO/, "Este corretor está desativado. Peça a reativação à equipe Frankkia em Equipe → Acessos desativados."],
     [/VAGAS_EM_USO/, "Há mais corretores ativos (ou convidados) do que o plano escolhido permite. Desative alguns em Equipe antes de trocar."],
+    [/TESTE_JA_USADO/, "Este e-mail, WhatsApp ou CRECI já usou o teste grátis. Fale com a gente pelo WhatsApp para contratar."],
+    [/JA_TEM_CONTA/, "Você já faz parte de uma conta na Frankkia. Entre pela tela de login."],
+    [/EMAIL_NAO_CONFIRMADO/, "Confirme seu e-mail (veja a mensagem que enviamos) e entre de novo."],
+    [/CADASTRO_FECHADO|CADASTRO_LIMITE_DIA/, "Os cadastros pelo site estão pausados no momento. Fale com a gente pelo WhatsApp."],
+    [/TELEFONE_INVALIDO/, "Informe um WhatsApp válido, com DDD."],
+    [/NOME_INVALIDO/, "Informe seu nome completo."],
+    [/IMOBILIARIA_INVALIDA/, "Informe o nome da imobiliária."],
     [/PEDIDO_ABERTO/, "Já existe um pedido de plano em andamento."],
     [/Failed to fetch|NetworkError/i, "Sem conexão com o servidor. Verifique sua internet."],
   ];

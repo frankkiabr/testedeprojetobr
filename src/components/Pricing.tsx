@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Check, Megaphone, UserRound, Users } from "lucide-react";
-import { pricing } from "@/content";
+import { contato, pricing } from "@/content";
+import { linkWhatsApp } from "@/lib/whatsapp";
+import { WhatsAppIcon } from "./WhatsAppIcon";
 import { useNavigate } from "react-router-dom";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { Button } from "./ui";
@@ -41,6 +43,12 @@ export function Pricing() {
     e.preventDefault();
     navigate(`/apresentacao?equipe=${encodeURIComponent(equipe)}`);
   };
+  const irCadastro = (plano: string) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    navigate(`/cadastro?plano=${encodeURIComponent(plano)}`);
+  };
+  // Planos grandes começam por uma conversa; os menores, pelo teste grátis
+  const conversa = (plano: string) => plano === "Equipe 30" || plano === "Equipe 60";
   const solo = pricing.solo;
   const [ciclo, setCiclo] = useState<Ciclo>("mensal");
 
@@ -98,15 +106,37 @@ export function Pricing() {
                     </li>
                   </ul>
                   <div className={`my-7 h-px ${dark ? "bg-white/10" : "bg-line"}`} />
-                  <Button
-                    href={`/apresentacao?equipe=${encodeURIComponent(p.equipe)}`}
-                    variant={dark ? "accent" : "outline"}
-                    className="mt-auto w-full"
-                    onClick={irPara(p.equipe)}
-                    trailing={<ArrowRight className="size-[1em] group-hover/button:translate-x-0.5" />}
-                  >
-                    {pricing.cta}
-                  </Button>
+                  <div className="mt-auto">
+                    {conversa(p.name) ? (
+                      <Button
+                        href={linkWhatsApp(`Olá, ${contato.primeiroNome}! Quero conhecer o plano ${p.name} da Frankkia.`)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        variant={dark ? "accent" : "outline"}
+                        className="w-full"
+                        icon={<WhatsAppIcon className="size-[1em]" />}
+                      >
+                        {pricing.ctaConversa}
+                      </Button>
+                    ) : (
+                      <Button
+                        href={`/cadastro?plano=${encodeURIComponent(p.name)}`}
+                        variant={dark ? "accent" : "outline"}
+                        className="w-full"
+                        onClick={irCadastro(p.name)}
+                        trailing={<ArrowRight className="size-[1em] group-hover/button:translate-x-0.5" />}
+                      >
+                        {pricing.ctaTeste}
+                      </Button>
+                    )}
+                    <a
+                      href={conversa(p.name) ? `/cadastro?plano=${encodeURIComponent(p.name)}` : `/apresentacao?equipe=${encodeURIComponent(p.equipe)}`}
+                      onClick={conversa(p.name) ? irCadastro(p.name) : irPara(p.equipe)}
+                      className={`mt-3 block text-center text-xs underline-offset-4 hover:underline ${dark ? "text-bg/60" : "text-muted"}`}
+                    >
+                      {conversa(p.name) ? "ou comece um teste grátis" : "ou solicite uma demonstração"}
+                    </a>
+                  </div>
                 </div>
               </motion.li>
             );
@@ -137,14 +167,23 @@ export function Pricing() {
             </p>
           </div>
           <Preco preco={solo.price} ciclo={ciclo} />
-          <Button
-            href={`/apresentacao?equipe=${encodeURIComponent(solo.equipe)}`}
-            variant="outline"
-            onClick={irPara(solo.equipe)}
-            trailing={<ArrowRight className="size-[1em] group-hover/button:translate-x-0.5" />}
-          >
-            {pricing.cta}
-          </Button>
+          <div>
+            <Button
+              href="/cadastro?plano=Solo"
+              variant="outline"
+              onClick={irCadastro("Solo")}
+              trailing={<ArrowRight className="size-[1em] group-hover/button:translate-x-0.5" />}
+            >
+              {pricing.ctaTeste}
+            </Button>
+            <a
+              href={`/apresentacao?equipe=${encodeURIComponent(solo.equipe)}`}
+              onClick={irPara(solo.equipe)}
+              className="mt-3 block text-center text-xs text-muted underline-offset-4 hover:underline"
+            >
+              ou solicite uma demonstração
+            </a>
+          </div>
         </motion.div>
 
         <p className="mx-auto mt-6 max-w-[48rem] text-center text-xs text-subtle">{pricing.note}</p>

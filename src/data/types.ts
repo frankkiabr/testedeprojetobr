@@ -10,6 +10,8 @@ export type Imobiliaria = {
   id: string;
   nome: string;
   cnpj: string;
+  /** CRECI da imobiliária (pessoa jurídica), mostrado no portal. */
+  creciJ: string;
   email: string;
   telefone: string;
   cidade: string;

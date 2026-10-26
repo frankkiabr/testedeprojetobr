@@ -74,7 +74,7 @@ export type AnuncioPublico = {
   lng: number | null;
   fotos: { url: string; largura: number | null; altura: number | null }[];
   corretor: CorretorResumo & { telefone: string | null };
-  imobiliaria: ImobResumo & { cidade: string | null; telefone: string | null };
+  imobiliaria: ImobResumo & { cidade: string | null; telefone: string | null; creci_j: string | null };
   /** Outros imóveis da mesma imobiliária (preenchido pela página). */
   relacionados?: CartaoAnuncio[];
 };
@@ -87,6 +87,7 @@ export type CorretorPublico = CorretorResumo & {
 };
 export type ImobiliariaPublica = ImobResumo & {
   cidade: string | null;
+  creci_j: string | null;
   telefone: string | null;
   anuncios: CartaoAnuncio[];
   corretores: CorretorResumo[];

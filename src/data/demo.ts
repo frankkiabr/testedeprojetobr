@@ -99,6 +99,7 @@ export const imobiliaria: Imobiliaria = {
   id: "imob-1",
   nome: "Imobiliária Exemplo",
   cnpj: "12.345.678/0001-90",
+  creciJ: "12345-J",
   email: "contato@imobiliariaexemplo.com.br",
   telefone: "5511940001234",
   cidade: "São Paulo, SP",
