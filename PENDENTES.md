@@ -13,14 +13,14 @@
 
 ## Termos de Uso, Política de Privacidade e lançamento (revisão legal de 27/10/2026)
 
-**Feito:** textos do plano anual, renovação automática, prazo do teste (7 dias), arrependimento de 7 dias, link dos Termos no
+**Feito:** cancelar assinatura pelo app, cartão e faturas (portal da Stripe), renovação recusada e assinatura encerrada no webhook;
+textos do plano anual, renovação automática, prazo do teste (7 dias), arrependimento de 7 dias, link dos Termos no
 pagamento, transferência internacional, cláusula de operador, prazos de guarda, encarregado e campo CRECI-J (Configurações).
 **Falta (depende do dono):**
 - Abrir o CNPJ (provável ME no Simples; confirmar com contador) e pôr nome/razão social, CPF ou CNPJ e endereço no rodapé e nos Termos.
 - Trocar o WhatsApp provisório (91) 99999-9999 em `contato` (`src/content.ts`).
 - Revisão de um advogado (inclusive a regra de reembolso).
 - Depois do CNPJ: guardar os registros de acesso por 6 meses (Marco Civil, art. 15).
-- Botão "Cancelar assinatura" no app (portal de cobrança da Stripe) e tratar renovação recusada/assinatura cancelada no webhook.
 
 ## Cadastro pelo site (/cadastro)
 
@@ -51,7 +51,7 @@ e `stripe-webhook` (pagamento aprovado → "Pagamento confirmado" no painel). Se
 `https://yvbbktrufoyhtiotholf.supabase.co/functions/v1/stripe-webhook`.
 
 **Ideias para depois:**
-- Passar para o modo real (chaves sk_live) quando a conta Stripe estiver ativada.
+- Feito em 27/10/2026: modo real (chave restrita rk_live, webhook com eventos de checkout, fatura e assinatura, portal do cliente).
 - Decidir: liberar manualmente (como hoje) ou automaticamente ao confirmar o pagamento.
 - PIX/boleto para assinaturas e trocar de plano direto na assinatura da Stripe.
 - Cobrança proporcional (proration) da diferença no mês do upgrade, se desejado.
