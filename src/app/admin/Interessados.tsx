@@ -125,7 +125,10 @@ export default function Interessados() {
                       <SelectField
                         value={i.status}
                         onChange={(v) => store.setInteressado(i.id, { status: v as StatusInteressado }, "Situação atualizada.")}
-                        options={(Object.keys(STATUS_INTERESSADO) as StatusInteressado[]).map((s) => ({ value: s, label: STATUS_INTERESSADO[s].label }))}
+                        options={(Object.keys(STATUS_INTERESSADO) as StatusInteressado[])
+                          // Quem criou conta pelo site já usa a Frankkia: não recebe link de demonstração
+                          .filter((s) => !(i.origem === "cadastro" && s === "demo_liberada"))
+                          .map((s) => ({ value: s, label: STATUS_INTERESSADO[s].label }))}
                       />
                     </div>
                   </div>
