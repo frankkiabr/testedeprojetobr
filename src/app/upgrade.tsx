@@ -9,12 +9,12 @@ import { pedidoAberto, PLANOS, PLANOS_EQUIPE } from "@/data/platform";
 import { usoDoPlano, vagasUsadas } from "@/data/queries";
 import { useStore } from "@/data/store";
 import type { PlanoNome } from "@/data/types";
-import { brl, relTime } from "@/lib/format";
+import { relTime } from "@/lib/format";
 import { btn, Modal } from "./forms";
 import { ProgressBar } from "./kit";
 import { useSession } from "./session";
 import { CicloToggle } from "@/components/CicloToggle";
-import { mensalNoAnual, totalAnual, type Ciclo } from "@/lib/planos";
+import { mensalNoAnual, precoPlano, totalAnual, type Ciclo } from "@/lib/planos";
 
 const ORDEM: PlanoNome[] = PLANOS_EQUIPE;
 export const proximoPlano = (): PlanoNome | null =>
@@ -103,11 +103,11 @@ export function UpgradeModal({ open, onClose }: { open: boolean; onClose: () => 
                 </div>
                 <div className="text-right">
                   <p className="font-display text-xl font-semibold">
-                    {brl(ciclo === "anual" ? mensalNoAnual(PLANOS[p].preco) : PLANOS[p].preco)}
+                    {precoPlano(ciclo === "anual" ? mensalNoAnual(PLANOS[p].preco) : PLANOS[p].preco)}
                     <span className="text-xs font-normal text-muted">/mês</span>
                   </p>
                   {ciclo === "anual" && (
-                    <p className="text-xs text-muted">{brl(totalAnual(PLANOS[p].preco))} por ano</p>
+                    <p className="text-xs text-muted">{precoPlano(totalAnual(PLANOS[p].preco))} por ano</p>
                   )}
                 </div>
               </button>

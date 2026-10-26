@@ -5,7 +5,8 @@ import { ArrowRight, Barcode, CheckCircle2, Clock, CreditCard, Info, QrCode, Roc
 import { clienteNome, pedidosUpgrade, PLANOS } from "@/data/platform";
 import { useStore } from "@/data/store";
 import type { PedidoUpgrade } from "@/data/types";
-import { brl, relTime } from "@/lib/format";
+import { relTime } from "@/lib/format";
+import { precoPlano } from "@/lib/planos";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { Badge, Card, PageHeader, Segmented, stagger } from "../kit";
 import { btn, EmptyState, Modal } from "../forms";
@@ -82,7 +83,7 @@ export default function Upgrades() {
                         <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted">
                           {p.planoAtual} <ArrowRight className="size-3.5" /> <span className="font-semibold text-ink">{p.planoNovo}</span>
                           <span>
-                            · {p.tipo === "reducao" ? `redução: ${extras} vagas` : extras > 0 ? `+${extras} vagas` : "contratação do plano"} · {brl(p.valorMensal)}/mês
+                            · {p.tipo === "reducao" ? `redução: ${extras} vagas` : extras > 0 ? `+${extras} vagas` : "contratação do plano"} · {precoPlano(p.valorMensal)}/mês
                             {p.ciclo === "anual" && <span className="ml-1 font-semibold text-verified">· anual</span>}
                           </span>
                         </p>

@@ -88,6 +88,9 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
 - Reativar corretor desativado é só com a Frankkia (`proteger_reativacao`): o administrador usa "Pedir reativação" (`pedir_reativacao`,
   vira chamado) e a Frankkia reativa em Painel → Corretores (`painel_corretores`, `reativar_corretor`).
 - Visão geral: "Primeiros passos" (`src/app/PrimeirosPassos.tsx`) e sino de avisos (`src/app/Notificacoes.tsx`), calculados dos dados.
+- Página de captura dos anúncios: `/conheca-a-frankkia` (`src/pages/Captura.tsx`), tudo leva ao WhatsApp de `contato` em
+  `src/content.ts` (`?utm_source=instagram|youtube` entra na mensagem). Página `/sobre` (`src/pages/Sobre.tsx`, dados em `criador`;
+  foto em `public/luiz-horizonte.jpg`, sem ela mostra as iniciais).
 - Interessados: `/apresentacao` e o formulário do site gravam em `interessados` (visitante só envia; só a Frankkia lê).
 - Demonstração: NÃO é pública. Só abre por `/demo/<código>` liberado pela Frankkia (`acessos_demo`, com validade;
   `validar_demo`). Não recoloque botões de demonstração na tela de login.

@@ -66,6 +66,11 @@ export function Footer({ onSearch }: { onSearch: () => void }) {
                       </a>
                     </li>
                   ))}
+                  <li>
+                    <Link to="/sobre" className="whitespace-nowrap text-bg/80 transition-colors hover:text-bg">
+                      Sobre
+                    </Link>
+                  </li>
                 </ul>
               </div>
               <div>
@@ -120,6 +125,9 @@ export function Footer({ onSearch }: { onSearch: () => void }) {
               </button>
             </p>
             <p className="flex flex-wrap gap-x-4 gap-y-1">
+              <Link to="/sobre" className="hover:text-bg/80">
+                Sobre
+              </Link>
               <Link to="/termos" className="hover:text-bg/80">
                 Termos de Uso
               </Link>

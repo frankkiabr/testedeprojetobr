@@ -22,6 +22,8 @@ import RedefinirSenha from "@/pages/RedefinirSenha";
 import Apresentacao from "@/pages/Apresentacao";
 import Demo from "@/pages/Demo";
 import { Privacidade, Termos } from "@/pages/Legal";
+import Sobre from "@/pages/Sobre";
+import Captura from "@/pages/Captura";
 import Interessados from "@/app/admin/Interessados";
 import { Guard } from "@/app/Guard";
 import Checkout from "@/pages/Checkout";
@@ -55,6 +57,9 @@ export default function App() {
               <Route path="/demo/:token" element={<Demo />} />
               <Route path="/termos" element={<Termos />} />
               <Route path="/privacidade" element={<Privacidade />} />
+              <Route path="/sobre" element={<Sobre />} />
+              {/* Página de captura dos anúncios (Instagram/YouTube) → WhatsApp */}
+              <Route path="/conheca-a-frankkia" element={<Captura />} />
               <Route path="/convite/:id" element={<Convite />} />
               <Route path="/checkout/:id" element={<Checkout />} />
 

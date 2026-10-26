@@ -6,6 +6,7 @@ import { clienteById, diasSemAcesso, ehSolo, listaClientes, mrrDe, PLANOS, STATU
 import { useStore } from "@/data/store";
 import type { ClienteStatus, PlanoNome } from "@/data/types";
 import { brl, int, relTime } from "@/lib/format";
+import { precoPlano } from "@/lib/planos";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { Avatar, Badge, Card, PageHeader, ProgressBar, Select, stagger } from "../kit";
 import { btn, Drawer, EmptyState, Field, inputCls, Modal, SearchInput, SelectField } from "../forms";
@@ -14,7 +15,7 @@ import { enviarConvitePorEmail, mensagemErro, supabase } from "@/integrations/fr
 
 const PLANO_OPTS = (Object.keys(PLANOS) as PlanoNome[]).map((p) => ({
   value: p,
-  label: `${ehSolo(p) ? "Solo (corretor autônomo)" : `${p} (1 adm. + ${PLANOS[p].limite} corretores)`} · ${brl(PLANOS[p].preco)}/mês`,
+  label: `${ehSolo(p) ? "Solo (corretor autônomo)" : `${p} (1 adm. + ${PLANOS[p].limite} corretores)`} · ${precoPlano(PLANOS[p].preco)}/mês`,
 }));
 const iniciais = (s: string) =>
   s

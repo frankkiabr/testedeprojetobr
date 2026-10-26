@@ -11,11 +11,16 @@ import { mensalNoAnual, reais, totalAnual, valorPlano, type Ciclo } from "@/lib/
 /** Preço do cartão: no anual mostra quanto sai por mês e o total cobrado no ano. */
 function Preco({ preco, ciclo, escuro = false }: { preco: string; ciclo: Ciclo; escuro?: boolean }) {
   const mensal = valorPlano(preco);
+  // Centavos menores, para valores como 1.208,33 caberem no cartão
+  const [inteiro, centavos] = (ciclo === "anual" ? reais(mensalNoAnual(mensal)) : preco).split(",");
   return (
     <div>
       <p className="flex items-start gap-1.5">
         <span className={`mt-2 text-lg font-medium ${escuro ? "text-bg/70" : "text-muted"}`}>R$</span>
-        <span className="font-display text-[3rem] font-medium leading-none tracking-[-0.04em]">{ciclo === "anual" ? reais(mensalNoAnual(mensal)) : preco}</span>
+        <span className={`font-display font-medium leading-none tracking-[-0.04em] ${ciclo === "anual" ? "text-[2.5rem]" : "text-[3rem]"}`}>
+          {inteiro}
+          {centavos && <span className="text-[1.5rem] tracking-[-0.02em]">,{centavos}</span>}
+        </span>
         <span className={`mt-auto pb-1.5 text-sm ${escuro ? "text-bg/60" : "text-muted"}`}>/mês</span>
       </p>
       <p className={`mt-2 h-4 text-xs ${escuro ? "text-bg/60" : "text-muted"}`}>
@@ -57,7 +62,7 @@ export function Pricing() {
           </div>
         </motion.header>
 
-        <ul className="mt-12 grid gap-4 sm:mt-16 sm:grid-cols-2 lg:grid-cols-4">
+        <ul className="mt-12 grid gap-4 sm:mt-16 sm:grid-cols-2 xl:grid-cols-4">
           {pricing.plans.map((p, i) => {
             const dark = !!p.highlight;
             return (

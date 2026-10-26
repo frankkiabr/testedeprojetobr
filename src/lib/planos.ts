@@ -12,6 +12,13 @@ export const valorPlano = (v: string | number) =>
 export const totalAnual = (mensal: number) => mensal * MESES_PAGOS_NO_ANUAL;
 
 /** Quanto o plano anual sai por mês (para comparar com o mensal). */
-export const mensalNoAnual = (mensal: number) => Math.round(totalAnual(mensal) / 12);
+export const mensalNoAnual = (mensal: number) => totalAnual(mensal) / 12;
 
-export const reais = (v: number) => v.toLocaleString("pt-BR", { maximumFractionDigits: 0 });
+/** 315 → "315", 1450 → "1.450", 79.9 → "79,90" (centavos só quando existem). */
+export const reais = (v: number) => {
+  const casas = Math.round(v * 100) % 100 === 0 ? 0 : 2;
+  return v.toLocaleString("pt-BR", { minimumFractionDigits: casas, maximumFractionDigits: casas });
+};
+
+/** Preço de plano com "R$" (mostra os centavos do Solo, ao contrário de `brl`). */
+export const precoPlano = (v: number) => `R$ ${reais(v)}`;

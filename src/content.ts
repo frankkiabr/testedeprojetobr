@@ -127,10 +127,10 @@ export const pricing = {
   note: "Leads, captações, vendas, agenda, Academy e Marketing sem limite em todos os planos. O limite de anúncios vale só para imóveis publicados no portal de imóveis da Frankkia. Planos e condições sujeitos à disponibilidade comercial.",
   cta: "Solicitar demonstração",
   plans: [
-    { name: "Equipe 5", seats: "1 administrador + até 5 corretores", equipe: "Até 5 corretores", price: "390", anuncios: "50 anúncios no portal, compartilhados pela equipe" },
-    { name: "Equipe 10", seats: "1 administrador + até 10 corretores", equipe: "Até 10 corretores", price: "650", anuncios: "100 anúncios no portal, compartilhados pela equipe", highlight: true },
-    { name: "Equipe 30", seats: "1 administrador + até 30 corretores", equipe: "Até 30 corretores", price: "1.800", anuncios: "300 anúncios no portal, compartilhados pela equipe" },
-    { name: "Equipe 60", seats: "1 administrador + até 60 corretores", equipe: "Até 60 corretores", price: "3.300", anuncios: "600 anúncios no portal, compartilhados pela equipe" },
+    { name: "Equipe 5", seats: "1 administrador + até 5 corretores", equipe: "Até 5 corretores", price: "315", anuncios: "50 anúncios no portal, compartilhados pela equipe" },
+    { name: "Equipe 10", seats: "1 administrador + até 10 corretores", equipe: "Até 10 corretores", price: "525", anuncios: "100 anúncios no portal, compartilhados pela equipe", highlight: true },
+    { name: "Equipe 30", seats: "1 administrador + até 30 corretores", equipe: "Até 30 corretores", price: "1.450", anuncios: "300 anúncios no portal, compartilhados pela equipe" },
+    { name: "Equipe 60", seats: "1 administrador + até 60 corretores", equipe: "Até 60 corretores", price: "2.650", anuncios: "600 anúncios no portal, compartilhados pela equipe" },
   ] as { name: string; seats: string; equipe: string; price: string; anuncios: string; highlight?: boolean }[],
   /** Plano para corretor autônomo: produto separado, sem equipe (não é um degrau dos planos de equipe). */
   solo: {
@@ -140,7 +140,7 @@ export const pricing = {
     text: "Todas as ferramentas da Frankkia para quem trabalha sozinho: leads, captações, vendas, agenda e Academy, sem equipe para gerenciar.",
     seats: "1 corretor (sem equipe)",
     equipe: "Corretor autônomo (Solo)",
-    price: "99",
+    price: "79,90",
     anuncios: "15 anúncios no portal",
   },
 };
@@ -202,4 +202,79 @@ export const demo = {
   fields: { name: "Seu nome", company: "Imobiliária", email: "E-mail", phone: "Telefone" },
   teamSize: ["Corretor autônomo (Solo)", "Até 5 corretores", "Até 10 corretores", "Até 30 corretores", "Até 60 corretores", "Mais de 60 corretores"],
   submit: "Solicitar demonstração",
+};
+
+/** Contato comercial: para onde a página de captura (/conheca-a-frankkia) e a página Sobre levam. */
+export const contato = {
+  /** Só números, com DDI 55 e DDD. Troque aqui quando o número oficial estiver pronto. */
+  whatsapp: "5591999999999",
+  whatsappExibir: "(91) 99999-9999",
+  responsavel: "Luiz Horizonte",
+  primeiroNome: "Luiz",
+};
+
+/** Quem criou a Frankkia (página /sobre e página de captura). A foto vai em public/luiz-horizonte.jpg. */
+export const criador = {
+  nome: "Luiz Horizonte",
+  papel: "Criador da Frankkia",
+  foto: "/luiz-horizonte.jpg",
+  resumo: "Marketing estratégico, inteligência digital e mais de 5 anos de experiência prática no mercado imobiliário.",
+  bio: [
+    "Luiz Horizonte trabalha com marketing estratégico, inteligência digital e inovação, somando mais de 5 anos de experiência prática no mercado imobiliário. Nascido em Belém do Pará e graduado em Marketing pela UNAMA, ele utiliza sua bagagem em automação e análise de dados para conectar pessoas e negócios de forma ágil e moderna.",
+    "Uma de suas maiores características profissionais é a otimização do trabalho através do uso de Inteligência Artificial, aplicando a tecnologia para tornar processos mais rápidos e eficientes. Em janeiro de 2026, idealizou a plataforma Dissnorteados, que hoje se consolidou como o maior site de mapeamento artístico da Região Norte do Brasil.",
+  ],
+};
+
+/** Página de captura dos anúncios (Instagram e YouTube): leva a pessoa para o WhatsApp. */
+export const captura = {
+  eyebrow: "Para imobiliárias e corretores",
+  title: "Pare de perder negócio no caderno, na planilha e no WhatsApp.",
+  text: "A Frankkia junta leads, captações, agenda, equipe e um portal de imóveis em uma só plataforma. Chame no WhatsApp e veja tudo funcionando com a rotina da sua imobiliária.",
+  cta: "Chamar no WhatsApp",
+  garantias: ["Apresentação sem compromisso", "Período de teste grátis", "Sem instalar nada"],
+  dores: {
+    eyebrow: "Soa familiar?",
+    title: "O dia a dia que custa vendas.",
+    items: [
+      { title: "Lead esquecido", text: "O contato chegou pelo Instagram ou pelo portal e ninguém respondeu a tempo." },
+      { title: "Captação travada", text: "O imóvel não anda porque falta matrícula, avaliação ou autorização e ninguém percebeu." },
+      { title: "Equipe no escuro", text: "Você não sabe quem está atendendo, quem está captando e quem está vendendo." },
+      { title: "Proprietário cobrando", text: "Ele quer saber o que foi feito pelo imóvel e o relatório não existe." },
+    ],
+  },
+  solucao: {
+    eyebrow: "A solução",
+    title: "Tudo o que a sua operação precisa, em um só lugar.",
+  },
+  publicos: {
+    eyebrow: "Para quem é",
+    title: "Feita para o tamanho da sua operação.",
+    items: [
+      {
+        title: "Imobiliárias",
+        text: "O administrador vê a operação inteira: funil, captações, vendas, ranking e metas. Cada corretor vê só os próprios clientes e negócios.",
+        pontos: ["Planos de 5 a 60 corretores", "O administrador não ocupa vaga", "Academy para treinar a equipe"],
+        planos: "Equipe",
+      },
+      {
+        title: "Corretores autônomos",
+        text: "Todas as ferramentas para quem trabalha sozinho, sem equipe para gerenciar: leads, captações, agenda, Academy e seus imóveis no portal.",
+        pontos: ["1 corretor, sem equipe", "15 anúncios no portal", "Relatório ao proprietário pelo WhatsApp"],
+        planos: "Solo",
+      },
+    ],
+  },
+  passos: {
+    eyebrow: "Como começar",
+    title: "Três passos até a sua equipe usar.",
+    items: [
+      { title: "Chame no WhatsApp", text: "Conte como a sua imobiliária trabalha hoje." },
+      { title: "Veja funcionando", text: "Uma apresentação rápida, no horário que for melhor para você." },
+      { title: "Comece a testar", text: "Sua conta é criada com um período de teste grátis e você convida a equipe." },
+    ],
+  },
+  final: {
+    title: "Vamos organizar a sua imobiliária?",
+    text: "Fale direto com quem criou a Frankkia.",
+  },
 };

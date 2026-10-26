@@ -6,8 +6,7 @@ import { imobiliaria } from "@/data/demo";
 import { pedidoById, PLANOS } from "@/data/platform";
 import { useStore } from "@/data/store";
 import type { PedidoUpgrade } from "@/data/types";
-import { brl } from "@/lib/format";
-import { DESCONTO_ANUAL, totalAnual } from "@/lib/planos";
+import { DESCONTO_ANUAL, precoPlano, totalAnual } from "@/lib/planos";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { Logo } from "@/components/ui";
 import { Segmented } from "@/app/kit";
@@ -110,7 +109,7 @@ export default function Checkout() {
   const vagasExtras = PLANOS[pedido.planoNovo].limite - PLANOS[pedido.planoAtual].limite;
   const anual = pedido.ciclo === "anual";
   // Anual: 12 meses pelo preço de 10, cobrado de uma vez
-  const cobranca = anual ? `${brl(totalAnual(pedido.valorMensal))}/ano` : `${brl(pedido.valorMensal)}/mês`;
+  const cobranca = anual ? `${precoPlano(totalAnual(pedido.valorMensal))}/ano` : `${precoPlano(pedido.valorMensal)}/mês`;
   const finalizado = pedido.pagamento !== "aguardando";
 
   return (
@@ -137,10 +136,10 @@ export default function Checkout() {
               <div className="flex justify-between border-t border-white/10 pt-3 text-base">
                 <dt className="font-semibold">{anual ? "Total anual" : "Total mensal"}</dt>
                 <dd className="text-right">
-                  <span className="font-display text-2xl font-semibold">{brl(anual ? totalAnual(pedido.valorMensal) : pedido.valorMensal)}</span>
+                  <span className="font-display text-2xl font-semibold">{precoPlano(anual ? totalAnual(pedido.valorMensal) : pedido.valorMensal)}</span>
                   {anual && (
                     <span className="block text-xs text-bg/60">
-                      12 meses pelo preço de 10 (-{DESCONTO_ANUAL}%) · em vez de {brl(pedido.valorMensal * 12)}
+                      12 meses pelo preço de 10 (-{DESCONTO_ANUAL}%) · em vez de {precoPlano(pedido.valorMensal * 12)}
                     </span>
                   )}
                 </dd>
