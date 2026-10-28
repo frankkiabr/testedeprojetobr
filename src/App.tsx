@@ -15,6 +15,8 @@ import Proprietarios from "@/app/pages/negocios/Proprietarios";
 import Transacoes from "@/app/pages/negocios/Transacoes";
 import Parceiros from "@/app/pages/negocios/Parceiros";
 import Mercado from "@/app/pages/Mercado";
+import NovoEstudo from "@/app/pages/estudos/NovoEstudo";
+import Estudo from "@/app/pages/estudos/Estudo";
 import AgendaPage from "@/app/pages/AgendaPage";
 import AgendaAdmin from "@/app/admin/AgendaAdmin";
 import Convite from "@/pages/Convite";
@@ -100,6 +102,8 @@ export default function App() {
                   />
                 </Route>
                 <Route path="mercado" element={<Mercado />} />
+                <Route path="mercado/estudos/novo" element={<NovoEstudo />} />
+                <Route path="mercado/estudos/:id" element={<Estudo />} />
                 <Route path="academy" element={<Academy />} />
                 <Route path="academy/:id" element={<Trilha />} />
                 <Route path="marketing" element={<Marketing />} />

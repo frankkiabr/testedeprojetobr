@@ -27,3 +27,6 @@ verify_jwt = false
 
 [functions.excluir-imobiliaria]
 verify_jwt = false
+
+[functions.ler-anuncio]
+verify_jwt = false

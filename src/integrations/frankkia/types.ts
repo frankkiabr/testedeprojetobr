@@ -288,6 +288,241 @@ export type Database = {
           },
         ]
       }
+      avaliacao_amostras: {
+        Row: {
+          ano_construcao: number | null
+          area_m2: number
+          avaliacao_id: string
+          bairro: string | null
+          banheiros: number | null
+          criado_em: string
+          endereco: string | null
+          foto_url: string | null
+          id: string
+          infraestrutura: string | null
+          origem: string
+          portal: string | null
+          portaria: string | null
+          quartos: number | null
+          suites: number | null
+          titulo: string | null
+          url: string | null
+          usar: boolean
+          vagas: number | null
+          valor: number
+        }
+        Insert: {
+          ano_construcao?: number | null
+          area_m2: number
+          avaliacao_id: string
+          bairro?: string | null
+          banheiros?: number | null
+          criado_em?: string
+          endereco?: string | null
+          foto_url?: string | null
+          id?: string
+          infraestrutura?: string | null
+          origem?: string
+          portal?: string | null
+          portaria?: string | null
+          quartos?: number | null
+          suites?: number | null
+          titulo?: string | null
+          url?: string | null
+          usar?: boolean
+          vagas?: number | null
+          valor: number
+        }
+        Update: {
+          ano_construcao?: number | null
+          area_m2?: number
+          avaliacao_id?: string
+          bairro?: string | null
+          banheiros?: number | null
+          criado_em?: string
+          endereco?: string | null
+          foto_url?: string | null
+          id?: string
+          infraestrutura?: string | null
+          origem?: string
+          portal?: string | null
+          portaria?: string | null
+          quartos?: number | null
+          suites?: number | null
+          titulo?: string | null
+          url?: string | null
+          usar?: boolean
+          vagas?: number | null
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "avaliacao_amostras_avaliacao_id_fkey"
+            columns: ["avaliacao_id"]
+            isOneToOne: false
+            referencedRelation: "avaliacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      avaliacoes: {
+        Row: {
+          ajuste_improvavel: number
+          ajuste_mercado: number
+          ajuste_urgencia: number
+          ano_construcao: number | null
+          apresentado: boolean
+          area_m2: number
+          area_terreno: number | null
+          atualizado_em: string
+          bairro: string | null
+          banheiros: number | null
+          captacao_id: string | null
+          categoria: string
+          cep: string | null
+          cidade: string | null
+          complemento: string | null
+          conservacao: string | null
+          corretor_id: string
+          criado_em: string
+          data_visita: string | null
+          em_condominio: boolean | null
+          exclusividade: boolean
+          expirado: boolean
+          finalidade: string
+          foto_url: string | null
+          id: string
+          imobiliaria_id: string
+          infraestrutura: string | null
+          lat: number | null
+          link_liberado: boolean
+          lng: number | null
+          logradouro: string | null
+          mobilia: string | null
+          mostrar_improvavel: boolean
+          mostrar_mercado: boolean
+          mostrar_urgencia: boolean
+          numero: string | null
+          observacoes: string | null
+          orientacao_solar: string | null
+          portaria: string | null
+          proprietario_id: string | null
+          quartos: number | null
+          suites: number | null
+          titulo: string
+          uf: string | null
+          vagas: number | null
+          valor_anunciado: number | null
+          vendido: boolean
+        }
+        Insert: {
+          ajuste_improvavel?: number
+          ajuste_mercado?: number
+          ajuste_urgencia?: number
+          ano_construcao?: number | null
+          apresentado?: boolean
+          area_m2: number
+          area_terreno?: number | null
+          atualizado_em?: string
+          bairro?: string | null
+          banheiros?: number | null
+          captacao_id?: string | null
+          categoria: string
+          cep?: string | null
+          cidade?: string | null
+          complemento?: string | null
+          conservacao?: string | null
+          corretor_id?: string
+          criado_em?: string
+          data_visita?: string | null
+          em_condominio?: boolean | null
+          exclusividade?: boolean
+          expirado?: boolean
+          finalidade: string
+          foto_url?: string | null
+          id?: string
+          imobiliaria_id: string
+          infraestrutura?: string | null
+          lat?: number | null
+          link_liberado?: boolean
+          lng?: number | null
+          logradouro?: string | null
+          mobilia?: string | null
+          mostrar_improvavel?: boolean
+          mostrar_mercado?: boolean
+          mostrar_urgencia?: boolean
+          numero?: string | null
+          observacoes?: string | null
+          orientacao_solar?: string | null
+          portaria?: string | null
+          proprietario_id?: string | null
+          quartos?: number | null
+          suites?: number | null
+          titulo: string
+          uf?: string | null
+          vagas?: number | null
+          valor_anunciado?: number | null
+          vendido?: boolean
+        }
+        Update: {
+          ajuste_improvavel?: number
+          ajuste_mercado?: number
+          ajuste_urgencia?: number
+          ano_construcao?: number | null
+          apresentado?: boolean
+          area_m2?: number
+          area_terreno?: number | null
+          atualizado_em?: string
+          bairro?: string | null
+          banheiros?: number | null
+          captacao_id?: string | null
+          categoria?: string
+          cep?: string | null
+          cidade?: string | null
+          complemento?: string | null
+          conservacao?: string | null
+          corretor_id?: string
+          criado_em?: string
+          data_visita?: string | null
+          em_condominio?: boolean | null
+          exclusividade?: boolean
+          expirado?: boolean
+          finalidade?: string
+          foto_url?: string | null
+          id?: string
+          imobiliaria_id?: string
+          infraestrutura?: string | null
+          lat?: number | null
+          link_liberado?: boolean
+          lng?: number | null
+          logradouro?: string | null
+          mobilia?: string | null
+          mostrar_improvavel?: boolean
+          mostrar_mercado?: boolean
+          mostrar_urgencia?: boolean
+          numero?: string | null
+          observacoes?: string | null
+          orientacao_solar?: string | null
+          portaria?: string | null
+          proprietario_id?: string | null
+          quartos?: number | null
+          suites?: number | null
+          titulo?: string
+          uf?: string | null
+          vagas?: number | null
+          valor_anunciado?: number | null
+          vendido?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "avaliacoes_imobiliaria_id_fkey"
+            columns: ["imobiliaria_id"]
+            isOneToOne: false
+            referencedRelation: "imobiliarias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       avisos_email: {
         Row: {
           chave: string
@@ -1727,6 +1962,7 @@ export type Database = {
       }
       pertence: { Args: { p_imob: string }; Returns: boolean }
       pode_editar_captacao: { Args: { p_captacao: string }; Returns: boolean }
+      pode_mexer_avaliacao: { Args: { p_avaliacao: string }; Returns: boolean }
       pode_mexer_avatar: { Args: { p_nome: string }; Returns: boolean }
       portal_anuncio: { Args: { p_slug: string }; Returns: Json }
       portal_busca: { Args: never; Returns: Json }

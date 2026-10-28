@@ -5,8 +5,8 @@
 **Falta:**
 - Google Agenda: a conexão real (Frankkia → Google) foi feita em 28/10/2026; falta testar, pedir a verificação do app ao Google
   (sem ela: só usuários de teste e reconexão a cada 7 dias) e, numa fase 2, trazer de volta as mudanças feitas no Google.
-- Zap Imóveis, OLX Imóveis e VivaReal: trazer dados de mercado para o Estudo de mercado (e enviar os anúncios do portal).
-- Ao excluir uma imobiliária, cancelar a assinatura dela na Stripe automaticamente.
+- Zap/OLX/VivaReal: feito em 28/10/2026 o "colar link do anúncio" nas Avaliações (como o BrokerApp). Falta, se quiser: feed para o
+  Canal Pro (enviar os anúncios) e dados prontos de mercado (DataZAP+ é pago, sob consulta; FipeZAP é público).
 
 ## Revisão de segurança
 

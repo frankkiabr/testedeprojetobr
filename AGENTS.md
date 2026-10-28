@@ -91,6 +91,16 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
 - Página de captura dos anúncios: `/conheca-a-frankkia` (`src/pages/Captura.tsx`), tudo leva ao WhatsApp de `contato` em
   `src/content.ts` (`?utm_source=instagram|youtube` entra na mensagem). Página `/sobre` (`src/pages/Sobre.tsx`, dados em `criador`;
   foto em `public/luiz-horizonte.jpg`, sem ela mostra as iniciais).
+- Estudo de mercado (no estilo do BrokerApp): aba "Estudos" (lista + funil, `src/app/pages/estudos/`), "Novo estudo" em
+  `/app/mercado/estudos/novo` (tipo, CEP+mapa, todos os dados do imóvel, proprietário, título; atalho a partir de uma captação) e
+  a página `/app/mercado/estudos/:id` (acompanhamento, Improvável/Valor de mercado/Urgência com ajustes, amostras por link de
+  portal, radar Frankkia ou manual). Dados em `src/data/avaliacoes.ts` (tabelas `avaliacoes` e `avaliacao_amostras`). O link é lido
+  pela função `ler-anuncio`; os portais bloqueiam o servidor (403), então vale o que o próprio link informa. Aba "Panorama da imobiliária" = antigo painel.
+- Google Agenda: função `google-agenda` (OAuth com volta por `/google-agenda/retorno`, fila `google_sync_fila` a cada minuto e
+  conferência de volta a cada 5 min só dos eventos criados pela Frankkia). Excluir imobiliária passa por `excluir-imobiliaria`
+  (também cancela a assinatura na Stripe). E-mails automáticos: fila `avisos_email` + função `enviar-avisos`.
+- Páginas públicas: o servidor entrega o texto principal e os links (`src/components/ConteudoServidor.tsx`) e cada uma tem
+  título/descrição em `src/routes/<pagina>.tsx` (component null; quem desenha é o `<App />`).
 - Interessados: `/apresentacao` e o formulário do site gravam em `interessados` (visitante só envia; só a Frankkia lê).
 - Demonstração: NÃO é pública. Só abre por `/demo/<código>` liberado pela Frankkia (`acessos_demo`, com validade;
   `validar_demo`). Não recoloque botões de demonstração na tela de login.

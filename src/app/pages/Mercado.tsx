@@ -9,6 +9,7 @@ import { brl, int } from "@/lib/format";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { AnimatedNumber, Card, CardHeader, PageHeader, Segmented, Select, stagger } from "../kit";
 import { EmptyState } from "../forms";
+import { ListaEstudos } from "./estudos/Lista";
 
 function Kpi({ label, icon: Icon, value, format, hint }: { label: string; icon: typeof Ruler; value: number; format: (n: number) => string; hint?: string }) {
   return (
@@ -30,6 +31,8 @@ function Kpi({ label, icon: Icon, value, format, hint }: { label: string; icon: 
 /** Banco de dados de preços a partir das vendas e locações registradas pela imobiliária. */
 export default function Mercado() {
   useStore();
+  // Estudos: valor de um imóvel por amostras (como o BrokerApp). Panorama: preços dos fechamentos da imobiliária.
+  const [aba, setAba] = useState<"estudos" | "panorama">("estudos");
   // Começa em Apartamento: misturar categorias (ex.: galpões e terrenos) distorce o preço médio do m².
   const [f, setF] = useState<FiltroMercado>({ tipo: "venda", categoria: "Apartamento", bairro: "", meses: 12 });
   const m = useMemo(() => mercado(f), [f]);
@@ -44,6 +47,23 @@ export default function Mercado() {
       <motion.div {...stagger(0)}>
         <PageHeader title="Estudo de mercado" subtitle="Preços reais de fechamento para embasar avaliações e conversas com proprietários." />
       </motion.div>
+
+      <motion.div {...stagger(1)}>
+        <Segmented
+          id="mercado-aba"
+          value={aba}
+          onChange={setAba}
+          options={[
+            { value: "estudos", label: "Estudos" },
+            { value: "panorama", label: "Panorama da imobiliária" },
+          ]}
+        />
+      </motion.div>
+
+      {aba === "estudos" ? (
+        <ListaEstudos />
+      ) : (
+      <>
 
       <motion.div {...stagger(1)} className="flex flex-wrap items-center gap-2">
         <Segmented
@@ -190,6 +210,8 @@ export default function Mercado() {
             </Card>
           </motion.div>
         </>
+      )}
+      </>
       )}
     </div>
   );
