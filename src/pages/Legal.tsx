@@ -11,7 +11,7 @@ import { Logo } from "@/components/ui";
  * Textos-base escritos para a Frankkia (plataforma + portal). Antes de divulgar em larga escala,
  * vale a revisão de um advogado e completar os dados da empresa (razão social, CNPJ e endereço).
  */
-const ATUALIZACAO = "27 de outubro de 2026";
+const ATUALIZACAO = "28 de outubro de 2026";
 
 type Secao = { titulo: string; texto: ReactNode };
 
@@ -319,6 +319,7 @@ export function Privacidade() {
                 <li>Stripe: processamento dos pagamentos.</li>
                 <li>Resend: envio de e-mails (convites e avisos).</li>
                 <li>OpenStreetMap e Google Maps: exibição de mapas e busca de endereço. ViaCEP: busca do endereço pelo CEP.</li>
+                <li>Google Agenda: só para quem escolher conectar a própria conta (veja a seção "Google Agenda").</li>
                 <li>WhatsApp: quando você toca em um botão de WhatsApp, a conversa acontece no aplicativo, sob a política da Meta.</li>
               </ul>
               <p>
@@ -327,6 +328,47 @@ export function Privacidade() {
                 dados oferecidas por eles, conforme o art. 33 da LGPD.
               </p>
               <p>Também podemos compartilhar dados quando a lei ou uma autoridade competente exigir.</p>
+            </>
+          ),
+        },
+        {
+          titulo: "Google Agenda",
+          texto: (
+            <>
+              <p>
+                A conexão com o Google Agenda é opcional e feita por cada pessoa, na própria Agenda da Frankkia, pela tela oficial de login do Google.
+                Ao conectar, você autoriza a Frankkia a:
+              </p>
+              <ul>
+                <li>
+                  ler o <strong>endereço de e-mail</strong> da sua conta Google, para mostrar qual conta está conectada;
+                </li>
+                <li>
+                  <strong>criar, alterar e excluir eventos</strong> no seu Google Agenda principal, apenas para copiar para lá os compromissos que você
+                  cria, altera ou exclui na Frankkia (título, data, horário, local e observações).
+                </li>
+              </ul>
+              <p>
+                A Frankkia não lê nem altera os outros eventos da sua agenda, não usa esses dados para publicidade, não os vende e não os compartilha com
+                outras pessoas (nem com a sua imobiliária). Guardamos apenas o e-mail da conta e a autorização de acesso, protegida no servidor e nunca
+                exibida no aplicativo.
+              </p>
+              <p>
+                Você pode desconectar a qualquer momento em Agenda → Google Agenda → Desconectar (a autorização é revogada na hora) ou em
+                myaccount.google.com/permissions. Ao desconectar, apagamos a autorização guardada; os eventos já criados continuam na sua agenda.
+              </p>
+              <p>
+                O uso e a transferência, para qualquer outro aplicativo, de informações recebidas das APIs do Google pela Frankkia seguirão a{" "}
+                <a
+                  href="https://developers.google.com/terms/api-services-user-data-policy"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-semibold text-accent"
+                >
+                  Política de Dados do Usuário dos Serviços de API do Google
+                </a>
+                , incluindo os requisitos de Uso Limitado.
+              </p>
             </>
           ),
         },
