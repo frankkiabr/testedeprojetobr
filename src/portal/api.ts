@@ -165,6 +165,12 @@ export type EstudoPublico = {
   vagas: number | null;
   ano: number | null;
   conservacao: string | null;
+  portaria: string | null;
+  infraestrutura: string | null;
+  orientacao_solar: string | null;
+  mobilia: string | null;
+  em_condominio: boolean | null;
+  usar_variaveis: boolean;
   ajuste_improvavel: number;
   ajuste_mercado: number;
   ajuste_urgencia: number;

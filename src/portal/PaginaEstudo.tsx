@@ -3,17 +3,31 @@ import type { EstudoPublico } from "./api";
 import { creciTexto, FotoPessoa } from "./ui";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 import { Logo } from "@/components/ui";
+import { calcularValores } from "@/lib/estudo-calculo";
 
 const brl = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
-/** Mesmo cálculo do estudo: média do m² das amostras × área, decrescida do ajuste de cada valor. */
+/** Mesmo cálculo do estudo no app (src/lib/estudo-calculo.ts). */
 export function valoresDoEstudo(e: EstudoPublico) {
-  const m2s = e.amostras.filter((s) => s.valor > 0 && s.area > 0).map((s) => s.valor / s.area);
-  if (!m2s.length) return null;
-  const m2 = m2s.reduce((t, x) => t + x, 0) / m2s.length;
-  const base = m2 * e.area;
-  const v = (pct: number) => base * (1 - pct / 100);
-  return { m2, improvavel: v(e.ajuste_improvavel), mercado: v(e.ajuste_mercado), urgencia: v(e.ajuste_urgencia) };
+  const v = calcularValores({
+    amostras: e.amostras,
+    area: e.area,
+    ajusteImprovavel: e.ajuste_improvavel,
+    ajusteMercado: e.ajuste_mercado,
+    ajusteUrgencia: e.ajuste_urgencia,
+    usarVariaveis: e.usar_variaveis,
+    caracteristicas: {
+      conservacao: e.conservacao,
+      anoConstrucao: e.ano,
+      emCondominio: e.em_condominio,
+      portaria: e.portaria,
+      infraestrutura: e.infraestrutura,
+      orientacaoSolar: e.orientacao_solar,
+      mobilia: e.mobilia,
+      finalidade: e.finalidade,
+    },
+  });
+  return v && { m2: v.m2Medio, improvavel: v.improvavel, mercado: v.mercado, urgencia: v.urgencia };
 }
 
 /**

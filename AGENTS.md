@@ -100,6 +100,9 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
   `estudo_publico`, só com `link_liberado`), envio por WhatsApp/e-mail (função `enviar-estudo`), "Imóveis vendidos na região"
   (`vendidos_regiao`: vendas da imobiliária + `vendas_externas`, sem cliente/comissão; nome do corretor só com
   `imobiliarias.mostrar_corretor_vendidos`, chave em Configurações) e "Criar captação com estes dados" (abre o Novo imóvel preenchido).
+  Fase C: lembretes e comentários (`avaliacao_notas`; com data viram compromisso na Agenda), histórico do valor pedido
+  (`avaliacao_precos`, gravado por gatilho) e ajuste por características (`src/lib/estudo-calculo.ts`, usado pelo app e pela
+  apresentação; liga/desliga em `avaliacoes.usar_variaveis`).
 - Google Agenda: função `google-agenda` (OAuth com volta por `/google-agenda/retorno`, fila `google_sync_fila` a cada minuto e
   conferência de volta a cada 5 min só dos eventos criados pela Frankkia). Excluir imobiliária passa por `excluir-imobiliaria`
   (também cancela a assinatura na Stripe). E-mails automáticos: fila `avisos_email` + função `enviar-avisos`.

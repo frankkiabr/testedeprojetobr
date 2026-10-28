@@ -365,6 +365,73 @@ export type Database = {
           },
         ]
       }
+      avaliacao_notas: {
+        Row: {
+          autor_id: string
+          avaliacao_id: string
+          compromisso_id: string | null
+          criado_em: string
+          id: string
+          lembrete_em: string | null
+          texto: string
+        }
+        Insert: {
+          autor_id?: string
+          avaliacao_id: string
+          compromisso_id?: string | null
+          criado_em?: string
+          id?: string
+          lembrete_em?: string | null
+          texto: string
+        }
+        Update: {
+          autor_id?: string
+          avaliacao_id?: string
+          compromisso_id?: string | null
+          criado_em?: string
+          id?: string
+          lembrete_em?: string | null
+          texto?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "avaliacao_notas_avaliacao_id_fkey"
+            columns: ["avaliacao_id"]
+            isOneToOne: false
+            referencedRelation: "avaliacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      avaliacao_precos: {
+        Row: {
+          avaliacao_id: string
+          criado_em: string
+          id: string
+          valor: number
+        }
+        Insert: {
+          avaliacao_id: string
+          criado_em?: string
+          id?: string
+          valor: number
+        }
+        Update: {
+          avaliacao_id?: string
+          criado_em?: string
+          id?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "avaliacao_precos_avaliacao_id_fkey"
+            columns: ["avaliacao_id"]
+            isOneToOne: false
+            referencedRelation: "avaliacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       avaliacoes: {
         Row: {
           ajuste_improvavel: number
@@ -412,6 +479,7 @@ export type Database = {
           titulo: string
           token: string
           uf: string | null
+          usar_variaveis: boolean
           vagas: number | null
           valor_anunciado: number | null
           vendido: boolean
@@ -462,6 +530,7 @@ export type Database = {
           titulo: string
           token?: string
           uf?: string | null
+          usar_variaveis?: boolean
           vagas?: number | null
           valor_anunciado?: number | null
           vendido?: boolean
@@ -512,6 +581,7 @@ export type Database = {
           titulo?: string
           token?: string
           uf?: string | null
+          usar_variaveis?: boolean
           vagas?: number | null
           valor_anunciado?: number | null
           vendido?: boolean

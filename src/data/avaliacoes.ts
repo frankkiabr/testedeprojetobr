@@ -9,6 +9,7 @@
 import { supabase } from "@/integrations/frankkia/client";
 import type { Database } from "@/integrations/frankkia/types";
 import type { Finalidade } from "./types";
+import { calcularValores } from "@/lib/estudo-calculo";
 
 export type Infra = "nao" | "parcial" | "completa";
 export type Portaria = "nao" | "parcial" | "24h";
@@ -87,6 +88,8 @@ export type Ajustes = {
   mostrarImprovavel: boolean;
   mostrarMercado: boolean;
   mostrarUrgencia: boolean;
+  /** Considerar conservação, idade, portaria etc. no valor (ajuste por características). */
+  usarVariaveis: boolean;
 };
 
 export type Avaliacao = DadosImovel &
@@ -119,7 +122,15 @@ export type AnuncioLido = {
 
 export type NovaAmostra = Omit<Amostra, "id" | "avaliacaoId" | "usar">;
 
-const AJUSTES_PADRAO: Ajustes = { ajusteImprovavel: 0, ajusteMercado: 10, ajusteUrgencia: 20, mostrarImprovavel: true, mostrarMercado: true, mostrarUrgencia: true };
+const AJUSTES_PADRAO: Ajustes = {
+  ajusteImprovavel: 0,
+  ajusteMercado: 10,
+  ajusteUrgencia: 20,
+  mostrarImprovavel: true,
+  mostrarMercado: true,
+  mostrarUrgencia: true,
+  usarVariaveis: true,
+};
 const SITUACAO_PADRAO: Situacao = { apresentado: false, exclusividade: false, vendido: false, expirado: false, linkLiberado: true };
 
 const u = <T>(v: T | null) => v ?? undefined;
@@ -134,21 +145,21 @@ const novoId = () => crypto.randomUUID();
  */
 export function resultado(a: Avaliacao) {
   const usadas = a.amostras.filter((x) => x.usar && x.valor > 0 && x.areaM2 > 0);
-  const m2s = usadas.map((x) => x.valor / x.areaM2);
-  if (!m2s.length) return null;
-  const m2Medio = m2s.reduce((s, x) => s + x, 0) / m2s.length;
-  const base = m2Medio * a.areaM2;
-  const valor = (pct: number) => base * (1 - pct / 100);
+  const v = calcularValores({
+    amostras: usadas.map((x) => ({ valor: x.valor, area: x.areaM2 })),
+    area: a.areaM2,
+    ajusteImprovavel: a.ajusteImprovavel,
+    ajusteMercado: a.ajusteMercado,
+    ajusteUrgencia: a.ajusteUrgencia,
+    usarVariaveis: a.usarVariaveis,
+    caracteristicas: a,
+  });
+  if (!v) return null;
   return {
+    ...v,
     qtd: usadas.length,
-    m2Medio,
-    m2Min: Math.min(...m2s),
-    m2Max: Math.max(...m2s),
-    areaMedia: usadas.reduce((s, x) => s + x.areaM2, 0) / usadas.length,
-    valorMedio: usadas.reduce((s, x) => s + x.valor, 0) / usadas.length,
-    improvavel: valor(a.ajusteImprovavel),
-    mercado: valor(a.ajusteMercado),
-    urgencia: valor(a.ajusteUrgencia),
+    areaMedia: usadas.reduce((t, x) => t + x.areaM2, 0) / usadas.length,
+    valorMedio: usadas.reduce((t, x) => t + x.valor, 0) / usadas.length,
   };
 }
 
@@ -238,6 +249,7 @@ const deEstudo = (x: LinhaEstudo, amostras: Amostra[]): Avaliacao => ({
   mostrarImprovavel: x.mostrar_improvavel,
   mostrarMercado: x.mostrar_mercado,
   mostrarUrgencia: x.mostrar_urgencia,
+  usarVariaveis: x.usar_variaveis,
   apresentado: x.apresentado,
   exclusividade: x.exclusividade,
   vendido: x.vendido,
@@ -289,6 +301,7 @@ function paraBanco(p: Partial<Avaliacao>) {
   set("mostrar_improvavel", p.mostrarImprovavel);
   set("mostrar_mercado", p.mostrarMercado);
   set("mostrar_urgencia", p.mostrarUrgencia);
+  set("usar_variaveis", p.usarVariaveis);
   set("apresentado", p.apresentado);
   set("exclusividade", p.exclusividade);
   set("vendido", p.vendido);
@@ -401,6 +414,7 @@ export async function duplicarAvaliacao(real: boolean, imobiliariaId: string, co
     mostrarImprovavel: a.mostrarImprovavel,
     mostrarMercado: a.mostrarMercado,
     mostrarUrgencia: a.mostrarUrgencia,
+    usarVariaveis: a.usarVariaveis,
   });
   for (const s of amostras) {
     const { id: _s, avaliacaoId: _a, usar, ...dados } = s;
@@ -601,4 +615,48 @@ export async function excluirVendaExterna(real: boolean, id: string) {
   const { error, count } = await supabase.from("vendas_externas").delete({ count: "exact" }).eq("id", id);
   if (error) throw error;
   if (!count) throw new Error("APENAS_ADMIN");
+}
+
+// ---------- Lembretes, comentários e histórico de preço ----------
+
+export type Nota = { id: string; texto: string; lembreteEm?: string; criadoEm: string; autorId: string };
+
+const notasDemo: Record<string, Nota[]> = {};
+
+export async function listarNotas(real: boolean, avaliacaoId: string): Promise<Nota[]> {
+  if (!real) return notasDemo[avaliacaoId] ?? [];
+  const { data, error } = await supabase.from("avaliacao_notas").select("*").eq("avaliacao_id", avaliacaoId).order("criado_em", { ascending: false });
+  if (error) throw error;
+  return (data ?? []).map((x) => ({ id: x.id, texto: x.texto, lembreteEm: u(x.lembrete_em), criadoEm: x.criado_em, autorId: x.autor_id }));
+}
+
+export async function adicionarNota(real: boolean, avaliacaoId: string, autorId: string, texto: string, lembreteEm?: string, compromissoId?: string): Promise<Nota> {
+  const nota: Nota = { id: novoId(), texto, lembreteEm, criadoEm: new Date().toISOString(), autorId };
+  if (real) {
+    const { error } = await supabase.from("avaliacao_notas").insert({
+      id: nota.id,
+      avaliacao_id: avaliacaoId,
+      autor_id: autorId,
+      texto,
+      lembrete_em: lembreteEm ?? null,
+      compromisso_id: compromissoId ?? null,
+    });
+    if (error) throw error;
+  } else notasDemo[avaliacaoId] = [nota, ...(notasDemo[avaliacaoId] ?? [])];
+  return nota;
+}
+
+export async function excluirNota(real: boolean, avaliacaoId: string, notaId: string) {
+  if (real) {
+    const { error } = await supabase.from("avaliacao_notas").delete().eq("id", notaId);
+    if (error) throw error;
+  } else notasDemo[avaliacaoId] = (notasDemo[avaliacaoId] ?? []).filter((n) => n.id !== notaId);
+}
+
+/** Histórico do valor pedido pelo cliente (gravado pelo banco a cada mudança). */
+export async function historicoPreco(real: boolean, a: Avaliacao): Promise<{ data: string; valor: number }[]> {
+  if (!real) return a.valorAnunciado ? [{ data: a.criadoEm, valor: a.valorAnunciado }] : [];
+  const { data, error } = await supabase.from("avaliacao_precos").select("valor, criado_em").eq("avaliacao_id", a.id).order("criado_em");
+  if (error) throw error;
+  return (data ?? []).map((x) => ({ data: x.criado_em, valor: Number(x.valor) }));
 }

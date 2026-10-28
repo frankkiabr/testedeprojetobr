@@ -63,6 +63,7 @@ import {
 } from "./partes";
 import { Compartilhar, guardarCaptacaoDoEstudo } from "./apresentacao";
 import { VendidosRegiao } from "./vendidos";
+import { AjusteCaracteristicas, HistoricoPreco, Lembretes } from "./acompanhamento";
 
 const AJUSTES = [0, 2, 5, 8, 10, 12, 15, 18, 20, 25, 30];
 const ERROS_LINK: Record<string, string> = {
@@ -303,6 +304,15 @@ export default function Estudo() {
         </motion.div>
       </div>
 
+      <div className="grid gap-6 lg:grid-cols-2 print:hidden">
+        <motion.div {...stagger(2)}>
+          <Lembretes a={a} real={real} />
+        </motion.div>
+        <motion.div {...stagger(3)}>
+          <HistoricoPreco a={a} real={real} valorMercado={r?.mercado} />
+        </motion.div>
+      </div>
+
       {/* Valores encontrados */}
       <motion.div {...stagger(3)}>
         <Card className="overflow-hidden">
@@ -316,11 +326,14 @@ export default function Estudo() {
                 : "Adicione amostras para calcular os valores."}
             </p>
           </div>
+          <AjusteCaracteristicas a={a} onUsar={(v) => salvar({ usarVariaveis: v })} />
           <div className="grid gap-6 p-6 md:grid-cols-3">
             <Valor
               etiqueta="Improvável"
               tom="danger"
-              explicacao={`Média do m² pesquisado × área privativa do imóvel avaliado, decrescido de ${a.ajusteImprovavel}% referente às variáveis que interferem no preço.`}
+              explicacao={`Média do m² pesquisado × área privativa do imóvel avaliado${
+                r?.pctVariaveis ? `, ajustada em ${r.pctVariaveis > 0 ? "+" : ""}${r.pctVariaveis}% pelas características` : ""
+              }, decrescido de ${a.ajusteImprovavel}%.`}
               valor={r?.improvavel}
               m2={r ? r.improvavel / a.areaM2 : undefined}
               fmtValor={fmtValor}
