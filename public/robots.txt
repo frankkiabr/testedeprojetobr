@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /app
+Disallow: /admin
+Disallow: /checkout
+Disallow: /convite
+Disallow: /demo
+
+Sitemap: https://frankkia.com/sitemap.xml

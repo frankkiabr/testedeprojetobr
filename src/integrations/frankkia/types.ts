@@ -461,6 +461,7 @@ export type Database = {
           criado_em: string
           dono_id: string
           fim: string
+          google_atualizado: string | null
           google_evento_id: string | null
           id: string
           imobiliaria_id: string | null
@@ -478,6 +479,7 @@ export type Database = {
           criado_em?: string
           dono_id: string
           fim: string
+          google_atualizado?: string | null
           google_evento_id?: string | null
           id?: string
           imobiliaria_id?: string | null
@@ -495,6 +497,7 @@ export type Database = {
           criado_em?: string
           dono_id?: string
           fim?: string
+          google_atualizado?: string | null
           google_evento_id?: string | null
           id?: string
           imobiliaria_id?: string | null
@@ -1559,6 +1562,18 @@ export type Database = {
         Returns: string
       }
       agendar_avisos_teste: { Args: never; Returns: undefined }
+      aplicar_mudanca_google: {
+        Args: {
+          p_atualizado: string
+          p_compromisso: string
+          p_excluir: boolean
+          p_fim: string
+          p_inicio: string
+          p_local: string
+          p_titulo: string
+        }
+        Returns: undefined
+      }
       aplicar_reducao: { Args: { p_pedido: string }; Returns: undefined }
       aplicar_upgrade: { Args: { p_pedido: string }; Returns: undefined }
       compartilha_imobiliaria: { Args: { p_usuario: string }; Returns: boolean }

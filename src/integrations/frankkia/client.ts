@@ -114,6 +114,25 @@ export async function abrirPagamentoStripe(pedidoId: string): Promise<{ url?: st
   return { erro: motivo ?? "FALHA_STRIPE" };
 }
 
+/** Frankkia: exclui a imobiliária (o banco confere o nome) e cancela a assinatura dela na Stripe. */
+export async function excluirImobiliariaNaStripe(
+  imobiliariaId: string,
+  confirmacao: string,
+): Promise<{ erro?: string; stripe?: "cancelada" | "sem_assinatura" | "falhou" }> {
+  const { data, error } = await supabase.functions.invoke("excluir-imobiliaria", { body: { imobiliariaId, confirmacao } });
+  const d = data as { ok?: boolean; stripe?: "cancelada" | "sem_assinatura" | "falhou"; erro?: string } | null;
+  if (d?.ok) return { stripe: d.stripe };
+  let motivo = d?.erro;
+  if (!motivo && error && "context" in error) {
+    try {
+      motivo = ((await (error as { context: Response }).context.json()) as { erro?: string }).erro;
+    } catch {
+      /* sem detalhes */
+    }
+  }
+  return { erro: motivo ?? "FALHA" };
+}
+
 /** Google Agenda: "conectar" devolve o endereço da tela de login do Google; "desconectar" revoga o acesso. */
 export async function googleAgenda(acao: "conectar" | "desconectar", caminho?: string): Promise<{ url?: string; ok?: boolean; erro?: string }> {
   const { data, error } = await supabase.functions.invoke("google-agenda", { body: { acao, origem: window.location.origin, caminho } });

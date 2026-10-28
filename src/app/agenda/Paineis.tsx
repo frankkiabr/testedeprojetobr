@@ -476,7 +476,7 @@ export function ConexaoGoogle({ usuario }: { usuario: Usuario }) {
                 ? [
                     "Compromissos criados, alterados ou excluídos na Frankkia vão para o seu Google Agenda em até 1 minuto.",
                     "Lembretes chegam no seu celular pelo próprio Google.",
-                    "Mudanças feitas direto no Google Agenda não voltam para a Frankkia.",
+                    "Se você mudar o horário, o título ou o local de um desses eventos no Google, ou excluir, a Frankkia acompanha em até 5 minutos.",
                   ]
                 : ["Compromissos criados na Frankkia aparecem no Google Agenda.", "Mudanças feitas no Google Agenda voltam para a Frankkia.", "Lembretes chegam no seu celular pelo próprio Google."]
               ).map((t) => (

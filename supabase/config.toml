@@ -24,3 +24,6 @@ verify_jwt = false
 
 [functions.google-agenda]
 verify_jwt = false
+
+[functions.excluir-imobiliaria]
+verify_jwt = false

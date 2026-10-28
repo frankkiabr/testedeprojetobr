@@ -345,7 +345,11 @@ export function Privacidade() {
                 </li>
                 <li>
                   <strong>criar, alterar e excluir eventos</strong> no seu Google Agenda principal, apenas para copiar para lá os compromissos que você
-                  cria, altera ou exclui na Frankkia (título, data, horário, local e observações).
+                  cria, altera ou exclui na Frankkia (título, data, horário, local e observações);
+                </li>
+                <li>
+                  <strong>consultar apenas esses mesmos eventos</strong>, um por um, para trazer de volta à Frankkia o que você mudar neles pelo
+                  Google (título, horário, local ou exclusão).
                 </li>
               </ul>
               <p>

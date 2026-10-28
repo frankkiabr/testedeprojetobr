@@ -28,7 +28,7 @@ import {
   trilhas,
 } from "./demo";
 import { captacaoTitulo, captacaoById, vagasLivres } from "./queries";
-import { aplicarReducaoNaStripe, enviarConvitePorEmail, mensagemErro } from "@/integrations/frankkia/client";
+import { aplicarReducaoNaStripe, enviarConvitePorEmail, excluirImobiliariaNaStripe, mensagemErro } from "@/integrations/frankkia/client";
 import { comprimirFoto } from "@/lib/files";
 import { aoMudar, compromissoParaBanco, configurarGravacao, contexto as ctxDados, ehReal, enfileirar, falhou, gravar, leadParaBanco, novoId, supabase } from "./sync";
 import { acessosDemo, clientes, errosSistema, frankkiaUser, interessados, linkDemo, nomeDaTela, novaReferencia, pedidoAberto, pedidoById, pedidosUpgrade, PLANOS, todosChamados } from "./platform";
@@ -1133,14 +1133,23 @@ function createActions(bump: () => void, toast: (text: string) => void) {
     async excluirImobiliaria(id: string, confirmacao: string): Promise<string | null> {
       const c = clientes.find((x) => x.id === id);
       if (!c) return null;
+      let stripe: string | undefined;
       if (ehReal()) {
-        const { error } = await supabase.rpc("excluir_imobiliaria", { p_imob: id, p_confirmacao: confirmacao });
-        if (error) return /CONFIRMACAO_INVALIDA/.test(error.message) ? "O nome digitado não confere." : "Não foi possível excluir. Tente de novo.";
+        // Pelo servidor: apaga no banco e cancela a assinatura na Stripe, se houver
+        const r = await excluirImobiliariaNaStripe(id, confirmacao);
+        if (r.erro) return /CONFIRMACAO_INVALIDA/.test(r.erro) ? "O nome digitado não confere." : "Não foi possível excluir. Tente de novo.";
+        stripe = r.stripe;
       }
       clientes.splice(clientes.indexOf(c), 1);
       for (let k = pedidosUpgrade.length - 1; k >= 0; k--) if (pedidosUpgrade[k].imobiliariaId === id) pedidosUpgrade.splice(k, 1);
       bump();
-      toast(`${c.nome} foi excluída.`);
+      toast(
+        stripe === "cancelada"
+          ? `${c.nome} foi excluída e a assinatura na Stripe foi cancelada.`
+          : stripe === "falhou"
+            ? `${c.nome} foi excluída, mas cancele a assinatura dela no painel da Stripe.`
+            : `${c.nome} foi excluída.`,
+      );
       return null;
     },
 

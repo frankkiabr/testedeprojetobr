@@ -1,8 +1,10 @@
-// Google Agenda de verdade (Frankkia → Google).
+// Google Agenda de verdade (Frankkia → Google, e as mudanças feitas no Google voltam).
 // - POST {acao: "conectar", origem, caminho}: devolve o endereço da tela oficial de login do Google (OAuth).
 // - GET  ?code&state: volta do Google; guarda a conexão e manda os compromissos futuros para a fila.
 // - POST {acao: "desconectar"}: revoga o acesso e apaga a conexão.
 // - POST {acao: "sincronizar"}: chamada pelo banco a cada minuto; leva a fila (google_sync_fila) para o Google.
+// - POST {acao: "buscar"}: chamada a cada 5 minutos; confere, um por um, os eventos que a Frankkia criou e traz
+//   de volta o que a pessoa mudou no Google (título, horário, local ou exclusão). Nunca lista os outros eventos.
 import { admin, cors, json, origemSegura, usuarioDoPedido } from "../_shared/comum.ts";
 
 const ESCOPOS = "openid email https://www.googleapis.com/auth/calendar.events";
@@ -21,6 +23,7 @@ Deno.serve(async (req) => {
     if (req.method === "GET") return await voltaDoGoogle(new URL(req.url));
     const corpo = await req.json().catch(() => ({}));
     if (corpo.acao === "sincronizar") return json(await sincronizar());
+    if (corpo.acao === "buscar") return json(await buscar());
     if (corpo.acao === "conectar") return await conectar(req, corpo);
     if (corpo.acao === "desconectar") return await desconectar(req);
     return json({ erro: "DADOS_INVALIDOS" }, 400);
@@ -104,6 +107,8 @@ async function desconectar(req: Request) {
   if (c) await fetch(`https://oauth2.googleapis.com/revoke?token=${encodeURIComponent(c.refresh_token)}`, { method: "POST" }).catch(() => null);
   await db.from("google_conexoes").delete().eq("usuario_id", user.id);
   await db.from("google_sync_fila").delete().eq("usuario_id", user.id);
+  // Os eventos ficam na agenda da conta antiga; ao conectar de novo, a Frankkia cria eventos novos
+  await db.from("compromissos").update({ google_evento_id: null, google_atualizado: null }).eq("dono_id", user.id).not("google_evento_id", "is", null);
   return json({ ok: true });
 }
 
@@ -146,7 +151,8 @@ async function sincronizar() {
           if (!r || r.status === 404 || r.status === 410) r = await fetch(API, { method: "POST", headers: h, body: JSON.stringify(evento) });
           if (!r.ok) throw new Error(`${r.status} ${await r.text()}`);
           const ev = await r.json();
-          if (ev.id !== c.google_evento_id) await db.from("compromissos").update({ google_evento_id: ev.id }).eq("id", c.id);
+          // Guarda também a marca de atualização: a conferência de volta sabe que esta mudança veio da Frankkia
+          await db.from("compromissos").update({ google_evento_id: ev.id, google_atualizado: ev.updated ?? null }).eq("id", c.id);
         }
       }
       await db.from("google_sync_fila").delete().eq("compromisso_id", item.compromisso_id).eq("criado_em", item.criado_em);
@@ -157,6 +163,63 @@ async function sincronizar() {
     }
   }
   return { feitos };
+}
+
+/** Mudanças feitas no Google: só nos eventos da Frankkia, de ontem até os próximos 90 dias. */
+async function buscar() {
+  const db = admin();
+  const { data: conexoes } = await db.from("google_conexoes").select("usuario_id");
+  let mudancas = 0;
+  for (const { usuario_id } of conexoes ?? []) {
+    const { data: comps } = await db
+      .from("compromissos")
+      .select("id, titulo, inicio, fim, local, google_evento_id, google_atualizado")
+      .eq("dono_id", usuario_id)
+      .not("google_evento_id", "is", null)
+      .gt("fim", new Date(Date.now() - 864e5).toISOString())
+      .lt("inicio", new Date(Date.now() + 90 * 864e5).toISOString())
+      .limit(100);
+    if (!comps?.length) continue;
+    // Pendências de envio desta pessoa: a versão da Frankkia ainda vai para o Google, então não puxa por cima
+    const { data: fila } = await db.from("google_sync_fila").select("compromisso_id").eq("usuario_id", usuario_id);
+    const pendentes = new Set((fila ?? []).map((f) => f.compromisso_id));
+    const acesso = await acessoDe(usuario_id);
+    if (!acesso) continue;
+
+    for (const c of comps) {
+      if (pendentes.has(c.id)) continue;
+      const r = await fetch(`${API}/${encodeURIComponent(c.google_evento_id!)}`, { headers: { Authorization: `Bearer ${acesso}` } });
+      if (!r.ok) continue; // 404: evento de outra conta ou apagado de vez; não mexe no compromisso
+      const ev = await r.json();
+      if (c.google_atualizado && ev.updated && new Date(ev.updated) <= new Date(c.google_atualizado)) continue;
+
+      const excluir = ev.status === "cancelled";
+      const inicio = ev.start?.dateTime ?? c.inicio; // evento de dia inteiro no Google: mantém o horário
+      const fim = ev.end?.dateTime ?? c.fim;
+      const mudou =
+        excluir ||
+        new Date(inicio).getTime() !== new Date(c.inicio).getTime() ||
+        new Date(fim).getTime() !== new Date(c.fim).getTime() ||
+        (ev.summary ?? "") !== c.titulo ||
+        (ev.location ?? "") !== (c.local ?? "");
+      if (!mudou) {
+        await db.from("compromissos").update({ google_atualizado: ev.updated ?? null }).eq("id", c.id);
+        continue;
+      }
+      const { error } = await db.rpc("aplicar_mudanca_google", {
+        p_compromisso: c.id,
+        p_titulo: ev.summary ?? c.titulo,
+        p_inicio: inicio,
+        p_fim: fim,
+        p_local: ev.location ?? "",
+        p_excluir: excluir,
+        p_atualizado: ev.updated ?? null,
+      });
+      if (error) console.error("Mudança do Google", error);
+      else mudancas++;
+    }
+  }
+  return { mudancas };
 }
 
 /** Acesso de curta duração a partir do refresh token. Acesso revogado: apaga a conexão. */

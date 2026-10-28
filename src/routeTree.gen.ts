@@ -11,7 +11,12 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SplatRouteImport } from './routes/$'
+import { Route as CadastroRouteImport } from './routes/cadastro'
+import { Route as ConhecaAFrankkiaRouteImport } from './routes/conheca-a-frankkia'
 import { Route as ImoveisRouteImport } from './routes/imoveis'
+import { Route as PrivacidadeRouteImport } from './routes/privacidade'
+import { Route as SobreRouteImport } from './routes/sobre'
+import { Route as TermosRouteImport } from './routes/termos'
 import { Route as CorretorSlugRouteImport } from './routes/corretor.$slug'
 import { Route as ImobiliariaSlugRouteImport } from './routes/imobiliaria.$slug'
 import { Route as ImoveisCidadeRouteImport } from './routes/imoveis_.$cidade'
@@ -27,9 +32,34 @@ const SplatRoute = SplatRouteImport.update({
   path: '/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CadastroRoute = CadastroRouteImport.update({
+  id: '/cadastro',
+  path: '/cadastro',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConhecaAFrankkiaRoute = ConhecaAFrankkiaRouteImport.update({
+  id: '/conheca-a-frankkia',
+  path: '/conheca-a-frankkia',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ImoveisRoute = ImoveisRouteImport.update({
   id: '/imoveis',
   path: '/imoveis',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacidadeRoute = PrivacidadeRouteImport.update({
+  id: '/privacidade',
+  path: '/privacidade',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SobreRoute = SobreRouteImport.update({
+  id: '/sobre',
+  path: '/sobre',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermosRoute = TermosRouteImport.update({
+  id: '/termos',
+  path: '/termos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CorretorSlugRoute = CorretorSlugRouteImport.update({
@@ -56,7 +86,12 @@ const ImovelSlugRoute = ImovelSlugRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/cadastro': typeof CadastroRoute
+  '/conheca-a-frankkia': typeof ConhecaAFrankkiaRoute
   '/imoveis': typeof ImoveisRoute
+  '/privacidade': typeof PrivacidadeRoute
+  '/sobre': typeof SobreRoute
+  '/termos': typeof TermosRoute
   '/corretor/$slug': typeof CorretorSlugRoute
   '/imobiliaria/$slug': typeof ImobiliariaSlugRoute
   '/imoveis/$cidade': typeof ImoveisCidadeRoute
@@ -65,7 +100,12 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/cadastro': typeof CadastroRoute
+  '/conheca-a-frankkia': typeof ConhecaAFrankkiaRoute
   '/imoveis': typeof ImoveisRoute
+  '/privacidade': typeof PrivacidadeRoute
+  '/sobre': typeof SobreRoute
+  '/termos': typeof TermosRoute
   '/corretor/$slug': typeof CorretorSlugRoute
   '/imobiliaria/$slug': typeof ImobiliariaSlugRoute
   '/imoveis/$cidade': typeof ImoveisCidadeRoute
@@ -75,7 +115,12 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/cadastro': typeof CadastroRoute
+  '/conheca-a-frankkia': typeof ConhecaAFrankkiaRoute
   '/imoveis': typeof ImoveisRoute
+  '/privacidade': typeof PrivacidadeRoute
+  '/sobre': typeof SobreRoute
+  '/termos': typeof TermosRoute
   '/corretor/$slug': typeof CorretorSlugRoute
   '/imobiliaria/$slug': typeof ImobiliariaSlugRoute
   '/imoveis_/$cidade': typeof ImoveisCidadeRoute
@@ -86,7 +131,12 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/$'
+    | '/cadastro'
+    | '/conheca-a-frankkia'
     | '/imoveis'
+    | '/privacidade'
+    | '/sobre'
+    | '/termos'
     | '/corretor/$slug'
     | '/imobiliaria/$slug'
     | '/imoveis/$cidade'
@@ -95,7 +145,12 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/$'
+    | '/cadastro'
+    | '/conheca-a-frankkia'
     | '/imoveis'
+    | '/privacidade'
+    | '/sobre'
+    | '/termos'
     | '/corretor/$slug'
     | '/imobiliaria/$slug'
     | '/imoveis/$cidade'
@@ -104,7 +159,12 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/$'
+    | '/cadastro'
+    | '/conheca-a-frankkia'
     | '/imoveis'
+    | '/privacidade'
+    | '/sobre'
+    | '/termos'
     | '/corretor/$slug'
     | '/imobiliaria/$slug'
     | '/imoveis_/$cidade'
@@ -114,7 +174,12 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SplatRoute: typeof SplatRoute
+  CadastroRoute: typeof CadastroRoute
+  ConhecaAFrankkiaRoute: typeof ConhecaAFrankkiaRoute
   ImoveisRoute: typeof ImoveisRoute
+  PrivacidadeRoute: typeof PrivacidadeRoute
+  SobreRoute: typeof SobreRoute
+  TermosRoute: typeof TermosRoute
   CorretorSlugRoute: typeof CorretorSlugRoute
   ImobiliariaSlugRoute: typeof ImobiliariaSlugRoute
   ImoveisCidadeRoute: typeof ImoveisCidadeRoute
@@ -137,11 +202,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cadastro': {
+      id: '/cadastro'
+      path: '/cadastro'
+      fullPath: '/cadastro'
+      preLoaderRoute: typeof CadastroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/conheca-a-frankkia': {
+      id: '/conheca-a-frankkia'
+      path: '/conheca-a-frankkia'
+      fullPath: '/conheca-a-frankkia'
+      preLoaderRoute: typeof ConhecaAFrankkiaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/imoveis': {
       id: '/imoveis'
       path: '/imoveis'
       fullPath: '/imoveis'
       preLoaderRoute: typeof ImoveisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacidade': {
+      id: '/privacidade'
+      path: '/privacidade'
+      fullPath: '/privacidade'
+      preLoaderRoute: typeof PrivacidadeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sobre': {
+      id: '/sobre'
+      path: '/sobre'
+      fullPath: '/sobre'
+      preLoaderRoute: typeof SobreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/termos': {
+      id: '/termos'
+      path: '/termos'
+      fullPath: '/termos'
+      preLoaderRoute: typeof TermosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/corretor/$slug': {
@@ -178,7 +278,12 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
+  CadastroRoute: CadastroRoute,
+  ConhecaAFrankkiaRoute: ConhecaAFrankkiaRoute,
   ImoveisRoute: ImoveisRoute,
+  PrivacidadeRoute: PrivacidadeRoute,
+  SobreRoute: SobreRoute,
+  TermosRoute: TermosRoute,
   CorretorSlugRoute: CorretorSlugRoute,
   ImobiliariaSlugRoute: ImobiliariaSlugRoute,
   ImoveisCidadeRoute: ImoveisCidadeRoute,
