@@ -11,7 +11,9 @@ const TIPOS: Record<string, string> = { visita: "Visita", captacao: "Captação"
 const API = "https://www.googleapis.com/calendar/v3/calendars/primary/events";
 
 const cliente = () => ({ id: Deno.env.get("GOOGLE_CLIENT_ID") ?? "", segredo: Deno.env.get("GOOGLE_CLIENT_SECRET") ?? "" });
-const retorno = () => `${Deno.env.get("SUPABASE_URL")}/functions/v1/google-agenda`;
+// Para onde o Google devolve a pessoa. GOOGLE_REDIRECT_URI = https://frankkia.com/google-agenda/retorno
+// (domínio verificado, que repassa para esta função); sem ele, volta direto para esta função.
+const retorno = () => Deno.env.get("GOOGLE_REDIRECT_URI") || `${Deno.env.get("SUPABASE_URL")}/functions/v1/google-agenda`;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });

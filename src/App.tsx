@@ -25,6 +25,7 @@ import { Privacidade, Termos } from "@/pages/Legal";
 import Sobre from "@/pages/Sobre";
 import Captura from "@/pages/Captura";
 import Cadastro from "@/pages/Cadastro";
+import GoogleRetorno from "@/pages/GoogleRetorno";
 import Interessados from "@/app/admin/Interessados";
 import { Guard } from "@/app/Guard";
 import Checkout from "@/pages/Checkout";
@@ -61,6 +62,8 @@ export default function App() {
               <Route path="/sobre" element={<Sobre />} />
               {/* Cadastro sem falar com ninguém: cria a conta já em teste grátis */}
               <Route path="/cadastro" element={<Cadastro />} />
+              {/* Volta da tela do Google (conexão do Google Agenda) */}
+              <Route path="/google-agenda/retorno" element={<GoogleRetorno />} />
               {/* Página de captura dos anúncios (Instagram/YouTube) → WhatsApp */}
               <Route path="/conheca-a-frankkia" element={<Captura />} />
               <Route path="/convite/:id" element={<Convite />} />
