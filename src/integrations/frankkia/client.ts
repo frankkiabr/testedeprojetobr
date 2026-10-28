@@ -114,6 +114,22 @@ export async function abrirPagamentoStripe(pedidoId: string): Promise<{ url?: st
   return { erro: motivo ?? "FALHA_STRIPE" };
 }
 
+/** Google Agenda: "conectar" devolve o endereço da tela de login do Google; "desconectar" revoga o acesso. */
+export async function googleAgenda(acao: "conectar" | "desconectar", caminho?: string): Promise<{ url?: string; ok?: boolean; erro?: string }> {
+  const { data, error } = await supabase.functions.invoke("google-agenda", { body: { acao, origem: window.location.origin, caminho } });
+  const d = data as { url?: string; ok?: boolean; erro?: string } | null;
+  if (d?.url || d?.ok) return d;
+  let motivo = d?.erro;
+  if (!motivo && error && "context" in error) {
+    try {
+      motivo = ((await (error as { context: Response }).context.json()) as { erro?: string }).erro;
+    } catch {
+      /* sem detalhes */
+    }
+  }
+  return { erro: motivo ?? "FALHA_GOOGLE" };
+}
+
 /** Administrador: cancelar (no fim do período pago), manter (desfaz o cancelamento) ou abrir a página de cartão e faturas. */
 export async function acaoAssinatura(
   imobiliariaId: string,
@@ -167,6 +183,7 @@ export function mensagemErro(e: unknown): string {
     [/EMAIL_DIFERENTE_DO_CONVITE/, "Você entrou com um e-mail diferente do convite."],
     [/CRECI_OBRIGATORIO/, "Informe o CRECI ou marque que é estagiário(a)."],
     [/APENAS_FRANKKIA/, "Só a equipe Frankkia pode fazer isso."],
+    [/FALHA_GOOGLE|GOOGLE_NAO_CONFIGURADO/, "Não foi possível falar com o Google agora. Tente de novo em alguns minutos."],
     [/SEM_ASSINATURA/, "Esta conta ainda não tem assinatura na Stripe."],
     [/STRIPE_NAO_CONFIGURADA|FALHA_STRIPE/, "Não foi possível falar com a Stripe agora. Tente de novo em alguns minutos."],
     [/APENAS_ADMIN/, "Só o administrador pode fazer isso."],

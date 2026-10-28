@@ -21,3 +21,6 @@ verify_jwt = false
 
 [functions.enviar-avisos]
 verify_jwt = false
+
+[functions.google-agenda]
+verify_jwt = false

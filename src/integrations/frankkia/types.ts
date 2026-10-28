@@ -461,6 +461,7 @@ export type Database = {
           criado_em: string
           dono_id: string
           fim: string
+          google_evento_id: string | null
           id: string
           imobiliaria_id: string | null
           inicio: string
@@ -477,6 +478,7 @@ export type Database = {
           criado_em?: string
           dono_id: string
           fim: string
+          google_evento_id?: string | null
           id?: string
           imobiliaria_id?: string | null
           inicio: string
@@ -493,6 +495,7 @@ export type Database = {
           criado_em?: string
           dono_id?: string
           fim?: string
+          google_evento_id?: string | null
           id?: string
           imobiliaria_id?: string | null
           inicio?: string
@@ -704,6 +707,78 @@ export type Database = {
         }
         Update: {
           email?: string
+        }
+        Relationships: []
+      }
+      google_conexoes: {
+        Row: {
+          conectado_em: string
+          email: string
+          refresh_token: string
+          usuario_id: string
+        }
+        Insert: {
+          conectado_em?: string
+          email: string
+          refresh_token: string
+          usuario_id: string
+        }
+        Update: {
+          conectado_em?: string
+          email?: string
+          refresh_token?: string
+          usuario_id?: string
+        }
+        Relationships: []
+      }
+      google_oauth_estados: {
+        Row: {
+          criado_em: string
+          estado: string
+          origem: string
+          usuario_id: string
+        }
+        Insert: {
+          criado_em?: string
+          estado: string
+          origem: string
+          usuario_id: string
+        }
+        Update: {
+          criado_em?: string
+          estado?: string
+          origem?: string
+          usuario_id?: string
+        }
+        Relationships: []
+      }
+      google_sync_fila: {
+        Row: {
+          acao: string
+          compromisso_id: string
+          criado_em: string
+          erro: string | null
+          evento_id: string | null
+          tentativas: number
+          usuario_id: string
+        }
+        Insert: {
+          acao: string
+          compromisso_id: string
+          criado_em?: string
+          erro?: string | null
+          evento_id?: string | null
+          tentativas?: number
+          usuario_id: string
+        }
+        Update: {
+          acao?: string
+          compromisso_id?: string
+          criado_em?: string
+          erro?: string | null
+          evento_id?: string | null
+          tentativas?: number
+          usuario_id?: string
         }
         Relationships: []
       }
@@ -1544,6 +1619,10 @@ export type Database = {
         Returns: undefined
       }
       gerar_codigo_imovel: { Args: never; Returns: string }
+      google_enfileirar_futuros: {
+        Args: { p_usuario: string }
+        Returns: undefined
+      }
       imob_liberada: {
         Args: { p_status: string; p_teste_ate: string }
         Returns: boolean
@@ -1564,6 +1643,13 @@ export type Database = {
           ciclo: string
           proxima_cobranca: string
           situacao: string
+        }[]
+      }
+      minha_conexao_google: {
+        Args: never
+        Returns: {
+          conectado_em: string
+          email: string
         }[]
       }
       minhas_participacoes: {

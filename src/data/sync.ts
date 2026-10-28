@@ -80,6 +80,13 @@ const ORIGINAL = structuredClone({
   anuncios: D.anuncios,
 });
 
+/** Google Agenda de quem entrou (só e-mail e data; o acesso fica no servidor). */
+async function carregarConexaoGoogle(usuarioId: string) {
+  const { data } = await supabase.rpc("minha_conexao_google");
+  const c = data?.[0];
+  trocarObjeto(D.conexoesGoogle, c ? { [usuarioId]: { email: c.email, conectadoEm: c.conectado_em } } : {});
+}
+
 function trocarLista<T>(alvo: T[], novos: T[]) {
   alvo.splice(0, alvo.length, ...novos);
 }
@@ -286,6 +293,7 @@ export async function carregarReal(conta: ContaDados) {
       fotoUrl: u(eu?.foto_url ?? null),
     });
     trocarLista(D.compromissos, agenda.map(paraCompromisso));
+    await carregarConexaoGoogle(conta.usuarioId);
     trocarLista(
       P.clientes,
       (painel.data ?? []).map(
@@ -528,7 +536,7 @@ export async function carregarReal(conta: ContaDados) {
     ),
   );
   trocarLista(D.compromissos, compromissos.map(paraCompromisso));
-  trocarObjeto(D.conexoesGoogle, {});
+  await carregarConexaoGoogle(conta.usuarioId);
   const aulasRows = aulas.data ?? [];
   trocarLista(
     D.trilhas,

@@ -1,8 +1,8 @@
-/** Formulário de compromisso, painel de detalhes e conexão (simulada) com o Google Agenda. */
+/** Formulário de compromisso, painel de detalhes e conexão com o Google Agenda (real no login real; simulada na demonstração). */
 import { useEffect, useState } from "react";
 import { Mapa } from "@/components/Mapa";
 import { linkGoogleMaps, localizar } from "@/lib/mapa";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { CalendarCheck2, CalendarPlus, Check, Clock, ExternalLink, Link2, Loader2, MapPin, Pencil, ShieldCheck, Trash2, UserRound } from "lucide-react";
 import { conexoesGoogle } from "@/data/demo";
@@ -12,6 +12,8 @@ import type { Compromisso, TipoCompromisso, Usuario } from "@/data/types";
 import { relTime } from "@/lib/format";
 import { btn, DateInput, Drawer, Field, inputCls, Modal, SelectField, TimeInput } from "../forms";
 import { Avatar } from "../kit";
+import { useSession } from "../session";
+import { googleAgenda, mensagemErro } from "@/integrations/frankkia/client";
 import { dataLonga, deInputs, hhmm, linkGoogleAgenda, ORDEM_TIPOS, paraInputData, paraInputHora, TIPOS } from "./utils";
 
 // ---------- Formulário ----------
@@ -234,6 +236,7 @@ export function CompromissoDetalhes({ c, onClose, onEditar }: { c: Compromisso |
   const lead = c?.leadId ? leadById(c.leadId) : undefined;
   const cap = c?.captacaoId ? captacaoById(c.captacaoId) : undefined;
   const sincronizado = c ? !!conexoesGoogle[c.donoId] : false;
+  const { modo } = useSession();
 
   return (
     <Drawer
@@ -339,7 +342,8 @@ export function CompromissoDetalhes({ c, onClose, onEditar }: { c: Compromisso |
           <div className="rounded-2xl border border-line p-4">
             {sincronizado ? (
               <p className="flex items-center gap-2 text-sm text-verified">
-                <Link2 className="size-4" /> Sincronizado com o Google Agenda de {conexoesGoogle[c.donoId].email} (simulação)
+                <Link2 className="size-4" /> Sincronizado com o Google Agenda de {conexoesGoogle[c.donoId].email}
+                {modo === "demo" && " (simulação)"}
               </p>
             ) : (
               <>
@@ -356,14 +360,35 @@ export function CompromissoDetalhes({ c, onClose, onEditar }: { c: Compromisso |
   );
 }
 
-// ---------- Conexão com o Google (simulada) ----------
+// ---------- Conexão com o Google ----------
+
+const VOLTA_GOOGLE: Record<string, string> = {
+  ok: "Google Agenda conectado! Seus compromissos aparecem lá em até 1 minuto.",
+  cancelado: "Conexão com o Google cancelada.",
+  sem_permissao: "Para conectar, marque a permissão de agenda na tela do Google.",
+  expirado: "O tempo para conectar expirou. Tente de novo.",
+  erro: "Não foi possível conectar ao Google agora. Tente de novo.",
+};
 
 export function ConexaoGoogle({ usuario }: { usuario: Usuario }) {
-  const { conectarGoogle, desconectarGoogle } = useStore();
+  const { conectarGoogle, desconectarGoogle, toast } = useStore();
+  const { modo } = useSession();
+  const real = modo === "real";
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState(usuario.email);
   const [etapa, setEtapa] = useState<"inicio" | "conectando">("inicio");
   const conexao = conexoesGoogle[usuario.id];
+  const loc = useLocation();
+  const [params, setParams] = useSearchParams();
+
+  // Volta da tela do Google (?google=ok etc.)
+  useEffect(() => {
+    const r = params.get("google");
+    if (!r) return;
+    toast(VOLTA_GOOGLE[r] ?? VOLTA_GOOGLE.erro);
+    params.delete("google");
+    setParams(params, { replace: true });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (open) {
@@ -372,12 +397,30 @@ export function ConexaoGoogle({ usuario }: { usuario: Usuario }) {
     }
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const conectar = () => {
+  const conectar = async () => {
     setEtapa("conectando");
+    if (real) {
+      const r = await googleAgenda("conectar", loc.pathname.startsWith("/admin") ? "/admin/agenda" : "/app/agenda");
+      if (r.url) window.location.href = r.url;
+      else {
+        setEtapa("inicio");
+        toast(mensagemErro(r.erro));
+      }
+      return;
+    }
     setTimeout(() => {
       conectarGoogle(usuario.id, email.trim());
       setOpen(false);
     }, 1200);
+  };
+
+  const desconectar = async () => {
+    if (real) {
+      const r = await googleAgenda("desconectar");
+      if (r.erro) return toast(mensagemErro(r.erro));
+    }
+    desconectarGoogle(usuario.id);
+    setOpen(false);
   };
 
   return (
@@ -396,17 +439,17 @@ export function ConexaoGoogle({ usuario }: { usuario: Usuario }) {
         open={open}
         onClose={() => setOpen(false)}
         title={conexao ? "Google Agenda" : "Conectar Google Agenda"}
-        subtitle={conexao ? `Conectado como ${conexao.email}.` : "Sincronize seus compromissos nos dois sentidos."}
+        subtitle={
+          conexao
+            ? `Conectado como ${conexao.email}.`
+            : real
+              ? "Seus compromissos da Frankkia aparecem no seu Google Agenda."
+              : "Sincronize seus compromissos nos dois sentidos."
+        }
         footer={
           conexao ? (
             <>
-              <button
-                onClick={() => {
-                  desconectarGoogle(usuario.id);
-                  setOpen(false);
-                }}
-                className={`${btn.outline} text-rose-600`}
-              >
+              <button onClick={desconectar} className={`${btn.outline} text-rose-600`}>
                 Desconectar
               </button>
               <button onClick={() => setOpen(false)} className={btn.primary}>
@@ -418,7 +461,7 @@ export function ConexaoGoogle({ usuario }: { usuario: Usuario }) {
               <button onClick={() => setOpen(false)} className={btn.outline}>
                 Cancelar
               </button>
-              <button disabled={!email.trim() || etapa === "conectando"} onClick={conectar} className={btn.primary}>
+              <button disabled={(!real && !email.trim()) || etapa === "conectando"} onClick={conectar} className={btn.primary}>
                 {etapa === "conectando" ? <Loader2 className="size-4 animate-spin" /> : <GoogleG />}
                 {etapa === "conectando" ? "Conectando..." : "Continuar com Google"}
               </button>
@@ -429,7 +472,14 @@ export function ConexaoGoogle({ usuario }: { usuario: Usuario }) {
         <>
           {conexao ? (
             <motion.ul key="on" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2.5 text-sm">
-              {["Compromissos criados na Frankkia aparecem no Google Agenda.", "Mudanças feitas no Google Agenda voltam para a Frankkia.", "Lembretes chegam no seu celular pelo próprio Google."].map((t) => (
+              {(real
+                ? [
+                    "Compromissos criados, alterados ou excluídos na Frankkia vão para o seu Google Agenda em até 1 minuto.",
+                    "Lembretes chegam no seu celular pelo próprio Google.",
+                    "Mudanças feitas direto no Google Agenda não voltam para a Frankkia.",
+                  ]
+                : ["Compromissos criados na Frankkia aparecem no Google Agenda.", "Mudanças feitas no Google Agenda voltam para a Frankkia.", "Lembretes chegam no seu celular pelo próprio Google."]
+              ).map((t) => (
                 <li key={t} className="flex items-start gap-2">
                   <Check className="mt-0.5 size-4 shrink-0 text-verified" /> {t}
                 </li>
@@ -446,12 +496,18 @@ export function ConexaoGoogle({ usuario }: { usuario: Usuario }) {
                   <li>• Criar eventos a partir dos seus compromissos</li>
                 </ul>
               </div>
-              <Field label="Conta Google">
-                <input type="email" className={inputCls} value={email} onChange={(e) => setEmail(e.target.value)} />
-              </Field>
-              <p className="text-xs text-subtle">
-                Demonstração: a conexão é simulada. Na versão final, este botão abre a tela oficial de login do Google (OAuth 2.0) e a sincronização roda pelo Lovable Cloud.
-              </p>
+              {real ? (
+                <p className="text-xs text-subtle">
+                  Você vai para a tela oficial do Google para escolher a conta e autorizar. A Frankkia só mexe nos eventos que ela mesma criou.
+                </p>
+              ) : (
+                <>
+                  <Field label="Conta Google">
+                    <input type="email" className={inputCls} value={email} onChange={(e) => setEmail(e.target.value)} />
+                  </Field>
+                  <p className="text-xs text-subtle">Demonstração: a conexão é simulada.</p>
+                </>
+              )}
             </motion.div>
           )}
         </>
