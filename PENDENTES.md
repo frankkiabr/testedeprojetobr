@@ -3,7 +3,8 @@
 ## Integrações
 
 **Falta:**
-- Google Agenda de verdade (hoje "Conectar Google Agenda" é só simulação; precisa de projeto no Google Cloud).
+- Google Agenda: a conexão real (Frankkia → Google) foi feita em 28/10/2026; falta testar, pedir a verificação do app ao Google
+  (sem ela: só usuários de teste e reconexão a cada 7 dias) e, numa fase 2, trazer de volta as mudanças feitas no Google.
 - Zap Imóveis, OLX Imóveis e VivaReal: trazer dados de mercado para o Estudo de mercado (e enviar os anúncios do portal).
 - Ao excluir uma imobiliária, cancelar a assinatura dela na Stripe automaticamente.
 
