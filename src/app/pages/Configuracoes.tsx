@@ -45,7 +45,7 @@ function ImobiliariaForm() {
         <button
           className={btn.primary}
           disabled={!f.nome.trim()}
-          onClick={() => updateImobiliaria({ nome: f.nome.trim(), cnpj: f.cnpj, creciJ: f.creciJ, email: f.email, telefone: normalizePhone(f.telefone), cidade: f.cidade })}
+          onClick={() => updateImobiliaria({ nome: f.nome.trim(), cnpj: f.cnpj, creciJ: f.creciJ, mostrarCorretorVendidos: !!f.mostrarCorretorVendidos, email: f.email, telefone: normalizePhone(f.telefone), cidade: f.cidade })}
         >
           Salvar alterações
         </button>
@@ -70,6 +70,21 @@ function ImobiliariaForm() {
         <Field label="Telefone">
           <input className={inputCls} value={f.telefone} onChange={(e) => setF({ ...f, telefone: e.target.value })} />
         </Field>
+        <label className="flex cursor-pointer items-start gap-3 rounded-2xl bg-canvas p-4 sm:col-span-2">
+          <input
+            type="checkbox"
+            className="mt-0.5 size-4 shrink-0 accent-accent"
+            checked={!!f.mostrarCorretorVendidos}
+            onChange={(e) => setF({ ...f, mostrarCorretorVendidos: e.target.checked })}
+          />
+          <span className="text-sm">
+            <span className="font-semibold">Mostrar o nome do corretor nos imóveis vendidos</span>
+            <span className="mt-0.5 block text-muted">
+              No Estudo de mercado, a equipe vê os imóveis vendidos pela imobiliária (sem cliente e sem comissão). Ligue para mostrar também quem
+              vendeu, para os corretores trocarem informações.
+            </span>
+          </span>
+        </label>
       </div>
     </Section>
   );

@@ -484,6 +484,7 @@ export async function carregarReal(conta: ContaDados) {
     nome: i.nome,
     cnpj: i.cnpj ?? "",
     creciJ: i.creci_j ?? "",
+    mostrarCorretorVendidos: i.mostrar_corretor_vendidos,
     email: i.email ?? "",
     telefone: i.telefone ?? "",
     cidade: i.cidade ?? "",

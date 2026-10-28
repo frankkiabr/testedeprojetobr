@@ -96,6 +96,10 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
   a página `/app/mercado/estudos/:id` (acompanhamento, Improvável/Valor de mercado/Urgência com ajustes, amostras por link de
   portal, radar Frankkia ou manual). Dados em `src/data/avaliacoes.ts` (tabelas `avaliacoes` e `avaliacao_amostras`). O link é lido
   pela função `ler-anuncio`; os portais bloqueiam o servidor (403), então vale o que o próprio link informa. Aba "Panorama da imobiliária" = antigo painel.
+  Fase B: apresentação pública `/estudo/<token>` (rota TanStack `src/routes/estudo.$token.tsx`, `src/portal/PaginaEstudo.tsx`, dados de
+  `estudo_publico`, só com `link_liberado`), envio por WhatsApp/e-mail (função `enviar-estudo`), "Imóveis vendidos na região"
+  (`vendidos_regiao`: vendas da imobiliária + `vendas_externas`, sem cliente/comissão; nome do corretor só com
+  `imobiliarias.mostrar_corretor_vendidos`, chave em Configurações) e "Criar captação com estes dados" (abre o Novo imóvel preenchido).
 - Google Agenda: função `google-agenda` (OAuth com volta por `/google-agenda/retorno`, fila `google_sync_fila` a cada minuto e
   conferência de volta a cada 5 min só dos eventos criados pela Frankkia). Excluir imobiliária passa por `excluir-imobiliaria`
   (também cancela a assinatura na Stripe). E-mails automáticos: fila `avisos_email` + função `enviar-avisos`.

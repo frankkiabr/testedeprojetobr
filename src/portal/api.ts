@@ -147,3 +147,45 @@ export async function enviarContato(
   if (/ANUNCIO_INDISPONIVEL/.test(error.message)) return "Este imóvel não está mais disponível.";
   return "Não foi possível enviar agora. Tente de novo ou chame no WhatsApp.";
 }
+
+/** Apresentação do estudo de mercado para o proprietário (/estudo/<token>), só com o link liberado. */
+export type EstudoPublico = {
+  titulo: string;
+  finalidade: Finalidade;
+  categoria: string;
+  bairro: string | null;
+  cidade: string | null;
+  uf: string | null;
+  logradouro: string | null;
+  area: number;
+  area_terreno: number | null;
+  quartos: number | null;
+  suites: number | null;
+  banheiros: number | null;
+  vagas: number | null;
+  ano: number | null;
+  conservacao: string | null;
+  ajuste_improvavel: number;
+  ajuste_mercado: number;
+  ajuste_urgencia: number;
+  mostrar_improvavel: boolean;
+  mostrar_mercado: boolean;
+  mostrar_urgencia: boolean;
+  criado_em: string;
+  atualizado_em: string;
+  amostras: {
+    valor: number;
+    area: number;
+    quartos: number | null;
+    suites: number | null;
+    banheiros: number | null;
+    vagas: number | null;
+    bairro: string | null;
+    endereco: string | null;
+    foto: string | null;
+    origem: string;
+  }[];
+  corretor: { nome: string; foto: string | null; creci: string | null; creci_uf: string | null; telefone: string | null; slug: string | null };
+  imobiliaria: { nome: string; logo: string | null; solo: boolean; creci_j: string | null };
+};
+export const buscarEstudo = (token: string) => rpc<EstudoPublico>("estudo_publico", { p_token: token });

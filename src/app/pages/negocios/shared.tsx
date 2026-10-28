@@ -16,6 +16,7 @@ import {
 import { ehSolo } from "@/data/platform";
 import { Mapa } from "@/components/Mapa";
 import { buscarCep, localizar, type Ponto } from "@/lib/mapa";
+import { lerCaptacaoDoEstudo, limparCaptacaoDoEstudo } from "../estudos/apresentacao";
 import { admin as administrador } from "@/data/demo";
 
 /** Quem pode participar de uma venda: os corretores; no plano Solo, o próprio dono da conta. */
@@ -467,10 +468,18 @@ export function CaptacaoFormModal({ open, onClose }: { open: boolean; onClose: (
   const [avisoMapa, setAvisoMapa] = useState("");
   useEffect(() => {
     if (open) {
-      setF(empty());
-      setPonto(null);
+      // Vindo de um estudo de mercado com exclusividade assinada: já abre com os dados do imóvel
+      const doEstudo = lerCaptacaoDoEstudo();
+      if (doEstudo) {
+        const { lat, lng, ...campos } = doEstudo;
+        setF({ ...empty(), ...(campos as Partial<ReturnType<typeof empty>>) });
+        setPonto(lat !== undefined && lng !== undefined ? { lat, lng } : null);
+      } else {
+        setF(empty());
+        setPonto(null);
+      }
       setAvisoMapa("");
-    }
+    } else limparCaptacaoDoEstudo();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 

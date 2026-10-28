@@ -410,6 +410,7 @@ export type Database = {
           quartos: number | null
           suites: number | null
           titulo: string
+          token: string
           uf: string | null
           vagas: number | null
           valor_anunciado: number | null
@@ -459,6 +460,7 @@ export type Database = {
           quartos?: number | null
           suites?: number | null
           titulo: string
+          token?: string
           uf?: string | null
           vagas?: number | null
           valor_anunciado?: number | null
@@ -508,6 +510,7 @@ export type Database = {
           quartos?: number | null
           suites?: number | null
           titulo?: string
+          token?: string
           uf?: string | null
           vagas?: number | null
           valor_anunciado?: number | null
@@ -1031,6 +1034,7 @@ export type Database = {
           id: string
           limite_corretores: number
           meta_mensal_vgv: number
+          mostrar_corretor_vendidos: boolean
           nome: string
           plano: string
           slug: string | null
@@ -1050,6 +1054,7 @@ export type Database = {
           id?: string
           limite_corretores?: number
           meta_mensal_vgv?: number
+          mostrar_corretor_vendidos?: boolean
           nome: string
           plano?: string
           slug?: string | null
@@ -1069,6 +1074,7 @@ export type Database = {
           id?: string
           limite_corretores?: number
           meta_mensal_vgv?: number
+          mostrar_corretor_vendidos?: boolean
           nome?: string
           plano?: string
           slug?: string | null
@@ -1779,6 +1785,74 @@ export type Database = {
           },
         ]
       }
+      vendas_externas: {
+        Row: {
+          area_m2: number
+          bairro: string
+          categoria: string
+          cidade: string
+          corretor_id: string
+          criado_em: string
+          data_venda: string
+          dias_para_vender: number | null
+          finalidade: string
+          id: string
+          imobiliaria_id: string
+          logradouro: string | null
+          quartos: number | null
+          uf: string | null
+          vagas: number | null
+          valor_anunciado: number | null
+          valor_venda: number
+        }
+        Insert: {
+          area_m2: number
+          bairro: string
+          categoria: string
+          cidade: string
+          corretor_id?: string
+          criado_em?: string
+          data_venda: string
+          dias_para_vender?: number | null
+          finalidade?: string
+          id?: string
+          imobiliaria_id: string
+          logradouro?: string | null
+          quartos?: number | null
+          uf?: string | null
+          vagas?: number | null
+          valor_anunciado?: number | null
+          valor_venda: number
+        }
+        Update: {
+          area_m2?: number
+          bairro?: string
+          categoria?: string
+          cidade?: string
+          corretor_id?: string
+          criado_em?: string
+          data_venda?: string
+          dias_para_vender?: number | null
+          finalidade?: string
+          id?: string
+          imobiliaria_id?: string
+          logradouro?: string | null
+          quartos?: number | null
+          uf?: string | null
+          vagas?: number | null
+          valor_anunciado?: number | null
+          valor_venda?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendas_externas_imobiliaria_id_fkey"
+            columns: ["imobiliaria_id"]
+            isOneToOne: false
+            referencedRelation: "imobiliarias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -1864,6 +1938,7 @@ export type Database = {
           valor: number
         }[]
       }
+      estudo_publico: { Args: { p_token: string }; Returns: Json }
       excluir_imobiliaria: {
         Args: { p_confirmacao: string; p_imob: string }
         Returns: undefined
@@ -2047,6 +2122,34 @@ export type Database = {
       }
       vagas_em_uso: { Args: { p_imob: string }; Returns: number }
       validar_demo: { Args: { p_token: string }; Returns: string }
+      vendidos_regiao: {
+        Args: {
+          p_bairro?: string
+          p_categoria?: string
+          p_cidade?: string
+          p_finalidade?: string
+          p_meses?: number
+        }
+        Returns: {
+          area: number
+          bairro: string
+          categoria: string
+          cidade: string
+          corretor: string
+          data_venda: string
+          dias: number
+          foto: string
+          id: string
+          imobiliaria: string
+          logradouro: string
+          origem: string
+          quartos: number
+          uf: string
+          vagas: number
+          valor_anunciado: number
+          valor_venda: number
+        }[]
+      }
       ver_convite: {
         Args: { p_token: string }
         Returns: {

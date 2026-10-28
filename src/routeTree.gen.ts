@@ -18,6 +18,7 @@ import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as SobreRouteImport } from './routes/sobre'
 import { Route as TermosRouteImport } from './routes/termos'
 import { Route as CorretorSlugRouteImport } from './routes/corretor.$slug'
+import { Route as EstudoTokenRouteImport } from './routes/estudo.$token'
 import { Route as ImobiliariaSlugRouteImport } from './routes/imobiliaria.$slug'
 import { Route as ImoveisCidadeRouteImport } from './routes/imoveis_.$cidade'
 import { Route as ImovelSlugRouteImport } from './routes/imovel.$slug'
@@ -67,6 +68,11 @@ const CorretorSlugRoute = CorretorSlugRouteImport.update({
   path: '/corretor/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EstudoTokenRoute = EstudoTokenRouteImport.update({
+  id: '/estudo/$token',
+  path: '/estudo/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ImobiliariaSlugRoute = ImobiliariaSlugRouteImport.update({
   id: '/imobiliaria/$slug',
   path: '/imobiliaria/$slug',
@@ -93,6 +99,7 @@ export interface FileRoutesByFullPath {
   '/sobre': typeof SobreRoute
   '/termos': typeof TermosRoute
   '/corretor/$slug': typeof CorretorSlugRoute
+  '/estudo/$token': typeof EstudoTokenRoute
   '/imobiliaria/$slug': typeof ImobiliariaSlugRoute
   '/imoveis/$cidade': typeof ImoveisCidadeRoute
   '/imovel/$slug': typeof ImovelSlugRoute
@@ -107,6 +114,7 @@ export interface FileRoutesByTo {
   '/sobre': typeof SobreRoute
   '/termos': typeof TermosRoute
   '/corretor/$slug': typeof CorretorSlugRoute
+  '/estudo/$token': typeof EstudoTokenRoute
   '/imobiliaria/$slug': typeof ImobiliariaSlugRoute
   '/imoveis/$cidade': typeof ImoveisCidadeRoute
   '/imovel/$slug': typeof ImovelSlugRoute
@@ -122,6 +130,7 @@ export interface FileRoutesById {
   '/sobre': typeof SobreRoute
   '/termos': typeof TermosRoute
   '/corretor/$slug': typeof CorretorSlugRoute
+  '/estudo/$token': typeof EstudoTokenRoute
   '/imobiliaria/$slug': typeof ImobiliariaSlugRoute
   '/imoveis_/$cidade': typeof ImoveisCidadeRoute
   '/imovel/$slug': typeof ImovelSlugRoute
@@ -138,6 +147,7 @@ export interface FileRouteTypes {
     | '/sobre'
     | '/termos'
     | '/corretor/$slug'
+    | '/estudo/$token'
     | '/imobiliaria/$slug'
     | '/imoveis/$cidade'
     | '/imovel/$slug'
@@ -152,6 +162,7 @@ export interface FileRouteTypes {
     | '/sobre'
     | '/termos'
     | '/corretor/$slug'
+    | '/estudo/$token'
     | '/imobiliaria/$slug'
     | '/imoveis/$cidade'
     | '/imovel/$slug'
@@ -166,6 +177,7 @@ export interface FileRouteTypes {
     | '/sobre'
     | '/termos'
     | '/corretor/$slug'
+    | '/estudo/$token'
     | '/imobiliaria/$slug'
     | '/imoveis_/$cidade'
     | '/imovel/$slug'
@@ -181,6 +193,7 @@ export interface RootRouteChildren {
   SobreRoute: typeof SobreRoute
   TermosRoute: typeof TermosRoute
   CorretorSlugRoute: typeof CorretorSlugRoute
+  EstudoTokenRoute: typeof EstudoTokenRoute
   ImobiliariaSlugRoute: typeof ImobiliariaSlugRoute
   ImoveisCidadeRoute: typeof ImoveisCidadeRoute
   ImovelSlugRoute: typeof ImovelSlugRoute
@@ -251,6 +264,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CorretorSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/estudo/$token': {
+      id: '/estudo/$token'
+      path: '/estudo/$token'
+      fullPath: '/estudo/$token'
+      preLoaderRoute: typeof EstudoTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/imobiliaria/$slug': {
       id: '/imobiliaria/$slug'
       path: '/imobiliaria/$slug'
@@ -285,6 +305,7 @@ const rootRouteChildren: RootRouteChildren = {
   SobreRoute: SobreRoute,
   TermosRoute: TermosRoute,
   CorretorSlugRoute: CorretorSlugRoute,
+  EstudoTokenRoute: EstudoTokenRoute,
   ImobiliariaSlugRoute: ImobiliariaSlugRoute,
   ImoveisCidadeRoute: ImoveisCidadeRoute,
   ImovelSlugRoute: ImovelSlugRoute,

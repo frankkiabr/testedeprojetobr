@@ -30,3 +30,6 @@ verify_jwt = false
 
 [functions.ler-anuncio]
 verify_jwt = false
+
+[functions.enviar-estudo]
+verify_jwt = false

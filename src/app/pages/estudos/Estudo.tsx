@@ -13,6 +13,7 @@ import {
   Link2,
   Loader2,
   PenLine,
+  Presentation,
   Printer,
   Radar,
   Settings2,
@@ -60,6 +61,8 @@ import {
   type FormEndereco,
   type FormImovel,
 } from "./partes";
+import { Compartilhar, guardarCaptacaoDoEstudo } from "./apresentacao";
+import { VendidosRegiao } from "./vendidos";
 
 const AJUSTES = [0, 2, 5, 8, 10, 12, 15, 18, 20, 25, 30];
 const ERROS_LINK: Record<string, string> = {
@@ -82,6 +85,7 @@ export default function Estudo() {
   const [opcoes, setOpcoes] = useState(false);
   const [trocarCorretor, setTrocarCorretor] = useState(false);
   const [amostra, setAmostra] = useState<{ modo: "escolher" | "portal" | "radar" | "manual"; editando?: Amostra } | null>(null);
+  const [compartilhar, setCompartilhar] = useState(false);
 
   if (lista === null)
     return (
@@ -130,6 +134,9 @@ export default function Estudo() {
             defaultValue={a.titulo}
             onBlur={(e) => e.target.value.trim().length >= 2 && e.target.value.trim() !== a.titulo && salvar({ titulo: e.target.value.trim() }, "Título salvo.")}
           />
+          <button className={`${btn.accent} print:hidden`} onClick={() => setCompartilhar(true)}>
+            <Presentation className="size-4" /> Apresentação
+          </button>
           <div className="relative print:hidden">
             <button className={btn.outline} onClick={() => setOpcoes((v) => !v)}>
               <Settings2 className="size-4" /> Opções
@@ -211,6 +218,7 @@ export default function Estudo() {
                   ["exclusividade", "Assinou a exclusividade?"],
                   ["vendido", a.finalidade === "locacao" ? "Alugado?" : "Vendido?"],
                   ["expirado", "Expirado (venceu o prazo ou desistiu)?"],
+                  ["linkLiberado", "Liberar link da apresentação"],
                 ] as const
               ).map(([k, rotulo]) => (
                 <li key={k} className="flex items-center justify-between gap-3 py-3 text-sm">
@@ -220,8 +228,20 @@ export default function Estudo() {
               ))}
             </ul>
             {a.exclusividade && (
-              <div className="mx-6 mb-5 flex items-start gap-2 rounded-2xl bg-verified-soft p-3 text-sm text-verified">
-                <FileSignature className="mt-0.5 size-4 shrink-0" /> Exclusividade assinada! Cadastre o imóvel em Negócios → Captações para anunciar.
+              <div className="mx-6 mb-5 rounded-2xl bg-verified-soft p-4 text-sm text-verified print:hidden">
+                <p className="flex items-start gap-2 font-semibold">
+                  <FileSignature className="mt-0.5 size-4 shrink-0" /> Exclusividade assinada!
+                </p>
+                <p className="mt-1 text-verified/80">Cadastre a captação com os dados deste estudo e já comece a anunciar.</p>
+                <button
+                  className={`${btn.accent} mt-3`}
+                  onClick={() => {
+                    guardarCaptacaoDoEstudo(a, r?.mercado);
+                    navigate("/app/negocios/captacoes?novo=1");
+                  }}
+                >
+                  <Building2 className="size-4" /> Criar captação com estes dados
+                </button>
               </div>
             )}
             <p className="px-6 pb-5 text-xs text-muted">Responsável: {corretor?.nome ?? "—"}</p>
@@ -470,6 +490,35 @@ export default function Estudo() {
           </div>
         </Card>
       </motion.div>
+
+      <motion.div {...stagger(5)} className="print:hidden">
+        <VendidosRegiao
+          a={a}
+          real={real}
+          onAdicionar={async (d) => {
+            try {
+              await adicionarAmostra(real, a, d);
+              atualizar();
+              toast("Imóvel vendido adicionado ao estudo.");
+              return true;
+            } catch (e) {
+              toast(mensagemErro(e));
+              return false;
+            }
+          }}
+        />
+      </motion.div>
+
+      <Compartilhar
+        open={compartilhar}
+        a={a}
+        real={real}
+        whatsappProprietario={proprietario?.whatsapp}
+        nomeProprietario={proprietario?.nome}
+        onClose={() => setCompartilhar(false)}
+        onApresentado={() => !a.apresentado && salvar({ apresentado: true })}
+        onLiberar={() => salvar({ linkLiberado: true }, "Link liberado.")}
+      />
 
       <EditarImovel open={editar} a={a} onClose={() => setEditar(false)} onSalvar={(p) => salvar(p, "Dados do imóvel salvos.").then(() => setEditar(false))} />
 

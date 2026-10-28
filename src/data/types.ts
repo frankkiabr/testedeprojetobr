@@ -12,6 +12,8 @@ export type Imobiliaria = {
   cnpj: string;
   /** CRECI da imobiliária (pessoa jurídica), mostrado no portal. */
   creciJ: string;
+  /** Estudo de mercado: mostra o nome do corretor nos imóveis vendidos da equipe (decisão do administrador). */
+  mostrarCorretorVendidos?: boolean;
   email: string;
   telefone: string;
   cidade: string;

@@ -758,12 +758,12 @@ function createActions(bump: () => void, toast: (text: string) => void) {
 
     // ---------- Configurações ----------
 
-    updateImobiliaria(patch: Partial<Pick<Imobiliaria, "nome" | "cnpj" | "creciJ" | "email" | "telefone" | "cidade">>) {
+    updateImobiliaria(patch: Partial<Pick<Imobiliaria, "nome" | "cnpj" | "creciJ" | "email" | "telefone" | "cidade" | "mostrarCorretorVendidos">>) {
       Object.assign(imobiliaria, patch);
       gravar(() =>
         supabase
           .from("imobiliarias")
-          .update({ nome: imobiliaria.nome, cnpj: imobiliaria.cnpj || null, creci_j: imobiliaria.creciJ.trim() || null, email: imobiliaria.email || null, telefone: imobiliaria.telefone || null, cidade: imobiliaria.cidade || null })
+          .update({ nome: imobiliaria.nome, cnpj: imobiliaria.cnpj || null, creci_j: imobiliaria.creciJ.trim() || null, mostrar_corretor_vendidos: !!imobiliaria.mostrarCorretorVendidos, email: imobiliaria.email || null, telefone: imobiliaria.telefone || null, cidade: imobiliaria.cidade || null })
           .eq("id", imobiliaria.id),
       );
       bump();

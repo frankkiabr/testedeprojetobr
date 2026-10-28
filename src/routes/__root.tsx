@@ -18,10 +18,10 @@ import { ConteudoServidor } from "@/components/ConteudoServidor";
 const App = lazy(() => import("../App"));
 
 /**
- * Exceção: as páginas públicas do portal (/imoveis, /imovel, /corretor, /imobiliaria) vêm prontas do servidor
+ * Exceção: as páginas públicas do portal (/imoveis, /imovel, /corretor, /imobiliaria) e a apresentação do estudo (/estudo) vêm prontas do servidor
  * (src/routes/imovel.$slug.tsx etc.), para o Google e a prévia de links do WhatsApp.
  */
-const PORTAL = /^\/(imoveis(\/|$)|(imovel|corretor|imobiliaria)\/)/;
+const PORTAL = /^\/(imoveis(\/|$)|(imovel|corretor|imobiliaria|estudo)\/)/;
 
 /** Páginas públicas do site: o servidor já entrega o texto principal e os links (Google, verificação do app). */
 const PUBLICAS = /^\/(sobre|conheca-a-frankkia|cadastro|termos|privacidade)?$/;

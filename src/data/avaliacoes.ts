@@ -16,7 +16,7 @@ export type Portaria = "nao" | "parcial" | "24h";
 export type Amostra = {
   id: string;
   avaliacaoId: string;
-  origem: "link" | "manual" | "radar";
+  origem: "link" | "manual" | "radar" | "vendido";
   portal?: string;
   url?: string;
   titulo?: string;
@@ -95,6 +95,8 @@ export type Avaliacao = DadosImovel &
     id: string;
     corretorId: string;
     criadoEm: string;
+    /** Código do link da apresentação (/estudo/<token>). */
+    token?: string;
     amostras: Amostra[];
   };
 
@@ -198,6 +200,7 @@ const deEstudo = (x: LinhaEstudo, amostras: Amostra[]): Avaliacao => ({
   id: x.id,
   corretorId: x.corretor_id,
   criadoEm: x.criado_em,
+  token: x.token,
   titulo: x.titulo,
   finalidade: x.finalidade as Finalidade,
   categoria: x.categoria,
@@ -328,6 +331,7 @@ const exemplo = (): Avaliacao[] => [
     ...SITUACAO_PADRAO,
     apresentado: true,
     id: "av-exemplo",
+    token: "demonstracao",
     corretorId: "",
     criadoEm: new Date().toISOString(),
     titulo: "Marina Souza – Apartamento – Pinheiros – São Paulo",
@@ -463,4 +467,138 @@ export async function lerAnuncio(real: boolean, url: string): Promise<{ anuncio?
     }
   }
   return { erro: motivo ?? "FALHA" };
+}
+
+// ---------- Apresentação ----------
+
+/** Endereço público da apresentação do estudo (o proprietário abre sem login). */
+export const linkApresentacao = (a: Avaliacao) => (a.token ? `${window.location.origin}/estudo/${a.token}` : "");
+
+/** Manda a apresentação por e-mail (função enviar-estudo) e marca o estudo como apresentado. */
+export async function enviarEstudoPorEmail(real: boolean, a: Avaliacao, para: string, nome?: string): Promise<{ erro?: string }> {
+  if (!real) {
+    a.apresentado = true;
+    return {};
+  }
+  const { data, error } = await supabase.functions.invoke("enviar-estudo", { body: { estudoId: a.id, para, nome, origem: window.location.origin } });
+  const d = data as { enviado?: boolean; erro?: string } | null;
+  if (d?.enviado) {
+    a.apresentado = true;
+    return {};
+  }
+  let motivo = d?.erro;
+  if (!motivo && error && "context" in error) {
+    try {
+      motivo = ((await (error as { context: Response }).context.json()) as { erro?: string }).erro;
+    } catch {
+      /* sem detalhes */
+    }
+  }
+  return { erro: motivo ?? "FALHA_ENVIO" };
+}
+
+// ---------- Imóveis vendidos na região ----------
+
+export type Vendido = {
+  id: string;
+  origem: "frankkia" | "cadastrada";
+  categoria: string;
+  logradouro?: string;
+  bairro: string;
+  cidade: string;
+  uf?: string;
+  area: number;
+  quartos?: number;
+  vagas?: number;
+  valorAnunciado?: number;
+  valorVenda: number;
+  dataVenda: string;
+  dias?: number;
+  foto?: string;
+  imobiliaria: string;
+  corretor?: string;
+};
+
+export type FiltroVendidos = { finalidade: Finalidade; cidade?: string; bairro?: string; categoria?: string; meses?: number };
+
+/** Categoria do estudo → categoria do imóvel cadastrado (Cobertura é apartamento; Outros, galpão). */
+export const categoriaImovel = (c: string) => (c === "Cobertura" ? "Apartamento" : c === "Outros" ? "Galpão" : c);
+
+const vendidosDemo: Vendido[] = [
+  { id: "vd-1", origem: "frankkia", categoria: "Apartamento", logradouro: "Rua Fradique Coutinho", bairro: "Pinheiros", cidade: "São Paulo", uf: "SP", area: 90, quartos: 3, vagas: 2, valorAnunciado: 1_350_000, valorVenda: 1_290_000, dataVenda: new Date(Date.now() - 40 * 864e5).toISOString().slice(0, 10), dias: 62, imobiliaria: "Imobiliária Exemplo" },
+  { id: "vd-2", origem: "cadastrada", categoria: "Apartamento", logradouro: "Rua Mourato Coelho", bairro: "Pinheiros", cidade: "São Paulo", uf: "SP", area: 84, quartos: 2, vagas: 1, valorAnunciado: 1_100_000, valorVenda: 1_040_000, dataVenda: new Date(Date.now() - 95 * 864e5).toISOString().slice(0, 10), dias: 30, imobiliaria: "Imobiliária Exemplo" },
+];
+
+export async function listarVendidos(real: boolean, f: FiltroVendidos): Promise<Vendido[]> {
+  if (!real)
+    return vendidosDemo.filter(
+      (v) => (!f.bairro || v.bairro.toLowerCase() === f.bairro.toLowerCase()) && (!f.categoria || v.categoria === f.categoria),
+    );
+  const { data, error } = await supabase.rpc("vendidos_regiao", {
+    p_finalidade: f.finalidade,
+    p_cidade: f.cidade || undefined,
+    p_bairro: f.bairro || undefined,
+    p_categoria: f.categoria || undefined,
+    p_meses: f.meses || undefined,
+  });
+  if (error) throw error;
+  return (data ?? []).map((x) => ({
+    id: x.id,
+    origem: x.origem as Vendido["origem"],
+    categoria: x.categoria,
+    logradouro: u(x.logradouro),
+    bairro: x.bairro,
+    cidade: x.cidade,
+    uf: u(x.uf),
+    area: Number(x.area),
+    quartos: u(x.quartos),
+    vagas: u(x.vagas),
+    valorAnunciado: n(x.valor_anunciado),
+    valorVenda: Number(x.valor_venda),
+    dataVenda: x.data_venda,
+    dias: u(x.dias),
+    foto: u(x.foto),
+    imobiliaria: x.imobiliaria,
+    corretor: u(x.corretor),
+  }));
+}
+
+export type NovaVendaExterna = Omit<Vendido, "id" | "origem" | "foto" | "imobiliaria" | "corretor"> & { finalidade: Finalidade };
+
+/** "Cadastrar imóvel vendido": venda que não passou pela Frankkia, para servir de referência nos estudos. */
+export async function cadastrarVendaExterna(real: boolean, imobiliariaId: string, corretorId: string, v: NovaVendaExterna) {
+  if (!real) {
+    vendidosDemo.unshift({ ...v, id: novoId(), origem: "cadastrada", imobiliaria: "Imobiliária Exemplo" });
+    return;
+  }
+  const { error } = await supabase.from("vendas_externas").insert({
+    imobiliaria_id: imobiliariaId,
+    corretor_id: corretorId,
+    finalidade: v.finalidade,
+    categoria: v.categoria,
+    logradouro: v.logradouro || null,
+    bairro: v.bairro,
+    cidade: v.cidade,
+    uf: v.uf || null,
+    area_m2: v.area,
+    quartos: v.quartos ?? null,
+    vagas: v.vagas ?? null,
+    valor_anunciado: v.valorAnunciado ?? null,
+    valor_venda: v.valorVenda,
+    data_venda: v.dataVenda,
+    dias_para_vender: v.dias ?? null,
+  });
+  if (error) throw error;
+}
+
+/** Exclui uma venda cadastrada à mão (o banco só deixa o próprio corretor ou o administrador). */
+export async function excluirVendaExterna(real: boolean, id: string) {
+  if (!real) {
+    const i = vendidosDemo.findIndex((v) => v.id === id);
+    if (i >= 0) vendidosDemo.splice(i, 1);
+    return;
+  }
+  const { error, count } = await supabase.from("vendas_externas").delete({ count: "exact" }).eq("id", id);
+  if (error) throw error;
+  if (!count) throw new Error("APENAS_ADMIN");
 }
