@@ -6,6 +6,7 @@
 // - POST {acao: "buscar"}: chamada a cada 5 minutos; confere, um por um, os eventos que a Frankkia criou e traz
 //   de volta o que a pessoa mudou no Google (título, horário, local ou exclusão). Nunca lista os outros eventos.
 import { admin, cors, json, origemSegura, usuarioDoPedido } from "../_shared/comum.ts";
+import { cifrado, cifrar, decifrar } from "../_shared/cofre.ts";
 
 const ESCOPOS = "openid email https://www.googleapis.com/auth/calendar.events";
 const CAMINHOS = ["/app/agenda", "/admin/agenda"];
@@ -94,7 +95,7 @@ async function voltaDoGoogle(url: URL) {
   } catch {
     /* sem e-mail no token */
   }
-  await db.from("google_conexoes").upsert({ usuario_id: e.usuario_id, email, refresh_token: t.refresh_token, conectado_em: new Date().toISOString() });
+  await db.from("google_conexoes").upsert({ usuario_id: e.usuario_id, email, refresh_token: await cifrar(t.refresh_token), conectado_em: new Date().toISOString() });
   await db.rpc("google_enfileirar_futuros", { p_usuario: e.usuario_id });
   return voltar("ok");
 }
@@ -104,7 +105,7 @@ async function desconectar(req: Request) {
   if (!user) return json({ erro: "NAO_AUTENTICADO" }, 401);
   const db = admin();
   const { data: c } = await db.from("google_conexoes").select("refresh_token").eq("usuario_id", user.id).maybeSingle();
-  if (c) await fetch(`https://oauth2.googleapis.com/revoke?token=${encodeURIComponent(c.refresh_token)}`, { method: "POST" }).catch(() => null);
+  if (c) await fetch(`https://oauth2.googleapis.com/revoke?token=${encodeURIComponent(await decifrar(c.refresh_token))}`, { method: "POST" }).catch(() => null);
   await db.from("google_conexoes").delete().eq("usuario_id", user.id);
   await db.from("google_sync_fila").delete().eq("usuario_id", user.id);
   // Os eventos ficam na agenda da conta antiga; ao conectar de novo, a Frankkia cria eventos novos
@@ -227,11 +228,17 @@ async function acessoDe(usuario: string): Promise<string | null> {
   const db = admin();
   const { data: c } = await db.from("google_conexoes").select("refresh_token").eq("usuario_id", usuario).maybeSingle();
   if (!c) return null;
+  const token = await decifrar(c.refresh_token);
+  // Conexão antiga, guardada antes da criptografia: aproveita e guarda cifrada
+  if (!cifrado(c.refresh_token)) {
+    const novo = await cifrar(token);
+    if (cifrado(novo)) await db.from("google_conexoes").update({ refresh_token: novo }).eq("usuario_id", usuario);
+  }
   const { id, segredo } = cliente();
   const r = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ refresh_token: c.refresh_token, client_id: id, client_secret: segredo, grant_type: "refresh_token" }),
+    body: new URLSearchParams({ refresh_token: token, client_id: id, client_secret: segredo, grant_type: "refresh_token" }),
   });
   const t = await r.json();
   if (r.ok && t.access_token) return t.access_token;

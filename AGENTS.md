@@ -116,6 +116,8 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
 - Interessados: `/apresentacao` e o formulário do site gravam em `interessados` (visitante só envia; só a Frankkia lê).
 - Demonstração: NÃO é pública. Só abre por `/demo/<código>` liberado pela Frankkia (`acessos_demo`, com validade;
   `validar_demo`). Não recoloque botões de demonstração na tela de login.
+- Tokens de serviços externos guardados no banco (ex.: `google_conexoes.refresh_token`) vão criptografados com AES-256-GCM
+  por `supabase/functions/_shared/cofre.ts` (`cifrar`/`decifrar`, chave no segredo `TOKENS_CHAVE`). Nunca grave token sem cifrar.
 - Nunca coloque a chave secreta (service_role) no app ou no repositório; só a chave publicável vai no `.env`.
 
 ## Próxima fase

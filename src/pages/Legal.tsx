@@ -11,7 +11,7 @@ import { Logo } from "@/components/ui";
  * Textos-base escritos para a Frankkia (plataforma + portal). Antes de divulgar em larga escala,
  * vale a revisão de um advogado e completar os dados da empresa (razão social, CNPJ e endereço).
  */
-const ATUALIZACAO = "28 de outubro de 2026";
+const ATUALIZACAO = "29 de outubro de 2026";
 
 type Secao = { titulo: string; texto: ReactNode };
 
@@ -275,7 +275,8 @@ export function Privacidade() {
                 <strong>Dados que a imobiliária cadastra</strong> na plataforma (leads, clientes, proprietários, negócios): a imobiliária (ou o
                 corretor Solo) é a controladora, e a Frankkia é a operadora. Como operadora, a Frankkia trata esses dados apenas para prestar o
                 serviço e segundo as instruções da imobiliária, não os usa para outros fins, avisa a imobiliária se houver um incidente de segurança
-                que os envolva e, quando a conta é encerrada, exclui os dados ou entrega uma cópia a pedido da imobiliária.
+                que os envolva e, quando a conta é encerrada, exclui os dados ou entrega uma cópia a pedido da imobiliária. A Frankkia{" "}
+                <strong>nunca vende</strong> esses dados, não os usa para publicidade e não os usa para treinar inteligência artificial.
               </li>
               <li>
                 <strong>Contatos recebidos pelo portal</strong>: vão para o corretor responsável pelo anúncio, que passa a ser o controlador desses
@@ -354,8 +355,8 @@ export function Privacidade() {
               </ul>
               <p>
                 A Frankkia não lê nem altera os outros eventos da sua agenda, não usa esses dados para publicidade, não os vende e não os compartilha com
-                outras pessoas (nem com a sua imobiliária). Guardamos apenas o e-mail da conta e a autorização de acesso, protegida no servidor e nunca
-                exibida no aplicativo.
+                outras pessoas (nem com a sua imobiliária). Guardamos apenas o e-mail da conta e a autorização de acesso, criptografada (AES-256) no servidor e
+                nunca exibida no aplicativo.
               </p>
               <p>
                 Você pode desconectar a qualquer momento em Agenda → Google Agenda → Desconectar (a autorização é revogada na hora) ou em
@@ -413,11 +414,31 @@ export function Privacidade() {
         {
           titulo: "Segurança",
           texto: (
-            <p>
-              Os dados trafegam com criptografia (HTTPS) e ficam protegidos por regras de acesso no banco: cada corretor só vê os próprios dados, a
-              comissão só é vista pelo próprio corretor e pelo administrador, e a equipe Frankkia vê apenas dados de conta e volumes de uso das
-              imobiliárias.
-            </p>
+            <>
+              <ul>
+                <li>
+                  <strong>Criptografia:</strong> os dados trafegam por conexão segura (HTTPS, TLS 1.2 ou superior) e ficam guardados com
+                  criptografia em disco (AES-256), inclusive as cópias de segurança. As autorizações de acesso a serviços externos (como o
+                  Google Agenda) recebem uma camada própria de criptografia (AES-256), com chave guardada separada do banco de dados.
+                </li>
+                <li>
+                  <strong>Senhas:</strong> são guardadas de forma irreversível (hash); nem a equipe Frankkia consegue lê-las.
+                </li>
+                <li>
+                  <strong>Regras de acesso no próprio banco:</strong> cada corretor só vê os próprios dados, a comissão só é vista pelo próprio corretor e
+                  pelo administrador, e a equipe Frankkia vê apenas dados de conta e volumes de uso das imobiliárias.
+                </li>
+                <li>
+                  <strong>Integrações:</strong> os avisos de pagamento da Stripe têm a assinatura conferida antes de serem aceitos, e a conexão com o Google
+                  usa um código de verificação de uso único contra fraudes.
+                </li>
+              </ul>
+              <p>
+                Se acontecer um incidente de segurança que possa trazer risco ou dano relevante, avisamos a Autoridade Nacional de Proteção de Dados
+                (ANPD) e as pessoas afetadas em até <strong>3 dias úteis</strong>, como determina a ANPD, e também a imobiliária responsável quando
+                envolver dados cadastrados por ela.
+              </p>
+            </>
           ),
         },
         {
@@ -432,7 +453,8 @@ export function Privacidade() {
                 <li>portabilidade, informação sobre compartilhamentos e revogação do consentimento, quando for o caso.</li>
               </ul>
               <p>
-                Muitos dados podem ser corrigidos por você mesmo em Configurações. Para os demais pedidos, escreva para {email}. Se o pedido for
+                Muitos dados podem ser corrigidos por você mesmo em Configurações. Para os demais pedidos, escreva para {email}: respondemos em até{" "}
+                <strong>15 dias</strong>. Se o pedido for
                 sobre dados cadastrados por uma imobiliária (por exemplo, um contato feito pelo portal), nós o encaminhamos a ela. Você também pode
                 procurar a Autoridade Nacional de Proteção de Dados (ANPD).
               </p>
