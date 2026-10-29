@@ -12,6 +12,7 @@ import { Avatar, Badge, Card, ProgressBar, Segmented, Select } from "../../kit";
 import { BotaoSalvar, btn, CheckItem, DateInput, Drawer, EmptyState, Field, formatPhone, inputCls, SearchInput, TimeInput, toLocalInput, waLink } from "../../forms";
 import { ETAPA_DOT, ETAPA_STYLE, LeadFormModal } from "./shared";
 import { ImportarLeadsModal } from "./ImportarLeads";
+import { Documentos } from "../../Documentos";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 
 const PERIODOS = [
@@ -330,6 +331,8 @@ function LeadDrawer({ id, onClose }: { id: string | null; onClose: () => void })
               className={`${inputCls} h-auto resize-none py-3`}
             />
           </Field>
+
+          <Documentos tipo="lead" refId={lead.id} corretorId={lead.corretorId} />
         </div>
       )}
     </Drawer>

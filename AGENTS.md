@@ -105,6 +105,9 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
 - Importar leads (Leads → "Importar", `?importar=1`): `src/app/pages/negocios/ImportarLeads.tsx` + `src/lib/planilha.ts`
   (lê .xlsx sem biblioteca, CSV em UTF-8/Windows-1252 e texto colado). Pula telefone inválido, repetido e já cadastrado;
   grava com `importarLeads` em lotes de 200. Até 2.000 linhas por vez.
+- Documentos por cliente (lead e proprietário): `src/app/Documentos.tsx` + `src/data/documentos.ts`; tabela `documentos` e
+  armazenamento privado `documentos` (`<imobiliária>/<corretor>/<tipo>/<cliente>/`, até 15 MB, PDF/foto/Word/Excel). Quem vê o
+  cliente vê os documentos (RLS + `documento_valido`); abre por link temporário. `excluir-imobiliaria` apaga os arquivos da imobiliária.
 - Visão geral: "Primeiros passos" (`src/app/PrimeirosPassos.tsx`) e sino de avisos (`src/app/Notificacoes.tsx`), calculados dos dados.
 - Página de captura dos anúncios: `/conheca-a-frankkia` (`src/pages/Captura.tsx`), tudo leva ao WhatsApp de `contato` em
   `src/content.ts` (`?utm_source=instagram|youtube` entra na mensagem). Página `/sobre` (`src/pages/Sobre.tsx`, dados em `criador`;

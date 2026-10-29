@@ -11,6 +11,7 @@ import { Avatar, Card, ProgressBar, Select } from "../../kit";
 import { btn, Drawer, EmptyState, formatPhone, SearchInput, waLink } from "../../forms";
 import { ImovelCover, ProprietarioFormModal, StatusBadge, valorLabel } from "./shared";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
+import { Documentos } from "../../Documentos";
 
 function ProprietarioDrawer({ id, onClose }: { id: string | null; onClose: () => void }) {
   const navigate = useNavigate();
@@ -62,6 +63,7 @@ function ProprietarioDrawer({ id, onClose }: { id: string | null; onClose: () =>
               <p className="rounded-2xl bg-canvas p-4 text-sm text-muted">Nenhuma captação vinculada ainda. Cadastre uma “Nova captação” e escolha este proprietário.</p>
             )}
           </div>
+          <Documentos tipo="proprietario" refId={p.id} corretorId={p.corretorId} />
         </div>
       )}
     </Drawer>

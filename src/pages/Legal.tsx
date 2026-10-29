@@ -291,7 +291,7 @@ export function Privacidade() {
             <ul>
               <li>Cadastro: nome, e-mail, WhatsApp, data de nascimento, CRECI, foto de perfil e redes sociais (se você informar).</li>
               <li>Uso da plataforma: registros de acesso e das ações feitas (por segurança e para mostrar o histórico).</li>
-              <li>Dados de negócio cadastrados pela imobiliária: leads, proprietários, imóveis, endereços, fotos e negociações.</li>
+              <li>Dados de negócio cadastrados pela imobiliária: leads, proprietários, imóveis, endereços, fotos, negociações e documentos anexados aos clientes (guardados em área privada).</li>
               <li>Visitantes do portal: nome, WhatsApp, e-mail (opcional) e mensagem enviados pelo formulário de contato.</li>
               <li>Pagamento: plano contratado e situação do pagamento. Os dados do cartão ficam com a Stripe, não com a Frankkia.</li>
             </ul>

@@ -907,6 +907,56 @@ export type Database = {
           },
         ]
       }
+      documentos: {
+        Row: {
+          caminho: string
+          corretor_id: string
+          criado_em: string
+          enviado_por: string | null
+          id: string
+          imobiliaria_id: string
+          mime: string | null
+          nome: string
+          ref_id: string
+          tamanho: number
+          tipo: string
+        }
+        Insert: {
+          caminho: string
+          corretor_id: string
+          criado_em?: string
+          enviado_por?: string | null
+          id?: string
+          imobiliaria_id: string
+          mime?: string | null
+          nome: string
+          ref_id: string
+          tamanho?: number
+          tipo: string
+        }
+        Update: {
+          caminho?: string
+          corretor_id?: string
+          criado_em?: string
+          enviado_por?: string | null
+          id?: string
+          imobiliaria_id?: string
+          mime?: string | null
+          nome?: string
+          ref_id?: string
+          tamanho?: number
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documentos_imobiliaria_id_fkey"
+            columns: ["imobiliaria_id"]
+            isOneToOne: false
+            referencedRelation: "imobiliarias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       erros_sistema: {
         Row: {
           id: string
@@ -1987,6 +2037,16 @@ export type Database = {
           imobiliaria_id: string
           token: string
         }[]
+      }
+      documento_valido: {
+        Args: {
+          p_caminho: string
+          p_corretor: string
+          p_imob: string
+          p_ref: string
+          p_tipo: string
+        }
+        Returns: boolean
       }
       enfileirar_aviso: {
         Args: {
