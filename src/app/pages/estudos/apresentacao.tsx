@@ -5,7 +5,7 @@ import { categoriaImovel, enviarEstudoPorEmail, linkApresentacao, type Avaliacao
 import { useStore } from "@/data/store";
 import { mensagemErro } from "@/integrations/frankkia/client";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
-import { btn, Field, inputCls, Modal, waLink } from "../../forms";
+import { btn, Field, inputCls, Modal, moeda, waLink } from "../../forms";
 
 const CHAVE_CAPTACAO = "frankkia:captacao-do-estudo";
 
@@ -26,7 +26,7 @@ export function guardarCaptacaoDoEstudo(a: Avaliacao, valorSugerido?: number) {
         uf: a.uf ?? "",
         unidade: a.complemento ?? "",
         area: t(a.areaM2),
-        valor: t(Math.round(a.valorAnunciado ?? valorSugerido ?? 0) || undefined),
+        valor: moeda(Math.round(a.valorAnunciado ?? valorSugerido ?? 0) || undefined),
         quartos: t(a.quartos),
         suites: t(a.suites),
         banheiros: t(a.banheiros),

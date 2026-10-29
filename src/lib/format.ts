@@ -20,8 +20,10 @@ export function relTime(iso: string) {
     return ahead <= 1 ? "amanhã" : `em ${ahead} dias`;
   }
   if (days === 0) {
-    const h = Math.floor(diff / 36e5);
-    return h <= 0 ? "agora" : `há ${h}h`;
+    const min = Math.floor(diff / 6e4);
+    if (min < 1) return "agora";
+    if (min < 60) return `há ${min} min`;
+    return `há ${Math.floor(diff / 36e5)}h`;
   }
   if (days === 1) return "ontem";
   if (days < 30) return `há ${days} dias`;

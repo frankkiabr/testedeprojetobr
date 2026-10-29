@@ -23,6 +23,7 @@ import {
   Users,
 } from "lucide-react";
 import { admin as adminDemo, corretores, imobiliaria } from "@/data/demo";
+import { ehSolo } from "@/data/platform";
 import { captacoesOf, imovelById, proprietarioById, userById } from "@/data/queries";
 import { useStore } from "@/data/store";
 import {
@@ -43,7 +44,7 @@ import { buscarTodos, type CartaoAnuncio } from "@/portal/api";
 import { mensagemErro } from "@/integrations/frankkia/client";
 import { brl } from "@/lib/format";
 import { Badge, Card, CardHeader, stagger } from "../../kit";
-import { btn, Field, formatPhone, inputCls, Modal, SelectField } from "../../forms";
+import { btn, Field, formatPhone, inputCls, mascaraMoeda, Modal, moeda, SelectField } from "../../forms";
 import { useScope } from "../../session";
 import {
   CamposEndereco,
@@ -725,7 +726,7 @@ function AmostraModal({
           {(
             [
               ["portal", Globe, "De um portal imobiliário", "Cole o link do VivaReal, Zap ou OLX e os dados são preenchidos sozinhos."],
-              ["radar", Radar, "Do radar Frankkia", "Imóveis parecidos anunciados no portal Frankkia e captações da sua imobiliária."],
+              ["radar", Radar, "Do radar Frankkia", `Imóveis parecidos anunciados no portal Frankkia e ${ehSolo(imobiliaria.plano) ? "as suas captações" : "captações da sua imobiliária"}.`],
               ["manual", PenLine, "Preencher manualmente", "Digite os dados de um imóvel que você conhece."],
             ] as const
           ).map(([m, Icone, t, d]) => (
@@ -770,7 +771,7 @@ function FormAmostra({
     portal: e?.portal ?? "",
     endereco: e?.endereco ?? e?.titulo ?? "",
     bairro: e?.bairro ?? "",
-    valor: txt(e?.valor),
+    valor: moeda(e?.valor),
     area: txt(e?.areaM2),
     quartos: txt(e?.quartos),
     suites: txt(e?.suites),
@@ -798,7 +799,7 @@ function FormAmostra({
       portal: x.portal,
       endereco: x.titulo ?? v.endereco,
       bairro: x.bairro ?? v.bairro,
-      valor: txt(x.valor) || v.valor,
+      valor: moeda(x.valor) || v.valor,
       area: txt(x.area) || v.area,
       quartos: txt(x.quartos) || v.quartos,
       banheiros: txt(x.banheiros) || v.banheiros,
@@ -813,7 +814,7 @@ function FormAmostra({
   const campo = (k: keyof typeof f, extra?: { inputMode?: "decimal" | "numeric"; placeholder?: string }) => ({
     className: inputCls,
     value: f[k],
-    onChange: (ev: React.ChangeEvent<HTMLInputElement>) => setF({ ...f, [k]: ev.target.value }),
+    onChange: (ev: React.ChangeEvent<HTMLInputElement>) => setF({ ...f, [k]: k === "valor" ? mascaraMoeda(ev.target.value) : ev.target.value }),
     ...extra,
   });
   const ok = !!num(f.valor) && !!num(f.area);
@@ -857,7 +858,7 @@ function FormAmostra({
       </div>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Field label={a.finalidade === "locacao" ? "Aluguel (R$/mês)" : "Valor (R$)"} className="col-span-2">
-          <input {...campo("valor", { inputMode: "decimal" })} />
+          <input {...campo("valor", { inputMode: "numeric", placeholder: "0,00" })} />
         </Field>
         <Field label="Área (m²)" className="col-span-2">
           <input {...campo("area", { inputMode: "decimal" })} />
@@ -972,7 +973,7 @@ function RadarFrankkia({ a, onAdicionar }: { a: Avaliacao; onAdicionar: (d: Nova
         banheiros: undefined as number | undefined,
         vagas: undefined as number | undefined,
         foto: undefined as string | undefined,
-        fonte: "Captação da imobiliária",
+        fonte: ehSolo(imobiliaria.plano) ? "Sua captação" : "Captação da imobiliária",
       }));
     // Mesmo bairro primeiro; depois, a área mais parecida
     return [...doPortal.filter((x) => !minhas.some((m) => m.titulo === x.titulo)), ...minhas]

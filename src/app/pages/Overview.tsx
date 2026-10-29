@@ -87,7 +87,7 @@ export default function Overview() {
         <PageHeader
           title={`${greeting()}, ${firstName}`}
           subtitle={
-            isAdmin ? `Aqui está o que está acontecendo na ${imobiliaria.nome} hoje.` : "Aqui está o que precisa da sua atenção hoje."
+            isAdmin && !solo ? `Aqui está o que está acontecendo na ${imobiliaria.nome} hoje.` : "Aqui está o que precisa da sua atenção hoje."
           }
           actions={
             <>
@@ -154,7 +154,7 @@ export default function Overview() {
               </span>
               <div>
                 <p className="font-display text-2xl font-semibold">Feliz aniversário, {firstName}! 🎉</p>
-                <p className="text-white/85">Toda a equipe da {imobiliaria.nome} deseja um ano incrível, cheio de boas vendas.</p>
+                <p className="text-white/85">{solo ? "A Frankkia deseja um ano incrível, cheio de boas vendas." : `Toda a equipe da ${imobiliaria.nome} deseja um ano incrível, cheio de boas vendas.`}</p>
               </div>
             </div>
           </div>
@@ -444,7 +444,7 @@ export default function Overview() {
                       <span className={`relative z-10 mt-0.5 grid size-7 shrink-0 place-items-center rounded-full ring-4 ring-bg ${tone}`}>{icon}</span>
                       <div className="min-w-0 text-sm">
                         <p>
-                          <span className="font-semibold">{isAdmin ? c.nome.split(" ")[0] : "Você"}</span> {a.texto}
+                          <span className="font-semibold">{isAdmin && c.id !== user.id ? c.nome.split(" ")[0] : "Você"}</span> {a.texto}
                           {a.valor && (
                             <span className="font-semibold text-verified">
                               {" "}

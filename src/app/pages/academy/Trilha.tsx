@@ -109,7 +109,7 @@ function DocumentoViewer({ aula }: { aula: Aula }) {
 
 export default function Trilha() {
   const store = useStore();
-  const { isAdmin, user } = useScope();
+  const { isAdmin, user, solo } = useScope();
   const { id } = useParams();
   const navigate = useNavigate();
   const trilha = trilhas.find((t) => t.id === id);
@@ -126,6 +126,7 @@ export default function Trilha() {
     }
   }, [trilha, trilha?.aulas.length, sel, user.id]);
 
+  if (solo) return <Navigate to="/app/visao-geral" replace />;
   if (!trilha) return <Navigate to="/app/academy" replace />;
 
   const aula = trilha.aulas.find((a) => a.id === sel);

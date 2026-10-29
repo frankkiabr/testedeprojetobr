@@ -19,6 +19,51 @@ export const btn = {
     "inline-flex h-10 items-center justify-center gap-2 rounded-full bg-[#25d366] px-4 text-sm font-semibold text-white transition hover:brightness-95 active:scale-[0.98]",
 };
 
+/** Botão de salvar que confirma com "Salvo" (verde, com ✓) por alguns segundos depois do clique. */
+export function BotaoSalvar({
+  onSalvar,
+  disabled,
+  className = btn.primary,
+  children = "Salvar",
+}: {
+  onSalvar: () => unknown;
+  disabled?: boolean;
+  className?: string;
+  children?: ReactNode;
+}) {
+  const [salvo, setSalvo] = useState(false);
+  useEffect(() => {
+    if (!salvo) return;
+    const t = setTimeout(() => setSalvo(false), 2200);
+    return () => clearTimeout(t);
+  }, [salvo]);
+  return (
+    <button
+      className={`${className} min-w-28 ${salvo ? "!border-verified !bg-verified !text-white !opacity-100" : ""}`}
+      disabled={disabled}
+      onClick={async () => {
+        if ((await onSalvar()) !== false) setSalvo(true);
+      }}
+    >
+      <motion.span
+        key={salvo ? "salvo" : "salvar"}
+        initial={{ opacity: 0, y: 6, scale: 0.9 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.25, ease: EASE_OUT_EXPO }}
+        className="inline-flex items-center gap-2"
+      >
+        {salvo ? (
+          <>
+            <Check className="size-4" /> Salvo
+          </>
+        ) : (
+          children
+        )}
+      </motion.span>
+    </button>
+  );
+}
+
 function useEsc(open: boolean, onClose: () => void) {
   useEffect(() => {
     if (!open) return;
@@ -257,6 +302,19 @@ export function Toaster() {
     </div>
   );
 }
+
+// ---------- Valores em R$ ----------
+
+const fmt2 = (n: number) => n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+/** Campo de R$: a pessoa digita só números e aparece 1.000.000,00 (os dois últimos dígitos são os centavos). */
+export function mascaraMoeda(s: string) {
+  const d = s.replace(/\D/g, "").replace(/^0+/, "").slice(0, 15);
+  return d ? fmt2(Number(d) / 100) : "";
+}
+
+/** Número → texto do campo de R$ (vazio quando não há valor). */
+export const moeda = (n?: number | null) => (n ? fmt2(n) : "");
 
 // ---------- Utilidades de telefone e WhatsApp ----------
 

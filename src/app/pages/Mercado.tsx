@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Clock, Info, MapPin, Ruler, Scale, TrendingUp } from "lucide-react";
 import { CATEGORIAS, imobiliaria } from "@/data/demo";
+import { ehSolo } from "@/data/platform";
 import { bairrosMercado, imovelNome, mercado, type FiltroMercado } from "@/data/queries";
 import { useStore } from "@/data/store";
 import type { Finalidade } from "@/data/types";
@@ -55,7 +56,7 @@ export default function Mercado() {
           onChange={setAba}
           options={[
             { value: "estudos", label: "Estudos" },
-            { value: "panorama", label: "Panorama da imobiliária" },
+            { value: "panorama", label: ehSolo(imobiliaria.plano) ? "Panorama dos seus negócios" : "Panorama da imobiliária" },
           ]}
         />
       </motion.div>

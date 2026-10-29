@@ -64,7 +64,9 @@ function useAvisos(): Aviso[] {
   const meu = (corretorId: string) => admin || corretorId === user.id;
   const out: Aviso[] = [];
 
-  for (const l of leads.filter((x) => meu(x.corretorId) && recente(x.criadoEm, 72))) {
+  // Só avisa do lead que chegou por outra pessoa: pelo portal ou cadastrado por outro usuário (nunca o que eu mesmo cadastrei)
+  const deOutro = (l: (typeof leads)[number]) => l.origem === "Portal" || (!!l.criadoPor && l.criadoPor !== user.id);
+  for (const l of leads.filter((x) => meu(x.corretorId) && deOutro(x) && recente(x.criadoEm, 72))) {
     const portal = l.origem === "Portal";
     out.push({
       id: `lead-${l.id}`,

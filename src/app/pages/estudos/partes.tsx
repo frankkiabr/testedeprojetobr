@@ -7,7 +7,7 @@ import { listarAvaliacoes, type Avaliacao, type DadosImovel } from "@/data/avali
 import { buscarCep, localizar } from "@/lib/mapa";
 import { mensagemErro } from "@/integrations/frankkia/client";
 import { useStore } from "@/data/store";
-import { btn, DateInput, Field, inputCls, SelectField } from "../../forms";
+import { btn, DateInput, Field, inputCls, mascaraMoeda, moeda, SelectField } from "../../forms";
 import { useSession } from "../../session";
 
 /** Interruptor Sim/Não (como no BrokerApp), nas cores da Frankkia. */
@@ -207,15 +207,16 @@ export function CamposImovel({ f, set }: { f: Partial<FormImovel>; set: (p: Part
     banheiros: txt(f.banheiros),
     vagas: txt(f.vagas),
     anoConstrucao: txt(f.anoConstrucao),
-    valorAnunciado: txt(f.valorAnunciado),
+    valorAnunciado: moeda(f.valorAnunciado),
   }));
   const numero = (k: keyof typeof t) => ({
     className: inputCls,
     inputMode: "decimal" as const,
     value: t[k],
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
-      setT((x) => ({ ...x, [k]: e.target.value }));
-      set({ [k]: num(e.target.value) });
+      const v = k === "valorAnunciado" ? mascaraMoeda(e.target.value) : e.target.value;
+      setT((x) => ({ ...x, [k]: v }));
+      set({ [k]: num(v) });
     },
   });
   const sel = (op: { value: string; label: string }[], k: "infraestrutura" | "portaria" | "orientacaoSolar" | "conservacao" | "mobilia") => (
@@ -262,7 +263,7 @@ export function CamposImovel({ f, set }: { f: Partial<FormImovel>; set: (p: Part
         <Field label="Conservação">{sel(OP_CONSERVACAO, "conservacao")}</Field>
         <Field label="Mobília">{sel(OP_MOBILIA, "mobilia")}</Field>
         <Field label={f.finalidade === "locacao" ? "Aluguel pedido pelo cliente" : "Valor já anunciado pelo cliente"} className="lg:col-span-2">
-          <input {...numero("valorAnunciado")} placeholder="R$" />
+          <input {...numero("valorAnunciado")} inputMode="numeric" placeholder="0,00" />
         </Field>
       </div>
       <Field label="O que você identificou no imóvel" hint="Até 2.750 caracteres.">

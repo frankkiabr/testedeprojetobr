@@ -41,7 +41,7 @@ export function PrimeirosPassos() {
     {
       id: "foto",
       titulo: "Coloque sua foto de perfil",
-      texto: "Ela aparece para a equipe e nos seus anúncios.",
+      texto: solo ? "Ela aparece nos seus anúncios e na sua página no portal." : "Ela aparece para a equipe e nos seus anúncios.",
       to: "/app/configuracoes?aba=perfil",
       feito: !!user.fotoUrl,
     },

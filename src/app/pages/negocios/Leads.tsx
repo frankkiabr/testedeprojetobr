@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { BadgeDollarSign, CalendarClock, Columns3, List, Phone, Plus, Users } from "lucide-react";
@@ -9,7 +9,7 @@ import type { EtapaLead, Lead } from "@/data/types";
 import { dateTime, relTime } from "@/lib/format";
 import { useScope } from "../../session";
 import { Avatar, Badge, Card, ProgressBar, Segmented, Select } from "../../kit";
-import { btn, CheckItem, DateInput, Drawer, EmptyState, Field, formatPhone, inputCls, SearchInput, TimeInput, toLocalInput, waLink } from "../../forms";
+import { BotaoSalvar, btn, CheckItem, DateInput, Drawer, EmptyState, Field, formatPhone, inputCls, SearchInput, TimeInput, toLocalInput, waLink } from "../../forms";
 import { ETAPA_DOT, ETAPA_STYLE, LeadFormModal } from "./shared";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 
@@ -161,10 +161,15 @@ function ListView({ leads, showCorretor, onOpen }: { leads: Lead[]; showCorretor
 
 function LeadDrawer({ id, onClose }: { id: string | null; onClose: () => void }) {
   const { updateLead, toggleLeadStep } = useStore();
-  const { isAdmin } = useScope();
+  const { isAdmin, solo } = useScope();
   const navigate = useNavigate();
   const lead = id ? leadById(id) : undefined;
   const passos = lead ? lead.checklist.filter(Boolean).length : 0;
+  // Etapa, visita e checklist já gravam no clique; o botão Salvar confirma e grava as observações
+  const obs = useRef<HTMLTextAreaElement>(null);
+  const salvar = () => {
+    if (lead && obs.current && obs.current.value !== (lead.observacoes ?? "")) updateLead(lead.id, { observacoes: obs.current.value });
+  };
 
   return (
     <Drawer
@@ -180,11 +185,14 @@ function LeadDrawer({ id, onClose }: { id: string | null; onClose: () => void })
         )
       }
       footer={
-        lead?.etapa === "fechado" ? (
-          <button onClick={() => navigate(isAdmin ? "/app/negocios/transacoes?nova=1" : "/app/negocios/transacoes?informar=1")} className={btn.accent}>
-            <BadgeDollarSign className="size-4" /> {isAdmin ? "Registrar venda ou locação" : "Informar fechamento"}
-          </button>
-        ) : undefined
+        <>
+          {lead?.etapa === "fechado" && (
+            <button onClick={() => navigate(isAdmin ? "/app/negocios/transacoes?nova=1" : "/app/negocios/transacoes?informar=1")} className={btn.accent}>
+              <BadgeDollarSign className="size-4" /> {isAdmin ? "Registrar venda ou locação" : "Informar fechamento"}
+            </button>
+          )}
+          <BotaoSalvar onSalvar={salvar}>Salvar</BotaoSalvar>
+        </>
       }
     >
       {lead && (
@@ -228,7 +236,7 @@ function LeadDrawer({ id, onClose }: { id: string | null; onClose: () => void })
               <dt className="text-xs text-muted">Cadastrado</dt>
               <dd className="mt-0.5 font-semibold">{relTime(lead.criadoEm)}</dd>
             </div>
-            {isAdmin && (
+            {isAdmin && !solo && (
               <div className="col-span-2 flex items-center gap-3 rounded-2xl bg-canvas p-3.5">
                 <Avatar user={pessoa(lead.corretorId)} className="size-8 text-[0.625rem]" />
                 <div>
@@ -282,6 +290,7 @@ function LeadDrawer({ id, onClose }: { id: string | null; onClose: () => void })
           <Field label="Observações">
             <textarea
               key={lead.id}
+              ref={obs}
               defaultValue={lead.observacoes}
               onBlur={(e) => updateLead(lead.id, { observacoes: e.target.value })}
               rows={4}
@@ -297,7 +306,7 @@ function LeadDrawer({ id, onClose }: { id: string | null; onClose: () => void })
 
 export default function Leads() {
   useStore();
-  const { scope, isAdmin } = useScope();
+  const { scope, isAdmin, solo } = useScope();
   const [params, setParams] = useSearchParams();
   const [view, setView] = useState<"quadro" | "lista">("quadro");
   const [busca, setBusca] = useState("");
@@ -380,9 +389,9 @@ export default function Leads() {
               />
             </Card>
           ) : view === "quadro" ? (
-            <Board leads={list} showCorretor={isAdmin} onOpen={(id) => setParam("lead", id)} />
+            <Board leads={list} showCorretor={isAdmin && !solo} onOpen={(id) => setParam("lead", id)} />
           ) : (
-            <ListView leads={list} showCorretor={isAdmin} onOpen={(id) => setParam("lead", id)} />
+            <ListView leads={list} showCorretor={isAdmin && !solo} onOpen={(id) => setParam("lead", id)} />
           )}
         </motion.div>
 

@@ -171,6 +171,7 @@ const paraLead = (r: Row<"leads">): Lead => ({
   checklist: r.checklist,
   visitaEm: u(r.visita_em),
   observacoes: u(r.observacoes),
+  criadoPor: u(r.criado_por),
 });
 
 const paraImovel = (r: Row<"imoveis">): Imovel => ({

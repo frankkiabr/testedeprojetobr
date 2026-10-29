@@ -27,7 +27,7 @@ function BotaoWhats({ tel, texto }: { tel: string | null; texto: string }) {
 export function PaginaCorretor({ c }: { c: CorretorPublico }) {
   const redes = REDES.filter((r) => c.redes?.[r.chave]);
   return (
-    <PortalShell imob={c.imobiliaria}>
+    <PortalShell imob={c.imobiliaria} corretor={c}>
       <Surge
         y={16}
         className="flex flex-col gap-5 rounded-3xl bg-canvas p-6 sm:flex-row sm:items-center sm:p-8"

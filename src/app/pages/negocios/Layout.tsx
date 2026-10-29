@@ -10,7 +10,7 @@ import { PageHeader, stagger } from "../../kit";
 /** Cabeçalho de Negócios com as abas. */
 export default function NegociosLayout() {
   useStore();
-  const { scope, isAdmin } = useScope();
+  const { scope, isAdmin, solo } = useScope();
   const pendentes = fechamentosPendentes(isAdmin ? {} : scope).length;
   const tabs = [
     { to: "leads", label: "Leads", icon: Users, count: leadsOf(scope).length },
@@ -25,7 +25,7 @@ export default function NegociosLayout() {
       <motion.div {...stagger(0)}>
         <PageHeader
           title="Negócios"
-          subtitle={isAdmin ? "Leads, captações, imóveis, proprietários, vendas e locações de toda a equipe." : "Seus leads, captações, proprietários, vendas e locações."}
+          subtitle={isAdmin && !solo ? "Leads, captações, imóveis, proprietários, vendas e locações de toda a equipe." : "Seus leads, captações, proprietários, vendas e locações."}
         />
       </motion.div>
       <motion.nav {...stagger(1)} className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">

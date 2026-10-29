@@ -18,7 +18,7 @@ import {
 import { brl } from "@/lib/format";
 import { mensagemErro } from "@/integrations/frankkia/client";
 import { Card, CardHeader } from "../../kit";
-import { btn, DateInput, Field, inputCls, Modal, SelectField } from "../../forms";
+import { btn, DateInput, Field, inputCls, mascaraMoeda, Modal, SelectField } from "../../forms";
 import { useScope } from "../../session";
 import { num } from "./partes";
 
@@ -246,7 +246,8 @@ function CadastrarVendido({ open, a, real, onClose, onCadastrado }: { open: bool
   const campo = (k: keyof ReturnType<typeof vazio>, extra?: object) => ({
     className: inputCls,
     value: f[k],
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => setF({ ...f, [k]: e.target.value }),
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
+      setF({ ...f, [k]: k === "anunciado" || k === "venda" ? mascaraMoeda(e.target.value) : e.target.value }),
     ...extra,
   });
   const ok = f.bairro.trim().length >= 2 && f.cidade.trim().length >= 2 && !!num(f.area) && !!num(f.venda) && !!f.data;
@@ -255,7 +256,7 @@ function CadastrarVendido({ open, a, real, onClose, onCadastrado }: { open: bool
       open={open}
       onClose={onClose}
       title={`Cadastrar imóvel ${loc ? "alugado" : "vendido"}`}
-      subtitle="Uma venda que você conhece e que não passou pela Frankkia. Fica disponível para toda a equipe, sem nome de cliente."
+      subtitle={`Uma venda que você conhece e que não passou pela Frankkia. Fica guardada para os seus próximos estudos${ehSolo(imobiliaria.plano) ? "" : " e de toda a equipe"}, sem nome de cliente.`}
       footer={
         <>
           <button className={btn.outline} onClick={onClose}>
@@ -326,10 +327,10 @@ function CadastrarVendido({ open, a, real, onClose, onCadastrado }: { open: bool
           </Field>
         </div>
         <Field label="Valor anunciado (opcional)">
-          <input {...campo("anunciado", { inputMode: "decimal" })} />
+          <input {...campo("anunciado", { inputMode: "numeric", placeholder: "0,00" })} />
         </Field>
         <Field label={loc ? "Aluguel fechado (R$/mês)" : "Valor da venda (R$)"}>
-          <input {...campo("venda", { inputMode: "decimal" })} />
+          <input {...campo("venda", { inputMode: "numeric", placeholder: "0,00" })} />
         </Field>
         <Field label={loc ? "Data da locação" : "Data da venda"}>
           <DateInput value={f.data} onChange={(v) => setF({ ...f, data: v })} />

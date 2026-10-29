@@ -2,7 +2,8 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { LifeBuoy, Mail, Plus, Send } from "lucide-react";
 import { site } from "@/content";
-import { chamados } from "@/data/demo";
+import { chamados, imobiliaria } from "@/data/demo";
+import { ehSolo } from "@/data/platform";
 import { useStore } from "@/data/store";
 import type { Chamado } from "@/data/types";
 import { relTime } from "@/lib/format";
@@ -17,9 +18,9 @@ const FAQ = [
   { q: "Como mudo a etapa de um lead?", a: "No quadro, arraste o cartão para outra coluna. Você também pode abrir o lead e escolher a etapa no topo do painel." },
   { q: "Como envio o relatório ao proprietário?", a: "Abra o imóvel em Negócios › Imóveis e clique em “Gerar relatório”. A mensagem é montada com as ações do checklist de marketing e enviada pelo WhatsApp cadastrado do proprietário." },
   { q: "Como registro uma venda?", a: "Em Negócios › Vendas, clique em “Registrar venda”, escolha o imóvel e informe o valor e a comissão. O imóvel passa para “Vendido” e o VGV e o VGC são atualizados na hora." },
-  { q: "Quem pode ver a minha comissão (VGC)?", a: "Somente você e o administrador da imobiliária. Os outros corretores não veem a sua comissão em nenhum lugar da plataforma." },
-  { q: "Como convido um corretor?", a: "O administrador acessa Equipe, digita o e-mail e clica em “Convidar”. O convite ocupa uma vaga do plano até ser aceito ou cancelado." },
-  { q: "Que arquivos posso enviar na Academy?", a: "Vídeos em MP4 ou MOV (apenas para assistir) e documentos em PDF, DOC ou DOCX (com botão de download para a equipe)." },
+  { q: "Quem pode ver a minha comissão (VGC)?", equipe: true, a: "Somente você e o administrador da imobiliária. Os outros corretores não veem a sua comissão em nenhum lugar da plataforma." },
+  { q: "Como convido um corretor?", equipe: true, a: "O administrador acessa Equipe, digita o e-mail e clica em “Convidar”. O convite ocupa uma vaga do plano até ser aceito ou cancelado." },
+  { q: "Que arquivos posso enviar na Academy?", equipe: true, a: "Vídeos em MP4 ou MOV (apenas para assistir) e documentos em PDF, DOC ou DOCX (com botão de download para a equipe)." },
 ];
 
 const CATEGORIAS = ["Dúvida", "Problema técnico", "Sugestão", "Financeiro"];
@@ -50,7 +51,7 @@ export default function Ajuda() {
           <Card>
             <CardHeader title="Perguntas frequentes" />
             <ul className="mt-2 px-6 pb-3">
-              {FAQ.map((it, i) => {
+              {FAQ.filter((it) => !("equipe" in it && ehSolo(imobiliaria.plano))).map((it, i) => {
                 const isOpen = open === i;
                 return (
                   <li key={it.q} className="border-b border-line last:border-0">

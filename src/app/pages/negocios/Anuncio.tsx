@@ -5,7 +5,7 @@ import { PLANOS } from "@/data/platform";
 import { anuncioDe, useStore } from "@/data/store";
 import type { Captacao } from "@/data/types";
 import { brl } from "@/lib/format";
-import { btn, Field, inputCls } from "../../forms";
+import { BotaoSalvar, btn, Field, inputCls, mascaraMoeda, moeda } from "../../forms";
 import { valorLabel } from "./shared";
 
 const numero = (s: string) => (s.trim() === "" ? undefined : Math.max(0, Math.min(50, Math.round(Number(s.replace(/\D/g, "")) || 0))));
@@ -26,8 +26,8 @@ export function AnuncioEditor({ captacao, onPublicado }: { captacao: Captacao; o
     suites: a.suites?.toString() ?? "",
     banheiros: a.banheiros?.toString() ?? "",
     vagas: a.vagas?.toString() ?? "",
-    condominio: a.condominio ? String(a.condominio).replace(".", ",") : "",
-    iptu: a.iptu ? String(a.iptu).replace(".", ",") : "",
+    condominio: moeda(a.condominio),
+    iptu: moeda(a.iptu),
     caracteristicas: [...a.caracteristicas],
   });
   const [f, setF] = useState(inicial);
@@ -168,10 +168,10 @@ export function AnuncioEditor({ captacao, onPublicado }: { captacao: Captacao; o
         {campo("banheiros", "Banheiros")}
         {campo("vagas", "Vagas")}
         <Field label="Condomínio (R$/mês)" className="sm:col-span-2">
-          <input className={inputCls} inputMode="decimal" value={f.condominio} onChange={(e) => setF({ ...f, condominio: e.target.value })} placeholder="0,00" />
+          <input className={inputCls} inputMode="decimal" value={f.condominio} onChange={(e) => setF({ ...f, condominio: mascaraMoeda(e.target.value) })} placeholder="0,00" />
         </Field>
         <Field label="IPTU (R$/ano)" className="sm:col-span-2">
-          <input className={inputCls} inputMode="decimal" value={f.iptu} onChange={(e) => setF({ ...f, iptu: e.target.value })} placeholder="0,00" />
+          <input className={inputCls} inputMode="decimal" value={f.iptu} onChange={(e) => setF({ ...f, iptu: mascaraMoeda(e.target.value) })} placeholder="0,00" />
         </Field>
       </div>
 
@@ -210,9 +210,9 @@ export function AnuncioEditor({ captacao, onPublicado }: { captacao: Captacao; o
           </label>
         )}
         <div className="flex flex-wrap justify-end gap-2">
-          <button disabled={!mudou} onClick={salvar} className={btn.outline}>
-            Salvar rascunho
-          </button>
+          <BotaoSalvar disabled={!mudou} onSalvar={salvar} className={btn.outline}>
+            Atualizar
+          </BotaoSalvar>
           {a.publicado ? (
             <button disabled={publicando} onClick={() => publicar(false)} className={`${btn.outline} text-rose-600`}>
               Retirar do portal

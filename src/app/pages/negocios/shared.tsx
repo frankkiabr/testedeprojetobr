@@ -38,7 +38,7 @@ import { useStore } from "@/data/store";
 import type { Captacao, CategoriaImovel, EtapaLead, FechamentoInformado, Finalidade, Participante, Imovel } from "@/data/types";
 import { brl } from "@/lib/format";
 import { useScope } from "../../session";
-import { btn, DateInput, Field, inputCls, Modal, normalizePhone, SelectField, waLink } from "../../forms";
+import { btn, DateInput, Field, inputCls, mascaraMoeda, Modal, moeda, normalizePhone, SelectField, waLink } from "../../forms";
 import { Avatar, Segmented } from "../../kit";
 
 // ---------- Visual ----------
@@ -675,7 +675,7 @@ export function CaptacaoFormModal({ open, onClose }: { open: boolean; onClose: (
           className="sm:col-span-4"
           hint={valor ? valorLabel(f.finalidade, valor) + (area ? ` · ${brl(valor / area)}/m²` : "") : undefined}
         >
-          <input className={inputCls} inputMode="numeric" value={f.valor} onChange={(e) => setF({ ...f, valor: e.target.value })} placeholder={f.finalidade === "venda" ? "Ex.: 850000" : "Ex.: 4200"} />
+          <input className={inputCls} inputMode="numeric" value={f.valor} onChange={(e) => setF({ ...f, valor: mascaraMoeda(e.target.value) })} placeholder={f.finalidade === "venda" ? "Ex.: 850.000,00" : "Ex.: 4.200,00"} />
         </Field>
         <div className="grid grid-cols-4 gap-3 sm:col-span-6">
           {campoNum("quartos", "Quartos")}
@@ -799,7 +799,7 @@ export function TransacaoFormModal({
   const iniciar = (cid: string, t: Finalidade, valor?: number, data?: string) => {
     const c = captacaoById(cid);
     setTipo(t);
-    setF({ captacaoId: cid, valor: String(valor ?? c?.valor ?? ""), honorarios: String(HONORARIOS_PADRAO[t]), cliente: "", data: data ?? today() });
+    setF({ captacaoId: cid, valor: moeda(valor ?? c?.valor), honorarios: String(HONORARIOS_PADRAO[t]), cliente: "", data: data ?? today() });
     setParts(c ? [{ tipo: "corretor", refId: c.corretorId, pct: 50 }] : []);
   };
 
@@ -903,7 +903,7 @@ export function TransacaoFormModal({
             />
           </Field>
           <Field label={tipo === "venda" ? "Valor da venda" : "Aluguel mensal"} hint={valor ? valorLabel(tipo, valor) : undefined}>
-            <input className={inputCls} inputMode="numeric" value={f.valor} onChange={(e) => setF({ ...f, valor: e.target.value })} />
+            <input className={inputCls} inputMode="numeric" value={f.valor} onChange={(e) => setF({ ...f, valor: mascaraMoeda(e.target.value) })} placeholder="0,00" />
           </Field>
           <Field label={tipo === "venda" ? "Honorários (% do valor)" : "Honorários (% do 1º aluguel)"} hint={valor ? `Total: ${brl(totalHon)}` : undefined}>
             <input className={inputCls} inputMode="decimal" value={f.honorarios} onChange={(e) => setF({ ...f, honorarios: e.target.value })} />
@@ -920,7 +920,10 @@ export function TransacaoFormModal({
             <div className="mb-2 flex items-end justify-between">
               <div>
                 <p className="text-sm font-semibold">Divisão dos honorários</p>
-                <p className="text-xs text-muted">% dos honorários que cada participante recebe. O restante fica com a imobiliária.</p>
+                <p className="text-xs text-muted">
+                  % dos honorários que cada participante recebe.{" "}
+                  {ehSolo(imobiliaria.plano) ? "Sem parceria, os honorários ficam todos com você." : "O restante fica com a imobiliária."}
+                </p>
               </div>
             </div>
             <div className="space-y-2">
@@ -931,7 +934,7 @@ export function TransacaoFormModal({
                     onChange={(e) => setPart(i, { tipo: e.target.value as Participante["tipo"], refId: "" })}
                     className="h-10 rounded-lg border border-line-strong bg-bg px-2 text-xs font-semibold outline-hidden"
                   >
-                    <option value="corretor">Da equipe</option>
+                    <option value="corretor">{ehSolo(imobiliaria.plano) ? "Você" : "Da equipe"}</option>
                     <option value="parceiro">Parceiro externo</option>
                   </select>
                   <div className="flex min-w-0 items-center gap-2">
@@ -980,8 +983,8 @@ export function TransacaoFormModal({
                 "A soma das partes passou de 100% dos honorários."
               ) : (
                 <>
-                  Corretores e parceiros: <span className="font-semibold">{soma}%</span>
-                  {valor > 0 && ` (${brl((totalHon * soma) / 100)})`} · Imobiliária: <span className="font-semibold">{100 - soma}%</span>
+                  {ehSolo(imobiliaria.plano) ? "Participantes" : "Corretores e parceiros"}: <span className="font-semibold">{soma}%</span>
+                  {valor > 0 && ` (${brl((totalHon * soma) / 100)})`} · {ehSolo(imobiliaria.plano) ? "Sua conta" : "Imobiliária"}: <span className="font-semibold">{100 - soma}%</span>
                   {valor > 0 && ` (${brl((totalHon * (100 - soma)) / 100)})`}
                 </>
               )}
@@ -1010,7 +1013,7 @@ export function InformarFechamentoModal({ open, onClose, captacaoId }: { open: b
   useEffect(() => {
     if (open) {
       const c = captacaoId ? captacaoById(captacaoId) : undefined;
-      setF({ captacaoId: c?.id ?? "", valor: c ? String(c.valor) : "", data: today(), obs: "" });
+      setF({ captacaoId: c?.id ?? "", valor: moeda(c?.valor), data: today(), obs: "" });
     }
   }, [open, captacaoId]);
   const cap = f.captacaoId ? captacaoById(f.captacaoId) : undefined;
@@ -1044,13 +1047,13 @@ export function InformarFechamentoModal({ open, onClose, captacaoId }: { open: b
         <Field label="Captação" className="sm:col-span-2">
           <SelectField
             value={f.captacaoId}
-            onChange={(v) => setF({ ...f, captacaoId: v, valor: String(captacaoById(v)?.valor ?? "") })}
+            onChange={(v) => setF({ ...f, captacaoId: v, valor: moeda(captacaoById(v)?.valor) })}
             placeholder={minhas.length ? "Selecione" : "Nenhuma captação ativa"}
             options={minhas.map((c) => ({ value: c.id, label: `${captacaoTitulo(c)} · ${c.finalidade === "venda" ? "Venda" : "Locação"}` }))}
           />
         </Field>
         <Field label={cap?.finalidade === "locacao" ? "Aluguel combinado" : "Valor combinado"} hint={valor && cap ? valorLabel(cap.finalidade, valor) : undefined}>
-          <input className={inputCls} inputMode="numeric" value={f.valor} onChange={(e) => setF({ ...f, valor: e.target.value })} />
+          <input className={inputCls} inputMode="numeric" value={f.valor} onChange={(e) => setF({ ...f, valor: mascaraMoeda(e.target.value) })} placeholder="0,00" />
         </Field>
         <Field label="Data do fechamento">
           <DateInput value={f.data} max={today()} onChange={(v) => setF({ ...f, data: v })} />

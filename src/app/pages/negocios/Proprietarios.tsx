@@ -14,7 +14,7 @@ import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 
 function ProprietarioDrawer({ id, onClose }: { id: string | null; onClose: () => void }) {
   const navigate = useNavigate();
-  const { isAdmin } = useScope();
+  const { isAdmin, solo } = useScope();
   const p = id ? proprietarios.find((x) => x.id === id) : undefined;
   const lista = p ? captacoesDoProprietario(p.id) : [];
 
@@ -27,7 +27,7 @@ function ProprietarioDrawer({ id, onClose }: { id: string | null; onClose: () =>
               <WhatsAppIcon className="size-4" /> Conversar no WhatsApp
             </a>
           </div>
-          {isAdmin && (
+          {isAdmin && !solo && (
             <div className="flex items-center gap-3 rounded-2xl bg-canvas p-3.5 text-sm">
               <Avatar user={pessoa(p.corretorId)} className="size-8 text-[0.625rem]" />
               <div>
@@ -70,7 +70,7 @@ function ProprietarioDrawer({ id, onClose }: { id: string | null; onClose: () =>
 
 export default function Proprietarios() {
   useStore();
-  const { scope, isAdmin } = useScope();
+  const { scope, isAdmin, solo } = useScope();
   const [params, setParams] = useSearchParams();
   const [busca, setBusca] = useState("");
   const [corretor, setCorretor] = useState("");
@@ -119,7 +119,7 @@ export default function Proprietarios() {
                   <th className="px-5 py-3 font-semibold">Proprietário</th>
                   <th className="px-3 py-3 font-semibold">WhatsApp</th>
                   <th className="px-3 py-3 font-semibold">Captações</th>
-                  {isAdmin && <th className="px-3 py-3 font-semibold">Corretor</th>}
+                  {isAdmin && !solo && <th className="px-3 py-3 font-semibold">Corretor</th>}
                   <th className="px-5 py-3" />
                 </tr>
               </thead>
@@ -159,7 +159,7 @@ export default function Proprietarios() {
                           {ims.some((x) => x.status !== "ativa") && <span className="ml-1.5 text-xs font-semibold text-verified">· fechada</span>}
                         </span>
                       </td>
-                      {isAdmin && (
+                      {isAdmin && !solo && (
                         <td className="px-3 py-3">
                           <span className="flex items-center gap-2">
                             <Avatar user={c} className="size-6 text-[0.5625rem]" />

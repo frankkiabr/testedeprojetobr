@@ -44,7 +44,7 @@ export default function PaginaAnuncio({ a, url }: { a: AnuncioPublico; url: stri
   ].filter(Boolean) as { icon: typeof Ruler; texto: string }[];
 
   return (
-    <PortalShell imob={a.imobiliaria}>
+    <PortalShell imob={a.imobiliaria} corretor={a.corretor}>
       <Surge y={16}>
         <Galeria fotos={a.fotos.map((f) => f.url)} titulo={a.titulo} />
       </Surge>

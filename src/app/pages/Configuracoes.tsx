@@ -11,7 +11,7 @@ import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { useScope, useSession } from "../session";
 import { acaoAssinatura, mensagemErro, supabase } from "@/integrations/frankkia/client";
 import { Avatar, Card, PageHeader, ProgressBar, Segmented, stagger } from "../kit";
-import { btn, DateInput, Field, formatPhone, inputCls, Modal, normalizePhone, SelectField } from "../forms";
+import { BotaoSalvar, btn, DateInput, Field, formatPhone, inputCls, Modal, normalizePhone, SelectField } from "../forms";
 import { PedidoUpgradeStatus, useIrParaPagamento } from "../upgrade";
 import { Link, useSearchParams } from "react-router-dom";
 import { CicloToggle } from "@/components/CicloToggle";
@@ -42,13 +42,12 @@ function ImobiliariaForm() {
       title="Dados da imobiliária"
       subtitle="Aparecem no topo da plataforma e nos relatórios enviados aos proprietários."
       footer={
-        <button
-          className={btn.primary}
+        <BotaoSalvar
           disabled={!f.nome.trim()}
-          onClick={() => updateImobiliaria({ nome: f.nome.trim(), cnpj: f.cnpj, creciJ: f.creciJ, mostrarCorretorVendidos: !!f.mostrarCorretorVendidos, email: f.email, telefone: normalizePhone(f.telefone), cidade: f.cidade })}
+          onSalvar={() => updateImobiliaria({ nome: f.nome.trim(), cnpj: f.cnpj, creciJ: f.creciJ, mostrarCorretorVendidos: !!f.mostrarCorretorVendidos, email: f.email, telefone: normalizePhone(f.telefone), cidade: f.cidade })}
         >
           Salvar alterações
-        </button>
+        </BotaoSalvar>
       }
     >
       <div className="grid gap-4 sm:grid-cols-2">
@@ -367,7 +366,7 @@ function AssinaturaSecao() {
 }
 
 function Perfil() {
-  const { updateUsuario, toast, setFotoPerfil } = useStore();
+  const { updateUsuario, updateImobiliaria, toast, setFotoPerfil } = useStore();
   const entradaFoto = useRef<HTMLInputElement>(null);
   const [enviandoFoto, setEnviandoFoto] = useState(false);
   const trocarFoto = async (arquivo: File | null) => {
@@ -387,6 +386,7 @@ function Perfil() {
     creciUF: user.creciUF ?? "SP",
     estagiario: !!user.estagiario,
     redes: Object.fromEntries(REDES.map((r) => [r.chave, textoDaRede(r.chave, user.redes?.[r.chave])])) as Record<string, string>,
+    cidade: imobiliaria.cidade,
   });
   const [f, setF] = useState(init);
   const [senha, setSenha] = useState({ atual: "", nova: "", confirma: "" });
@@ -403,11 +403,13 @@ function Perfil() {
       <Section
         title="Meu perfil"
         footer={
-          <button
-            className={btn.primary}
+          <BotaoSalvar
             disabled={!perfilOk}
-            onClick={() =>
-              updateUsuario(user.id, {
+            onSalvar={() => {
+              // Solo: a conta leva o nome do corretor e a cidade onde ele atua (usada nos novos imóveis)
+              if (solo && (f.nome.trim() !== imobiliaria.nome || f.cidade !== imobiliaria.cidade))
+                updateImobiliaria({ nome: f.nome.trim(), cidade: f.cidade.trim() }, true);
+              return updateUsuario(user.id, {
                 nome: f.nome.trim(),
                 email: f.email.trim(),
                 telefone: f.telefone ? normalizePhone(f.telefone) : undefined,
@@ -416,11 +418,11 @@ function Perfil() {
                 creci: f.creci.trim() || undefined,
                 creciUF: f.creci.trim() ? f.creciUF : undefined,
                 redes: redesLimpas(f.redes),
-              })
-            }
+              });
+            }}
           >
             Salvar perfil
-          </button>
+          </BotaoSalvar>
         }
       >
         <div className="mb-6 flex flex-wrap items-center gap-4">
@@ -437,7 +439,7 @@ function Perfil() {
           </button>
           <div className="min-w-0 flex-1">
             <p className="font-semibold">{user.nome}</p>
-            <p className="text-sm text-muted">{user.papel === "admin" ? "Administrador" : "Corretor"} · {imobiliaria.nome}</p>
+            <p className="text-sm text-muted">{solo ? "Corretor autônomo · Plano Solo" : `${user.papel === "admin" ? "Administrador" : "Corretor"} · ${imobiliaria.nome}`}</p>
             <div className="mt-1.5 flex gap-3 text-xs font-semibold">
               <button type="button" onClick={() => entradaFoto.current?.click()} disabled={enviandoFoto} className="text-accent">
                 {enviandoFoto ? "Enviando..." : user.fotoUrl ? "Trocar foto" : "Adicionar foto"}
@@ -471,9 +473,14 @@ function Perfil() {
           <Field label="WhatsApp">
             <input className={inputCls} value={f.telefone} onChange={(e) => setF({ ...f, telefone: e.target.value })} placeholder="(11) 98765-4321" />
           </Field>
-          <Field label="Data de nascimento" hint="Usada para avisar a equipe no seu aniversário.">
+          <Field label="Data de nascimento" hint={solo ? undefined : "Usada para avisar a equipe no seu aniversário."}>
             <DateInput value={f.aniversario} onChange={(v) => setF({ ...f, aniversario: v })} />
           </Field>
+          {solo && (
+            <Field label="Cidade onde você atua" hint="Já vem preenchida ao cadastrar um imóvel.">
+              <input className={inputCls} value={f.cidade} onChange={(e) => setF({ ...f, cidade: e.target.value })} placeholder="Ex.: Belém, PA" />
+            </Field>
+          )}
         </div>
 
         <div className="mt-6 rounded-2xl bg-canvas p-4">
@@ -577,14 +584,14 @@ function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {
 }
 
 function Notificacoes() {
-  const { isAdmin } = useScope();
+  const { isAdmin, solo } = useScope();
   const { toast } = useStore();
   const itens = [
     { id: "lead", label: "Novo lead atribuído a mim", desc: "Aviso assim que um lead chegar." },
     { id: "visita", label: "Lembrete de visita", desc: "Uma hora antes de cada visita agendada." },
     { id: "semanal", label: "Resumo semanal de performance", desc: "Toda segunda-feira, por e-mail." },
-    { id: "academy", label: "Novas trilhas na Academy", desc: "Quando uma trilha nova for publicada." },
-    ...(isAdmin ? [{ id: "venda", label: "Vendas da equipe", desc: "Sempre que um corretor registrar uma venda." }] : []),
+    ...(solo ? [] : [{ id: "academy", label: "Novas trilhas na Academy", desc: "Quando uma trilha nova for publicada." }]),
+    ...(isAdmin && !solo ? [{ id: "venda", label: "Vendas da equipe", desc: "Sempre que um corretor registrar uma venda." }] : []),
   ];
   const [on, setOn] = useState<Record<string, boolean>>({ lead: true, visita: true, semanal: true, academy: false, venda: true });
   return (
@@ -612,21 +619,19 @@ function Notificacoes() {
 
 export default function Configuracoes() {
   useStore();
-  const { isAdmin } = useScope();
+  const { isAdmin, solo } = useScope();
   const abas: { value: Aba; label: string; icon: typeof Bell }[] = [
-    ...(isAdmin
-      ? [
-          { value: "imobiliaria" as const, label: "Imobiliária", icon: Building2 },
-          { value: "plano" as const, label: "Plano", icon: CreditCard },
-        ]
-      : []),
+    ...(isAdmin && !solo ? [{ value: "imobiliaria" as const, label: "Imobiliária", icon: Building2 }] : []),
+    ...(isAdmin ? [{ value: "plano" as const, label: "Plano", icon: CreditCard }] : []),
     { value: "perfil", label: "Meu perfil", icon: UserRound },
     { value: "notificacoes", label: "Notificações", icon: Bell },
   ];
   // Permite abrir direto numa aba (ex.: /app/configuracoes?aba=plano, usado ao voltar do pagamento)
   const [params] = useSearchParams();
   const pedida = params.get("aba") as Aba | null;
-  const [aba, setAba] = useState<Aba>(pedida && (isAdmin || pedida === "perfil" || pedida === "notificacoes") ? pedida : isAdmin ? "imobiliaria" : "perfil");
+  const [aba, setAba] = useState<Aba>(
+    pedida && abas.some((a) => a.value === pedida) ? pedida : isAdmin && !solo ? "imobiliaria" : "perfil",
+  );
   useEffect(() => {
     if (!abas.some((a) => a.value === aba)) setAba(abas[0].value);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -635,7 +640,7 @@ export default function Configuracoes() {
   return (
     <div className="space-y-6">
       <motion.div {...stagger(0)}>
-        <PageHeader title="Configurações" subtitle={isAdmin ? "Dados da imobiliária, plano e preferências." : "Seu perfil e preferências."} />
+        <PageHeader title="Configurações" subtitle={solo ? "Seu perfil, plano e preferências." : isAdmin ? "Dados da imobiliária, plano e preferências." : "Seu perfil e preferências."} />
       </motion.div>
       <motion.div {...stagger(1)} className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
         <Segmented id="config" value={aba} onChange={setAba} options={abas.map((a) => ({ value: a.value, label: a.label }))} />

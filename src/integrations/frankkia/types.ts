@@ -1273,6 +1273,7 @@ export type Database = {
           checklist: boolean[]
           corretor_id: string
           criado_em: string
+          criado_por: string | null
           etapa: string
           id: string
           imobiliaria_id: string
@@ -1287,6 +1288,7 @@ export type Database = {
           checklist?: boolean[]
           corretor_id: string
           criado_em?: string
+          criado_por?: string | null
           etapa?: string
           id?: string
           imobiliaria_id: string
@@ -1301,6 +1303,7 @@ export type Database = {
           checklist?: boolean[]
           corretor_id?: string
           criado_em?: string
+          criado_por?: string | null
           etapa?: string
           id?: string
           imobiliaria_id?: string

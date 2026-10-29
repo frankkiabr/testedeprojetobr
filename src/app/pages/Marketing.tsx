@@ -81,7 +81,7 @@ export default function Marketing() {
         <Card className="overflow-hidden">
           <div className="flex flex-col gap-1 border-b border-line px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="font-display text-lg font-semibold">Logo da imobiliária</h2>
+              <h2 className="font-display text-lg font-semibold">{ehSolo(imobiliaria.plano) ? "Sua logo" : "Logo da imobiliária"}</h2>
               <p className="text-sm text-muted">Arquivo PNG com fundo transparente, pronto para usar em artes, anúncios e apresentações.</p>
             </div>
           </div>

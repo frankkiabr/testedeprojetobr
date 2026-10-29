@@ -34,7 +34,7 @@ import { brl, relTime } from "@/lib/format";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { useScope } from "../../session";
 import { Avatar, Card, ProgressBar, Segmented, Select } from "../../kit";
-import { btn, CheckItem, Drawer, EmptyState, Field, formatPhone, inputCls, SearchInput, waLink } from "../../forms";
+import { btn, CheckItem, Drawer, EmptyState, Field, formatPhone, inputCls, mascaraMoeda, moeda, SearchInput, waLink } from "../../forms";
 import {
   CaptacaoFormModal,
   FinalidadeBadge,
@@ -179,7 +179,7 @@ function EditarDados({ c, categoria, onFim }: { c: Captacao; categoria: string; 
   const an = anuncios.find((x) => x.captacaoId === c.id);
   const comUnidade = categoria === "Apartamento" || categoria === "Sala comercial";
   const [f, setF] = useState({
-    valor: String(c.valor),
+    valor: moeda(c.valor),
     area: String(c.areaM2),
     unidade: c.unidade ?? "",
     quartos: an?.quartos?.toString() ?? "",
@@ -196,7 +196,7 @@ function EditarDados({ c, categoria, onFim }: { c: Captacao; categoria: string; 
         className={inputCls}
         inputMode={numerico ? "decimal" : "text"}
         value={f[k]}
-        onChange={(e) => setF({ ...f, [k]: e.target.value })}
+        onChange={(e) => setF({ ...f, [k]: k === "valor" ? mascaraMoeda(e.target.value) : e.target.value })}
       />
     </Field>
   );
@@ -236,7 +236,7 @@ function EditarDados({ c, categoria, onFim }: { c: Captacao; categoria: string; 
 function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: () => void }) {
   const { toggleMarketing, toggleCaptacao } = useStore();
   const [aba, setAba] = useState<AbaCaptacao>("imovel");
-  const { isAdmin, user } = useScope();
+  const { isAdmin, user, solo } = useScope();
   const [report, setReport] = useState(false);
   const [registrar, setRegistrar] = useState(false);
   const [informar, setInformar] = useState(false);
@@ -378,7 +378,7 @@ function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: () => voi
                       </div>
                     </div>
                   )}
-                  {isAdmin && (
+                  {isAdmin && !solo && (
                     <div className="col-span-2 flex items-center gap-3 rounded-2xl bg-canvas p-3.5">
                       <Avatar user={pessoa(c.corretorId)} className="size-8 text-[0.625rem]" />
                       <div>
@@ -471,7 +471,7 @@ function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: () => voi
 
 export default function Captacoes() {
   useStore();
-  const { scope, isAdmin } = useScope();
+  const { scope, isAdmin, solo } = useScope();
   const [params, setParams] = useSearchParams();
   const [status, setStatus] = useState<"ativa" | "fechadas" | "todas">("ativa");
   const [finalidade, setFinalidade] = useState("");
@@ -547,7 +547,7 @@ export default function Captacoes() {
         <motion.div layout className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           <AnimatePresence mode="popLayout">
             {list.map((c, i) => (
-              <CaptacaoCard key={c.id} c={c} i={i} showCorretor={isAdmin} onOpen={() => setParam("captacao", c.id)} />
+              <CaptacaoCard key={c.id} c={c} i={i} showCorretor={isAdmin && !solo} onOpen={() => setParam("captacao", c.id)} />
             ))}
           </AnimatePresence>
         </motion.div>

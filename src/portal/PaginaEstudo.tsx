@@ -55,12 +55,16 @@ export default function PaginaEstudo({ e }: { e: EstudoPublico }) {
           <div className="flex min-w-0 items-center gap-3">
             {e.imobiliaria.logo ? (
               <img src={e.imobiliaria.logo} alt={e.imobiliaria.nome} className="h-9 w-auto max-w-[9rem] object-contain" />
+            ) : e.imobiliaria.solo ? (
+              <FotoPessoa p={{ nome: e.corretor.nome, foto: e.corretor.foto }} className="size-9 text-sm" />
             ) : (
               <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent-soft font-display font-semibold text-accent">
                 {e.imobiliaria.nome.slice(0, 1).toUpperCase()}
               </span>
             )}
-            <span className="truncate font-display text-lg font-semibold tracking-tight">{e.imobiliaria.nome}</span>
+            <span className="truncate font-display text-lg font-semibold tracking-tight">
+              {e.imobiliaria.solo && !e.imobiliaria.logo ? e.corretor.nome : e.imobiliaria.nome}
+            </span>
           </div>
           <button
             onClick={() => window.print()}

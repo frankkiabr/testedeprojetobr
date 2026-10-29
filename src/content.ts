@@ -139,7 +139,7 @@ export const pricing = {
     name: "Solo",
     eyebrow: "É corretor autônomo?",
     title: "Plano Solo, só para você.",
-    text: "Todas as ferramentas da Frankkia para quem trabalha sozinho: leads, captações, vendas, agenda e Academy, sem equipe para gerenciar.",
+    text: "Todas as ferramentas da Frankkia para quem trabalha sozinho: leads, captações, vendas, agenda, estudo de mercado e portal, sem equipe para gerenciar.",
     seats: "1 corretor (sem equipe)",
     equipe: "Corretor autônomo (Solo)",
     price: "79,90",

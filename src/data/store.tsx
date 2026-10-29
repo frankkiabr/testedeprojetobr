@@ -758,7 +758,7 @@ function createActions(bump: () => void, toast: (text: string) => void) {
 
     // ---------- Configurações ----------
 
-    updateImobiliaria(patch: Partial<Pick<Imobiliaria, "nome" | "cnpj" | "creciJ" | "email" | "telefone" | "cidade" | "mostrarCorretorVendidos">>) {
+    updateImobiliaria(patch: Partial<Pick<Imobiliaria, "nome" | "cnpj" | "creciJ" | "email" | "telefone" | "cidade" | "mostrarCorretorVendidos">>, silencioso = false) {
       Object.assign(imobiliaria, patch);
       gravar(() =>
         supabase
@@ -767,7 +767,7 @@ function createActions(bump: () => void, toast: (text: string) => void) {
           .eq("id", imobiliaria.id),
       );
       bump();
-      toast("Dados da imobiliária salvos.");
+      if (!silencioso) toast("Dados da imobiliária salvos.");
     },
 
     /** Primeiro acesso: o convidado completa o cadastro (CRECI, aniversário...) e vira corretor ativo. */

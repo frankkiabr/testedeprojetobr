@@ -241,6 +241,8 @@ export type Lead = {
   checklist: boolean[];
   visitaEm?: string;
   observacoes?: string;
+  /** Quem cadastrou (vazio nos leads do portal e nos recém-criados por quem está usando). */
+  criadoPor?: string;
 };
 
 /** Proprietário pertence ao corretor que o cadastrou (o administrador vê todos). */

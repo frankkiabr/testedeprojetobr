@@ -88,7 +88,7 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       </Link>
       <p className="mt-4 px-3 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-subtle">Seu universo</p>
       <nav className="mt-3 space-y-1">
-        {MENU.filter((m) => (!m.adminOnly || role === "admin") && !(solo && m.to === "equipe")).map((m) => (
+        {MENU.filter((m) => (!m.adminOnly || role === "admin") && !(solo && (m.to === "equipe" || m.to === "academy"))).map((m) => (
           <NavItem key={m.to} {...m} onClick={onNavigate} />
         ))}
       </nav>

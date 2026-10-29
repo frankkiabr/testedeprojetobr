@@ -51,7 +51,7 @@ function Stat({ label, icon: Icon, value, format, lock }: { label: string; icon:
 
 export default function Transacoes() {
   const store = useStore();
-  const { scope, isAdmin } = useScope();
+  const { scope, isAdmin, solo } = useScope();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const months = lastMonths(6);
@@ -77,6 +77,9 @@ export default function Transacoes() {
     0,
   );
   const receitaImob = list.reduce((s, t) => s + parteImobiliaria(t), 0);
+  // Solo: os honorários são todos do dono da conta, menos o que foi para parceiros externos
+  const suaReceita = (t: (typeof list)[number]) =>
+    honorarios(t) - t.participantes.filter((p) => p.tipo === "parceiro").reduce((a, p) => a + parteDe(t, p), 0);
   const pendentes = fechamentosPendentes(isAdmin ? {} : scope);
 
   return (
@@ -167,16 +170,20 @@ export default function Transacoes() {
         </Card>
       )}
 
-      <div className={`grid grid-cols-2 gap-4 ${isAdmin && !corretor ? "xl:grid-cols-4" : "xl:grid-cols-3"}`}>
+      <div className={`grid grid-cols-2 gap-4 ${isAdmin && !corretor && !solo ? "xl:grid-cols-4" : "xl:grid-cols-3"}`}>
         <Stat label="VGV (vendas)" icon={BadgeDollarSign} value={vgv} format={brlCompact} />
         <Stat label="Volume de locação" icon={KeyRound} value={loc} format={(n) => `${brlCompact(n)}/mês`} />
-        <Stat label={isAdmin && !corretor ? "VGC (comissões da equipe)" : "VGC (comissão)"} icon={Coins} value={vgc} format={brlCompact} lock />
-        {isAdmin && !corretor && <Stat label="Receita da imobiliária" icon={Building} value={receitaImob} format={brlCompact} lock />}
+        {solo ? (
+          <Stat label="Sua receita (honorários)" icon={Coins} value={list.reduce((s, t) => s + suaReceita(t), 0)} format={brlCompact} lock />
+        ) : (
+          <Stat label={isAdmin && !corretor ? "VGC (comissões da equipe)" : "VGC (comissão)"} icon={Coins} value={vgc} format={brlCompact} lock />
+        )}
+        {isAdmin && !corretor && !solo && <Stat label="Receita da imobiliária" icon={Building} value={receitaImob} format={brlCompact} lock />}
       </div>
 
       <Card className="overflow-hidden">
         {list.length === 0 ? (
-          <EmptyState icon={<BadgeDollarSign className="size-6" />} title="Nenhuma transação no período" text="Vendas e locações registradas pelo administrador aparecem aqui." />
+          <EmptyState icon={<BadgeDollarSign className="size-6" />} title="Nenhuma transação no período" text={solo ? "As vendas e locações que você registrar aparecem aqui." : "Vendas e locações registradas pelo administrador aparecem aqui."} />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[52rem] text-sm">
@@ -187,7 +194,7 @@ export default function Transacoes() {
                   <th className="px-3 py-3 font-semibold">Participantes</th>
                   <th className="px-3 py-3 text-right font-semibold">Valor</th>
                   {isAdmin && !corretor && <th className="px-3 py-3 text-right font-semibold">Honorários</th>}
-                  <th className="px-5 py-3 text-right font-semibold">{sc.corretorId ? (isAdmin ? "Comissão do corretor" : "Sua comissão") : "Imobiliária"}</th>
+                  <th className="px-5 py-3 text-right font-semibold">{solo ? "Sua receita" : sc.corretorId ? (isAdmin ? "Comissão do corretor" : "Sua comissão") : "Imobiliária"}</th>
                 </tr>
               </thead>
               <tbody>
@@ -232,7 +239,7 @@ export default function Transacoes() {
                       </td>
                       <td className="px-3 py-3 text-right font-semibold tabular-nums">{valorLabel(t.tipo, t.valor)}</td>
                       {isAdmin && !corretor && <td className="px-3 py-3 text-right tabular-nums text-muted">{brl(honorarios(t))}</td>}
-                      <td className="px-5 py-3 text-right font-semibold tabular-nums text-verified">{brl(cred ? cred.comissao : parteImobiliaria(t))}</td>
+                      <td className="px-5 py-3 text-right font-semibold tabular-nums text-verified">{brl(solo ? suaReceita(t) : cred ? cred.comissao : parteImobiliaria(t))}</td>
                     </motion.tr>
                   );
                 })}

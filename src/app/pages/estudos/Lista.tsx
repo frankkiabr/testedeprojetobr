@@ -25,7 +25,7 @@ const situacao = (a: Avaliacao): { rotulo: string; tom: "neutral" | "accent" | "
 /** Lista de estudos de mercado com o funil (criados → apresentados → assinados → vendidos). */
 export function ListaEstudos() {
   const { lista } = useEstudos();
-  const { isAdmin } = useScope();
+  const { isAdmin, solo } = useScope();
 
   if (lista === null)
     return (
@@ -81,7 +81,7 @@ export function ListaEstudos() {
 
       <motion.div {...stagger(2)}>
         <Card className="overflow-hidden">
-          <CardHeader title={isAdmin ? "Estudos da equipe" : "Seus estudos"} subtitle="Os mais recentes primeiro." />
+          <CardHeader title={isAdmin && !solo ? "Estudos da equipe" : "Seus estudos"} subtitle="Os mais recentes primeiro." />
           <ul className="mt-3 divide-y divide-line">
             {lista.map((a) => {
               const r = resultado(a);

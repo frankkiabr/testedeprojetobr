@@ -1,6 +1,6 @@
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Bath, BedDouble, Car, MapPin, Ruler, Search } from "lucide-react";
+import { Bath, BedDouble, Car, MapPin, Menu, Ruler, X } from "lucide-react";
 import { Logo, LogoMark } from "@/components/ui";
 import { EntradaPagina, Surge } from "./anim";
 import type { CartaoAnuncio, CorretorResumo, Finalidade, ImobResumo } from "./api";
@@ -81,26 +81,51 @@ export const creciTexto = (c: { creci: string | null; creci_uf: string | null })
   c.creci ? `CRECI ${c.creci}${c.creci_uf ? `-${c.creci_uf}` : ""}` : "";
 
 /** Moldura das páginas do portal: topo com a imobiliária (ou a Frankkia) e rodapé simples. */
+/** Menu do portal: leva de volta ao site da Frankkia. */
+const MENU_PORTAL = [
+  { href: "/", label: "Início" },
+  { href: "/#planos", label: "Planos" },
+  { href: "/imoveis", label: "Imóveis" },
+  { href: "/sobre", label: "Sobre" },
+];
+
 export function PortalShell({
   imob,
+  corretor,
   rotulo,
   children,
 }: {
   imob?: ImobResumo | null;
+  /** No plano Solo sem logo, o topo mostra a foto e o nome do corretor no lugar da inicial. */
+  corretor?: Pick<CorretorResumo, "nome" | "foto" | "slug"> | null;
   /** Nome da seção ao lado da marca Frankkia (ex.: "Imóveis"). */
   rotulo?: string;
   children: ReactNode;
 }) {
   // Trocou de página dentro do portal: volta ao topo e anima a entrada
   const caminho = useRouterState({ select: (s) => s.location.pathname });
+  const [menu, setMenu] = useState(false);
   useEffect(() => {
     window.scrollTo(0, 0);
+    setMenu(false);
   }, [caminho]);
+  const fotoDoCorretor = !!imob?.solo && !imob.logo && !!corretor;
   return (
     <div className="min-h-screen bg-bg text-ink">
       <header className="sticky top-0 z-30 border-b border-line bg-bg/90 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-          {imob ? (
+          {fotoDoCorretor && corretor ? (
+            <Link
+              to="/corretor/$slug"
+              params={{ slug: corretor.slug ?? "" }}
+              preload="intent"
+              disabled={!corretor.slug}
+              className="flex min-w-0 items-center gap-3"
+            >
+              <FotoPessoa p={corretor} className="size-9 text-sm" />
+              <span className="truncate font-display text-lg font-semibold tracking-tight">{corretor.nome}</span>
+            </Link>
+          ) : imob ? (
             <Link
               to="/imobiliaria/$slug"
               params={{ slug: imob.slug ?? "" }}
@@ -130,16 +155,35 @@ export function PortalShell({
               {rotulo && <span className="ml-1 text-sm font-medium text-muted">{rotulo}</span>}
             </a>
           )}
-          {caminho !== "/imoveis" && (
-            <Link
-              to="/imoveis"
-              preload="intent"
-              className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-line-strong px-4 text-sm font-semibold transition hover:bg-canvas"
-            >
-              <Search className="size-4" /> <span className="hidden sm:inline">Buscar imóveis</span>
-            </Link>
-          )}
+          <nav className="hidden shrink-0 items-center gap-1 sm:flex">
+            {MENU_PORTAL.map((m) => (
+              <a
+                key={m.href}
+                href={m.href}
+                className={`rounded-full px-3.5 py-2 text-sm font-semibold transition hover:bg-canvas ${caminho === m.href ? "text-accent" : "text-muted hover:text-ink"}`}
+              >
+                {m.label}
+              </a>
+            ))}
+          </nav>
+          <button
+            onClick={() => setMenu((v) => !v)}
+            aria-label="Menu"
+            aria-expanded={menu}
+            className="grid size-10 shrink-0 place-items-center rounded-full border border-line-strong transition hover:bg-canvas sm:hidden"
+          >
+            {menu ? <X className="size-5" /> : <Menu className="size-5" />}
+          </button>
         </div>
+        {menu && (
+          <nav className="border-t border-line px-4 py-2 sm:hidden">
+            {MENU_PORTAL.map((m) => (
+              <a key={m.href} href={m.href} className="block rounded-xl px-3 py-3 font-semibold transition hover:bg-canvas">
+                {m.label}
+              </a>
+            ))}
+          </nav>
+        )}
       </header>
       <main className="mx-auto max-w-6xl px-4 pb-20 pt-6 sm:px-6">
         <EntradaPagina key={caminho}>{children}</EntradaPagina>

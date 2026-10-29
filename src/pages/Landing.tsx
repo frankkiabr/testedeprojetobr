@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { startLenis } from "@/lib/scroll";
+import { scrollToId, startLenis } from "@/lib/scroll";
 import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
 import { Ecosystem } from "@/components/Ecosystem";
@@ -16,6 +16,13 @@ import { CommandPalette } from "@/components/CommandPalette";
 export default function Landing() {
   const [paletteOpen, setPaletteOpen] = useState(false);
   useEffect(() => startLenis(), []);
+  // Veio de outra página com âncora (ex.: /#planos, pelo menu do portal): desce até a seção depois que a página montou
+  useEffect(() => {
+    const id = window.location.hash.slice(1);
+    if (!id) return;
+    const t = setTimeout(() => scrollToId(id), 500);
+    return () => clearTimeout(t);
+  }, []);
 
   return (
     <>

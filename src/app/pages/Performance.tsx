@@ -141,7 +141,7 @@ export default function Performance() {
         <PageHeader
           title="Performance"
           subtitle={
-            isAdmin
+            isAdmin && !ehSolo(imobiliaria.plano)
               ? who
                 ? `Resultados de ${who.nome} em ${monthLabel.toLowerCase()}.`
                 : `Resultados de toda a equipe em ${monthLabel.toLowerCase()}.`
@@ -207,7 +207,7 @@ export default function Performance() {
 
         <motion.div {...stagger(8)}>
           <Card className="flex h-full flex-col">
-            <CardHeader title="Meta do mês" subtitle={who ? `Meta individual de ${who.nome.split(" ")[0]}.` : isAdmin ? "Meta da imobiliária." : "Sua meta individual."} />
+            <CardHeader title="Meta do mês" subtitle={who ? `Meta individual de ${who.nome.split(" ")[0]}.` : isAdmin && !ehSolo(imobiliaria.plano) ? "Meta da imobiliária." : "Sua meta do mês."} />
             <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 pb-6 pt-4">
               <div className="relative">
                 <Ring value={m.metaPct / 100} size={160} />

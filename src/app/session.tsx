@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import type { User } from "@supabase/supabase-js";
-import { admin, corretorDemo, corretores } from "@/data/demo";
-import { frankkiaUser } from "@/data/platform";
+import { admin, corretorDemo, corretores, imobiliaria } from "@/data/demo";
+import { ehSolo, frankkiaUser } from "@/data/platform";
 import type { Role, Usuario } from "@/data/types";
 import { userById, type Scope } from "@/data/queries";
 import { aoMudar, carregarReal, usarDemo } from "@/data/sync";
@@ -400,7 +400,9 @@ export function useScope() {
   const { role, user } = useSession();
   const isAdmin = role === "admin";
   const scope: Scope = isAdmin ? {} : { corretorId: user.id };
-  return { isAdmin, user, scope };
+  /** Plano Solo: o dono da conta é o próprio corretor, sem equipe nem imobiliária. */
+  const solo = isAdmin && ehSolo(imobiliaria.plano);
+  return { isAdmin, user, scope, solo };
 }
 
 /** Para onde vai cada papel ao entrar. */

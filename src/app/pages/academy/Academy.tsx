@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, BookOpen, Clock, FileText, Play, Plus, Video } from "lucide-react";
 import { trilhas } from "@/data/demo";
@@ -13,7 +13,7 @@ import { TrilhaCover, TrilhaFormModal } from "./shared";
 
 export default function Academy() {
   useStore();
-  const { isAdmin, user } = useScope();
+  const { isAdmin, user, solo } = useScope();
   const navigate = useNavigate();
   const [nova, setNova] = useState(false);
 
@@ -24,6 +24,9 @@ export default function Academy() {
         return p.k > 0 && p.k < p.n;
       })
     : undefined;
+
+  // Plano Solo não tem Academy: não há equipe para capacitar
+  if (solo) return <Navigate to="/app/visao-geral" replace />;
 
   return (
     <div className="space-y-6">
