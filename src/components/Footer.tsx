@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Check, Copy, LogIn, Mail, Search } from "lucide-react";
+import { Calculator, Check, Copy, Landmark, LogIn, Mail, MapPin, Search } from "lucide-react";
 import { nav, site } from "@/content";
 import { EASE_OUT_EXPO, scrollToId } from "@/lib/scroll";
 import { Logo } from "./ui";
@@ -37,7 +37,7 @@ export function Footer({ onSearch }: { onSearch: () => void }) {
       <div className="relative mx-auto max-w-[90rem] overflow-hidden rounded-panel bg-ink text-bg">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_10%_0%,rgb(47_91_234/0.35),transparent_70%)]" />
         <div className="relative mx-auto w-full max-w-[70rem] px-5 pb-8 pt-20 sm:px-8 sm:pt-28">
-          <div className="grid gap-14 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-16">
+          <div className="grid gap-14 2xl:grid-cols-[minmax(0,1fr)_auto] 2xl:gap-16">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -50,7 +50,7 @@ export function Footer({ onSearch }: { onSearch: () => void }) {
               <PergunteIA className="mt-10" />
             </motion.div>
 
-            <nav className="grid grid-cols-2 gap-x-10 gap-y-8 text-[0.9375rem] sm:grid-cols-[repeat(3,auto)] lg:pt-2">
+            <nav className="grid grid-cols-2 gap-x-10 gap-y-8 text-[0.9375rem] sm:grid-cols-[repeat(4,auto)] sm:justify-between 2xl:justify-normal 2xl:pt-2">
               <div>
                 <h3 className="type-eyebrow text-bg/60">Plataforma</h3>
                 <ul className="mt-4 space-y-3">
@@ -94,23 +94,32 @@ export function Footer({ onSearch }: { onSearch: () => void }) {
                       Buscar imóveis
                     </a>
                   </li>
-                  <li>
-                    <Link to="/simulador-de-financiamento" className="whitespace-nowrap text-bg/80 transition-colors hover:text-bg">
-                      Simulador de financiamento
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to="/calculadora-de-comissao" className="whitespace-nowrap text-bg/80 transition-colors hover:text-bg">
-                      Calculadora de comissão
-                    </Link>
-                  </li>
+                  {/* Até 5 cidades com mais anúncios: atalhos para as páginas de cada cidade (ajudam o Google a achá-las) */}
                   {cidades.map((c) => (
                     <li key={c.slug}>
-                      <a href={`/imoveis/${c.slug}`} className="whitespace-nowrap text-bg/80 transition-colors hover:text-bg">
+                      <a href={`/imoveis/${c.slug}`} className="inline-flex items-center gap-2 whitespace-nowrap text-bg/80 transition-colors hover:text-bg">
+                        <MapPin className="size-4" />
                         {c.cidade} - {c.uf}
                       </a>
                     </li>
                   ))}
+                </ul>
+              </div>
+              <div className="col-span-2 sm:col-span-1">
+                <h3 className="type-eyebrow text-bg/60">Ferramentas</h3>
+                <ul className="mt-4 space-y-3">
+                  <li>
+                    <Link to="/simulador-de-financiamento" className="inline-flex items-center gap-2 whitespace-nowrap text-bg/80 transition-colors hover:text-bg">
+                      <Landmark className="size-4" />
+                      Simulador de financiamento
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/calculadora-de-comissao" className="inline-flex items-center gap-2 whitespace-nowrap text-bg/80 transition-colors hover:text-bg">
+                      <Calculator className="size-4" />
+                      Calculadora de comissão
+                    </Link>
+                  </li>
                 </ul>
               </div>
               <div>
