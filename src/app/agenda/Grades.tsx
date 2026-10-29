@@ -62,8 +62,8 @@ export function GradeHorarios({ dias, eventos, onAbrir, onNovo, onMover, mostrar
 
   return (
     <div className="overflow-hidden rounded-3xl border border-line bg-bg">
-      {/* Cabeçalho com os dias */}
-      <div className="grid border-b border-line" style={{ gridTemplateColumns: `3.5rem repeat(${dias.length}, minmax(0, 1fr))` }}>
+      {/* Cabeçalho com os dias. O mesmo espaço da barra de rolagem fica reservado aqui e na grade, para as colunas baterem */}
+      <div className="grid overflow-y-hidden border-b border-line [scrollbar-gutter:stable]" style={{ gridTemplateColumns: `3.5rem repeat(${dias.length}, minmax(0, 1fr))` }}>
         <div />
         {dias.map((d) => {
           const hoje = mesmoDia(d, agora);
@@ -76,7 +76,7 @@ export function GradeHorarios({ dias, eventos, onAbrir, onNovo, onMover, mostrar
         })}
       </div>
 
-      <div ref={scroller} className="max-h-[68vh] overflow-y-auto">
+      <div ref={scroller} className="max-h-[68vh] overflow-y-auto [scrollbar-gutter:stable]">
         <div className="relative grid" style={{ gridTemplateColumns: `3.5rem repeat(${dias.length}, minmax(0, 1fr))`, height: alturaTotal }}>
           {/* Horas */}
           <div className="relative">
