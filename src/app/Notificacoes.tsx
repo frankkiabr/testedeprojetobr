@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   AlarmClock,
+  Repeat,
   Bell,
   CalendarClock,
   Cake,
@@ -30,6 +31,7 @@ import {
   captacaoTitulo,
   DIAS_ATRASO,
   leadsAtrasados,
+  prazoRodizio,
   leadsSemAtendimento,
   pessoa,
   usoDoPlano,
@@ -100,6 +102,30 @@ function useAvisos(): Aviso[] {
       titulo: `${sem.length} ${sem.length === 1 ? "lead aguardando" : "leads aguardando"} o primeiro contato`,
       texto: "Há mais de 24 horas sem atendimento.",
       quando: sem[0].criadoEm,
+      to: "/app/negocios/leads",
+    });
+
+  // Rodízio: o corretor tem prazo para o primeiro contato; o administrador vê os que voltaram sem atendimento
+  for (const l of leads.filter((x) => x.corretorId === user.id && prazoRodizio(x))) {
+    const ate = prazoRodizio(l)!;
+    out.push({
+      id: `rodizio-${l.id}-${l.atribuidoEm}`,
+      icone: Repeat,
+      titulo: `Lead do rodízio: ${l.nome}`,
+      texto: `Faça o primeiro contato até ${ate.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}, senão ele passa para o próximo.`,
+      quando: l.atribuidoEm ?? l.criadoEm,
+      to: `/app/negocios/leads?lead=${l.id}`,
+      destaque: true,
+    });
+  }
+  const voltaram = admin && !solo ? leads.filter((x) => x.voltouAoAdmin && x.etapa === "novo" && x.corretorId === user.id) : [];
+  if (voltaram.length)
+    out.push({
+      id: `rodizio-voltaram-${voltaram.map((x) => x.id).join("-").slice(0, 80)}`,
+      icone: Repeat,
+      titulo: `${voltaram.length} ${voltaram.length === 1 ? "lead do rodízio voltou" : "leads do rodízio voltaram"} para você`,
+      texto: "Ninguém da equipe fez o primeiro contato a tempo.",
+      quando: voltaram[0].atribuidoEm ?? voltaram[0].criadoEm,
       to: "/app/negocios/leads",
     });
 

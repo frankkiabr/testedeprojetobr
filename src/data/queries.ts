@@ -209,6 +209,16 @@ export const atrasado = (l: Lead) => emAberto(l) && diasSemContato(l) > DIAS_ATR
 export const leadsAtrasados = (scope: Scope) =>
   leads.filter((l) => inScope(l.corretorId, scope) && atrasado(l)).sort((a, b) => diasSemContato(b) - diasSemContato(a));
 
+/** Lead do rodízio ainda sem o primeiro contato (é o que o repasse automático confere). */
+export const aguardandoRodizio = (l: Lead) =>
+  !!l.rodizio && !l.voltouAoAdmin && l.etapa === "novo" && !l.ultimoContato && !l.checklist.some(Boolean);
+/** Até quando o corretor tem para o primeiro contato antes de o lead passar para o próximo (sem prazo = null). */
+export function prazoRodizio(l: Lead) {
+  const min = imobiliaria.rodizio?.ativo ? imobiliaria.rodizio.minutos : null;
+  if (!min || !aguardandoRodizio(l) || !l.atribuidoEm) return null;
+  return new Date(new Date(l.atribuidoEm).getTime() + min * 60_000);
+}
+
 export const leadsSemAtendimento = (scope: Scope) =>
   leads.filter((l) => inScope(l.corretorId, scope) && !atendido(l) && l.etapa === "novo").sort((a, b) => a.criadoEm.localeCompare(b.criadoEm));
 

@@ -1,9 +1,9 @@
 import { useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { AlarmClock, BadgeDollarSign, CalendarClock, Columns3, FileSpreadsheet, List, MessageCircleMore, Phone, Plus, Users } from "lucide-react";
+import { AlarmClock, BadgeDollarSign, CalendarClock, Columns3, FileSpreadsheet, List, MessageCircleMore, Phone, Plus, Repeat, Users } from "lucide-react";
 import { CHECKLIST_LEAD, ETAPAS } from "@/data/demo";
-import { atendido, atrasado, corretoresAtivos, DIAS_ATRASO, diasSemContato, emAberto, leadById, leadsOf, pessoa, userById } from "@/data/queries";
+import { atendido, atrasado, corretoresAtivos, DIAS_ATRASO, diasSemContato, emAberto, leadById, leadsOf, pessoa, prazoRodizio, userById } from "@/data/queries";
 import { useStore } from "@/data/store";
 import type { EtapaLead, Lead } from "@/data/types";
 import { dateTime, relTime } from "@/lib/format";
@@ -217,6 +217,27 @@ function LeadDrawer({ id, onClose }: { id: string | null; onClose: () => void })
     >
       {lead && (
         <div className="space-y-7">
+          {/* Rodízio: prazo para o primeiro contato e por quem o lead já passou */}
+          {(prazoRodizio(lead) || (isAdmin && lead.rodizio && ((lead.passouPor?.length ?? 0) > 0 || lead.voltouAoAdmin))) && (
+            <div className="flex gap-3 rounded-2xl bg-amber-50 p-3.5 text-sm text-amber-900">
+              <Repeat className="mt-0.5 size-4 shrink-0" />
+              <div className="space-y-1">
+                {prazoRodizio(lead) && (
+                  <p>
+                    <span className="font-semibold">Lead do rodízio.</span> Faça o primeiro contato até{" "}
+                    <span className="font-semibold">{prazoRodizio(lead)!.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span>
+                    {prazoRodizio(lead)!.toDateString() !== new Date().toDateString() && ` de ${prazoRodizio(lead)!.toLocaleDateString("pt-BR")}`}, senão ele passa
+                    para o próximo corretor.
+                  </p>
+                )}
+                {isAdmin && lead.voltouAoAdmin && <p className="font-semibold">Ninguém fez contato a tempo: o lead voltou para você.</p>}
+                {isAdmin && (lead.passouPor?.length ?? 0) > 0 && (
+                  <p>Já passou por: {lead.passouPor!.map((id) => pessoa(id).nome.split(" ")[0]).join(", ")}.</p>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Contato */}
           <div className="flex flex-wrap items-center gap-2">
             <a href={waLink(lead.telefone)} target="_blank" rel="noreferrer" onClick={() => registrarContato(lead.id, false)} className={btn.whatsapp}>

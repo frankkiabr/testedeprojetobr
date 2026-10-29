@@ -20,6 +20,8 @@ export type Imobiliaria = {
   plano: "Solo" | "Equipe 5" | "Equipe 10" | "Equipe 30" | "Equipe 60";
   limiteCorretores: number;
   metaMensalVGV: number;
+  /** Rodízio de leads (planos de equipe): ligado, prazo para o primeiro contato (minutos; vazio = sem prazo) e quem está fora da fila. */
+  rodizio?: { ativo: boolean; minutos: number | null; fora: string[] };
 };
 
 export type Usuario = {
@@ -245,6 +247,11 @@ export type Lead = {
   criadoPor?: string;
   /** Último contato com o cliente (vazio = conta desde a criação). */
   ultimoContato?: string;
+  /** Entrou pelo rodízio: quando foi entregue ao corretor atual, por quem já passou e se voltou ao administrador. */
+  rodizio?: boolean;
+  atribuidoEm?: string;
+  passouPor?: string[];
+  voltouAoAdmin?: boolean;
 };
 
 /** Proprietário pertence ao corretor que o cadastrou (o administrador vê todos). */

@@ -1157,6 +1157,9 @@ export type Database = {
           mostrar_corretor_vendidos: boolean
           nome: string
           plano: string
+          rodizio_ativo: boolean
+          rodizio_fora: string[]
+          rodizio_minutos: number | null
           slug: string | null
           status: string
           telefone: string | null
@@ -1177,6 +1180,9 @@ export type Database = {
           mostrar_corretor_vendidos?: boolean
           nome: string
           plano?: string
+          rodizio_ativo?: boolean
+          rodizio_fora?: string[]
+          rodizio_minutos?: number | null
           slug?: string | null
           status?: string
           telefone?: string | null
@@ -1197,6 +1203,9 @@ export type Database = {
           mostrar_corretor_vendidos?: boolean
           nome?: string
           plano?: string
+          rodizio_ativo?: boolean
+          rodizio_fora?: string[]
+          rodizio_minutos?: number | null
           slug?: string | null
           status?: string
           telefone?: string | null
@@ -1320,6 +1329,7 @@ export type Database = {
       }
       leads: {
         Row: {
+          atribuido_em: string | null
           checklist: boolean[]
           corretor_id: string
           criado_em: string
@@ -1331,11 +1341,15 @@ export type Database = {
           nome: string
           observacoes: string | null
           origem: string
+          passou_por: string[]
+          rodizio: boolean
           telefone: string
           ultimo_contato: string | null
           visita_em: string | null
+          voltou_ao_admin: boolean
         }
         Insert: {
+          atribuido_em?: string | null
           checklist?: boolean[]
           corretor_id: string
           criado_em?: string
@@ -1347,11 +1361,15 @@ export type Database = {
           nome: string
           observacoes?: string | null
           origem?: string
+          passou_por?: string[]
+          rodizio?: boolean
           telefone: string
           ultimo_contato?: string | null
           visita_em?: string | null
+          voltou_ao_admin?: boolean
         }
         Update: {
+          atribuido_em?: string | null
           checklist?: boolean[]
           corretor_id?: string
           criado_em?: string
@@ -1363,9 +1381,12 @@ export type Database = {
           nome?: string
           observacoes?: string | null
           origem?: string
+          passou_por?: string[]
+          rodizio?: boolean
           telefone?: string
           ultimo_contato?: string | null
           visita_em?: string | null
+          voltou_ao_admin?: boolean
         }
         Relationships: [
           {
@@ -1984,6 +2005,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _fila_rodizio: { Args: { p_imob: string }; Returns: string[] }
       aceitar_convite: {
         Args: {
           p_aniversario: string
@@ -2012,6 +2034,15 @@ export type Database = {
       aplicar_reducao: { Args: { p_pedido: string }; Returns: undefined }
       aplicar_upgrade: { Args: { p_pedido: string }; Returns: undefined }
       compartilha_imobiliaria: { Args: { p_usuario: string }; Returns: boolean }
+      configurar_rodizio: {
+        Args: {
+          p_ativo: boolean
+          p_fora: string[]
+          p_imob: string
+          p_minutos: number
+        }
+        Returns: undefined
+      }
       criar_conta_teste: {
         Args: {
           p_cidade: string
@@ -2079,6 +2110,7 @@ export type Database = {
         Args: { p_confirmacao: string; p_imob: string }
         Returns: undefined
       }
+      fila_rodizio: { Args: { p_imob: string }; Returns: string[] }
       gerar_codigo_imovel: { Args: never; Returns: string }
       google_enfileirar_futuros: {
         Args: { p_usuario: string }
@@ -2244,6 +2276,7 @@ export type Database = {
         }
         Returns: string
       }
+      rodizio_repassar: { Args: never; Returns: number }
       slugificar: { Args: { p: string }; Returns: string }
       solicitar_reducao: { Args: { p_plano: string }; Returns: string }
       tem_assinatura: { Args: { p_imob: string }; Returns: boolean }

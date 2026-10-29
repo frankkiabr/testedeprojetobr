@@ -29,6 +29,7 @@ import {
   corretoresAtivos,
   enderecoCompleto,
   imovelById,
+  pessoa,
   proprietarioById,
   proprietariosOf,
   userById,
@@ -126,10 +127,31 @@ export const valorLabel = (finalidade: Finalidade, valor: number) => (finalidade
 
 // ---------- Ajudas de formulário ----------
 
-export function CorretorField({ value, onChange, label = "Corretor responsável" }: { value: string; onChange: (v: string) => void; label?: string }) {
+/** Valor do campo de corretor que significa "entregar ao próximo da fila do rodízio". */
+export const RODIZIO = "__rodizio";
+export const rodizioLigado = () => !!imobiliaria.rodizio?.ativo && !ehSolo(imobiliaria.plano);
+
+export function CorretorField({
+  value,
+  onChange,
+  label = "Corretor responsável",
+  comRodizio,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  label?: string;
+  /** Mostra a opção "Rodízio" quando o rodízio de leads está ligado. */
+  comRodizio?: boolean;
+}) {
+  const opcoes = corretoresAtivos().map((c) => ({ value: c.id, label: c.nome }));
   return (
-    <Field label={label}>
-      <SelectField value={value} onChange={onChange} placeholder="Selecione" options={corretoresAtivos().map((c) => ({ value: c.id, label: c.nome }))} />
+    <Field label={label} hint={value === RODIZIO ? "Vai para o próximo corretor da fila do rodízio." : undefined}>
+      <SelectField
+        value={value}
+        onChange={onChange}
+        placeholder="Selecione"
+        options={comRodizio && rodizioLigado() ? [{ value: RODIZIO, label: "Rodízio (próximo da fila)" }, ...opcoes] : opcoes}
+      />
     </Field>
   );
 }
@@ -150,12 +172,15 @@ const num = (s: string) => Number(s.replace(/\./g, "").replace(",", ".").replace
 // ---------- Novo lead ----------
 
 export function LeadFormModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { addLead } = useStore();
+  const { addLead, filaRodizio, toast } = useStore();
   const { isAdmin, corretorId, setCorretorId } = useTargetCorretor(open);
   const [f, setF] = useState({ nome: "", telefone: "", interesse: "", origem: ORIGENS[0] });
+  const [salvando, setSalvando] = useState(false);
   useEffect(() => {
     if (open) setF({ nome: "", telefone: "", interesse: "", origem: ORIGENS[0] });
-  }, [open]);
+    // Rodízio ligado: o administrador já começa com "Rodízio" escolhido
+    if (open && isAdmin && rodizioLigado()) setCorretorId(RODIZIO);
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
   const ok = f.nome.trim() && normalizePhone(f.telefone).length >= 12 && corretorId;
 
   return (
@@ -170,14 +195,29 @@ export function LeadFormModal({ open, onClose }: { open: boolean; onClose: () =>
             Cancelar
           </button>
           <button
-            disabled={!ok}
-            onClick={() => {
-              addLead({ corretorId, nome: f.nome.trim(), telefone: normalizePhone(f.telefone), interesse: f.interesse.trim() || "Não informado", origem: f.origem });
+            disabled={!ok || salvando}
+            onClick={async () => {
+              let dono = corretorId;
+              if (dono === RODIZIO) {
+                setSalvando(true);
+                dono = (await filaRodizio())[0] ?? "";
+                setSalvando(false);
+                if (!dono) return toast("Ninguém na fila do rodízio. Confira em Equipe → Rodízio de leads.");
+              }
+              addLead({
+                corretorId: dono,
+                nome: f.nome.trim(),
+                telefone: normalizePhone(f.telefone),
+                interesse: f.interesse.trim() || "Não informado",
+                origem: f.origem,
+                ...(corretorId === RODIZIO ? { rodizio: true, atribuidoEm: new Date().toISOString() } : {}),
+              });
+              if (corretorId === RODIZIO) toast(`Lead entregue a ${pessoa(dono).nome.split(" ")[0]} pelo rodízio.`);
               onClose();
             }}
             className={btn.primary}
           >
-            Cadastrar lead
+            {salvando ? "Cadastrando..." : "Cadastrar lead"}
           </button>
         </>
       }
@@ -197,7 +237,7 @@ export function LeadFormModal({ open, onClose }: { open: boolean; onClose: () =>
         </Field>
         {isAdmin && (
           <div className="sm:col-span-2">
-            <CorretorField value={corretorId} onChange={setCorretorId} />
+            <CorretorField value={corretorId} onChange={setCorretorId} comRodizio />
           </div>
         )}
       </div>

@@ -5,7 +5,7 @@ import { useStore } from "@/data/store";
 import type { EtapaLead } from "@/data/types";
 import { lerPlanilha, lerTexto, type Linhas } from "@/lib/planilha";
 import { btn, Field, formatPhone, inputCls, Modal, normalizePhone, SelectField } from "../../forms";
-import { CorretorField, useTargetCorretor } from "./shared";
+import { CorretorField, RODIZIO, rodizioLigado, useTargetCorretor } from "./shared";
 
 const LIMITE = 2000;
 type Campo = "nome" | "telefone" | "interesse" | "origem" | "email" | "observacoes";
@@ -56,7 +56,7 @@ function mapear(linhas: Linhas) {
 
 /** IMPORTAR LEADS de uma planilha (.xlsx, .csv) ou de texto colado. Pula telefones inválidos e quem já está cadastrado. */
 export function ImportarLeadsModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { importarLeads } = useStore();
+  const { importarLeads, filaRodizio, toast } = useStore();
   const { isAdmin, corretorId, setCorretorId } = useTargetCorretor(open);
   const arquivo = useRef<HTMLInputElement>(null);
   const [linhas, setLinhas] = useState<Linhas | null>(null);
@@ -79,7 +79,8 @@ export function ImportarLeadsModal({ open, onClose }: { open: boolean; onClose: 
     setEtapa("novo");
     setOrigemPadrao("Planilha");
     setPularRepetidos(true);
-  }, [open]);
+    if (isAdmin && rodizioLigado()) setCorretorId(RODIZIO);
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const leitura = useMemo(() => (linhas ? mapear(linhas) : null), [linhas]);
   useEffect(() => {
@@ -155,8 +156,17 @@ export function ImportarLeadsModal({ open, onClose }: { open: boolean; onClose: 
             <button
               className={btn.accent}
               disabled={!pronto}
-              onClick={() => {
-                importarLeads(validos.map((v) => ({ ...v.lead, corretorId, etapa })));
+              onClick={async () => {
+                if (corretorId !== RODIZIO) {
+                  importarLeads(validos.map((v) => ({ ...v.lead, corretorId, etapa })));
+                  return onClose();
+                }
+                // Rodízio: distribui um para cada corretor da fila, na ordem, e recomeça
+                const fila = await filaRodizio();
+                if (!fila.length) return toast("Ninguém na fila do rodízio. Confira em Equipe → Rodízio de leads.");
+                const agora = new Date().toISOString();
+                importarLeads(validos.map((v, i) => ({ ...v.lead, corretorId: fila[i % fila.length], etapa, rodizio: true, atribuidoEm: agora })));
+                toast(`Leads distribuídos entre ${fila.length} ${fila.length === 1 ? "corretor" : "corretores"}.`);
                 onClose();
               }}
             >
@@ -243,7 +253,7 @@ export function ImportarLeadsModal({ open, onClose }: { open: boolean; onClose: 
             <Field label="Entram na etapa">
               <SelectField value={etapa} onChange={(v) => setEtapa(v as EtapaLead)} options={ETAPAS.filter((e) => e.id !== "fechado" && e.id !== "perdido").map((e) => ({ value: e.id, label: e.label }))} />
             </Field>
-            {isAdmin && <CorretorField value={corretorId} onChange={setCorretorId} />}
+            {isAdmin && <CorretorField value={corretorId} onChange={setCorretorId} comRodizio />}
           </div>
 
           <label className="flex cursor-pointer items-center gap-2 text-sm">

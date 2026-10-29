@@ -173,6 +173,10 @@ const paraLead = (r: Row<"leads">): Lead => ({
   observacoes: u(r.observacoes),
   criadoPor: u(r.criado_por),
   ultimoContato: u(r.ultimo_contato),
+  rodizio: r.rodizio,
+  atribuidoEm: u(r.atribuido_em),
+  passouPor: r.passou_por,
+  voltouAoAdmin: r.voltou_ao_admin,
 });
 
 const paraImovel = (r: Row<"imoveis">): Imovel => ({
@@ -487,6 +491,7 @@ export async function carregarReal(conta: ContaDados) {
     cnpj: i.cnpj ?? "",
     creciJ: i.creci_j ?? "",
     mostrarCorretorVendidos: i.mostrar_corretor_vendidos,
+    rodizio: { ativo: i.rodizio_ativo, minutos: i.rodizio_minutos, fora: i.rodizio_fora },
     email: i.email ?? "",
     telefone: i.telefone ?? "",
     cidade: i.cidade ?? "",
@@ -751,6 +756,8 @@ export const leadParaBanco = (l: Lead) => ({
   visita_em: l.visitaEm ?? null,
   observacoes: l.observacoes ?? null,
   ultimo_contato: l.ultimoContato ?? null,
+  rodizio: !!l.rodizio,
+  atribuido_em: l.atribuidoEm ?? null,
   criado_em: l.criadoEm,
 });
 

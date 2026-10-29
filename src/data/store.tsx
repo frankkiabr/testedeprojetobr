@@ -27,7 +27,7 @@ import {
   transacoes,
   trilhas,
 } from "./demo";
-import { captacaoTitulo, captacaoById, vagasLivres } from "./queries";
+import { captacaoTitulo, captacaoById, corretoresAtivos, vagasLivres } from "./queries";
 import { aplicarReducaoNaStripe, enviarConvitePorEmail, excluirImobiliariaNaStripe, mensagemErro } from "@/integrations/frankkia/client";
 import { comprimirFoto } from "@/lib/files";
 import { aoMudar, compromissoParaBanco, configurarGravacao, contexto as ctxDados, ehReal, enfileirar, falhou, gravar, leadParaBanco, novoId, supabase } from "./sync";
@@ -181,7 +181,7 @@ function createActions(bump: () => void, toast: (text: string) => void) {
     toast,
 
     /** Importação de planilha: cria os leads de uma vez e grava no banco em lotes de 200. */
-    importarLeads(lista: Pick<Lead, "corretorId" | "nome" | "telefone" | "origem" | "interesse" | "etapa" | "observacoes">[]) {
+    importarLeads(lista: (Pick<Lead, "corretorId" | "nome" | "telefone" | "origem" | "interesse" | "etapa" | "observacoes"> & Partial<Pick<Lead, "rodizio" | "atribuidoEm">>)[]) {
       const agora = Date.now();
       // Milissegundos diferentes mantêm a ordem da planilha na lista (mais recentes primeiro)
       const novos: Lead[] = lista.map((x, i) => ({
@@ -199,7 +199,28 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       toast(`${novos.length} ${novos.length === 1 ? "lead importado" : "leads importados"}.`);
     },
 
-    addLead(input: Pick<Lead, "corretorId" | "nome" | "telefone" | "origem" | "interesse">) {
+    // ---------- Rodízio de leads (planos de equipe) ----------
+
+    /** Fila do rodízio: quem recebeu lead do rodízio há mais tempo vem primeiro. */
+    async filaRodizio(): Promise<string[]> {
+      const fora = imobiliaria.rodizio?.fora ?? [];
+      if (!ehReal()) return corretoresAtivos().map((c) => c.id).filter((id) => !fora.includes(id));
+      const { data, error } = await supabase.rpc("fila_rodizio", { p_imob: imobiliaria.id });
+      if (error) {
+        toast(mensagemErro(error));
+        return [];
+      }
+      return (data as string[] | null) ?? [];
+    },
+
+    configurarRodizio(cfg: { ativo: boolean; minutos: number | null; fora: string[] }) {
+      imobiliaria.rodizio = { ...cfg };
+      gravar(() => supabase.rpc("configurar_rodizio", { p_imob: imobiliaria.id, p_ativo: cfg.ativo, p_minutos: cfg.minutos as number, p_fora: cfg.fora }));
+      bump();
+      toast(cfg.ativo ? "Rodízio de leads salvo." : "Rodízio de leads desligado.");
+    },
+
+    addLead(input: Pick<Lead, "corretorId" | "nome" | "telefone" | "origem" | "interesse"> & Partial<Pick<Lead, "rodizio" | "atribuidoEm">>) {
       const lead: Lead = {
         ...input,
         id: uid("l"),

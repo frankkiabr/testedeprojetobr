@@ -12,6 +12,7 @@ import { relTime } from "@/lib/format";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { Avatar, Badge, Card, CardHeader, PageHeader, stagger } from "../kit";
 import { btn, inputCls, Modal } from "../forms";
+import { RodizioCard } from "../Rodizio";
 
 function Row({ children, i }: { children: React.ReactNode; i: number }) {
   return (
@@ -155,6 +156,10 @@ export default function Equipe() {
                 </p>
               )}
             </Card>
+          </motion.div>
+
+          <motion.div {...stagger(3)}>
+            <RodizioCard corretores={ativos} />
           </motion.div>
 
           <UpgradeNudge aPartirDe={0.6} />

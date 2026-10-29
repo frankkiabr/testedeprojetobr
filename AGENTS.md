@@ -108,6 +108,11 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
 - Documentos por cliente (lead e proprietário): `src/app/Documentos.tsx` + `src/data/documentos.ts`; tabela `documentos` e
   armazenamento privado `documentos` (`<imobiliária>/<corretor>/<tipo>/<cliente>/`, até 15 MB, PDF/foto/Word/Excel). Quem vê o
   cliente vê os documentos (RLS + `documento_valido`); abre por link temporário. `excluir-imobiliaria` apaga os arquivos da imobiliária.
+- Rodízio de leads (só planos de equipe): Equipe → "Rodízio de leads" (`src/app/Rodizio.tsx`, `configurar_rodizio`; colunas
+  `imobiliarias.rodizio_*`). No Novo lead e na importação, o corretor "Rodízio" (`RODIZIO` em `negocios/shared.tsx`) usa
+  `fila_rodizio` (quem recebeu há mais tempo primeiro). Com prazo, `rodizio_repassar()` (pg_cron a cada 5 min) passa o lead sem
+  primeiro contato para o próximo e, depois de todos, devolve ao administrador (`leads.passou_por`, `voltou_ao_admin`). Esse
+  repasse é a única exceção do `proteger_dono` (flag `frankkia.repasse`). Leads do portal não entram no rodízio.
 - Visão geral: "Primeiros passos" (`src/app/PrimeirosPassos.tsx`) e sino de avisos (`src/app/Notificacoes.tsx`), calculados dos dados.
 - Página de captura dos anúncios: `/conheca-a-frankkia` (`src/pages/Captura.tsx`), tudo leva ao WhatsApp de `contato` em
   `src/content.ts` (`?utm_source=instagram|youtube` entra na mensagem). Página `/sobre` (`src/pages/Sobre.tsx`, dados em `criador`;
