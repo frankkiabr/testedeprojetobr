@@ -198,7 +198,9 @@ function createActions(bump: () => void, toast: (text: string) => void) {
     updateLead(id: string, patch: Partial<Lead>) {
       const l = leads.find((x) => x.id === id);
       if (!l) return;
-      Object.assign(l, patch);
+      // Mudar etapa, marcar visita ou anotar conta como contato com o cliente
+      const contato = "etapa" in patch || "visitaEm" in patch || "observacoes" in patch;
+      Object.assign(l, contato ? { ultimoContato: new Date().toISOString() } : {}, patch);
       salvarLead(l);
       // A data de visita do lead e o compromisso de visita na agenda andam juntos.
       if ("visitaEm" in patch) {
@@ -275,8 +277,19 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       const l = leads.find((x) => x.id === id);
       if (!l) return;
       l.checklist = l.checklist.map((v, k) => (k === step ? !v : v));
+      if (l.checklist[step]) l.ultimoContato = new Date().toISOString();
       salvarLead(l);
       bump();
+    },
+
+    /** Registra um contato com o lead agora (botão no lead, ou ao abrir o WhatsApp/ligar). */
+    registrarContato(id: string, aviso = true) {
+      const l = leads.find((x) => x.id === id);
+      if (!l) return;
+      l.ultimoContato = new Date().toISOString();
+      salvarLead(l);
+      bump();
+      if (aviso) toast("Contato registrado.");
     },
 
     addProprietario(input: Omit<Proprietario, "id">) {

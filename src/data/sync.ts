@@ -172,6 +172,7 @@ const paraLead = (r: Row<"leads">): Lead => ({
   visitaEm: u(r.visita_em),
   observacoes: u(r.observacoes),
   criadoPor: u(r.criado_por),
+  ultimoContato: u(r.ultimo_contato),
 });
 
 const paraImovel = (r: Row<"imoveis">): Imovel => ({
@@ -749,6 +750,7 @@ export const leadParaBanco = (l: Lead) => ({
   checklist: l.checklist,
   visita_em: l.visitaEm ?? null,
   observacoes: l.observacoes ?? null,
+  ultimo_contato: l.ultimoContato ?? null,
   criado_em: l.criadoEm,
 });
 

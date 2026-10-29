@@ -201,6 +201,14 @@ export const position = (userId: string, kind: RankingKind, month: string) =>
 
 // ---------- Visão geral ----------
 
+/** Lead atrasado: mais de 5 dias sem contato e ainda em aberto (nem fechado, nem perdido). */
+export const DIAS_ATRASO = 5;
+export const diasSemContato = (l: Lead) => Math.max(0, Math.floor((Date.now() - new Date(l.ultimoContato ?? l.criadoEm).getTime()) / 864e5));
+export const emAberto = (l: Lead) => l.etapa !== "fechado" && l.etapa !== "perdido";
+export const atrasado = (l: Lead) => emAberto(l) && diasSemContato(l) > DIAS_ATRASO;
+export const leadsAtrasados = (scope: Scope) =>
+  leads.filter((l) => inScope(l.corretorId, scope) && atrasado(l)).sort((a, b) => diasSemContato(b) - diasSemContato(a));
+
 export const leadsSemAtendimento = (scope: Scope) =>
   leads.filter((l) => inScope(l.corretorId, scope) && !atendido(l) && l.etapa === "novo").sort((a, b) => a.criadoEm.localeCompare(b.criadoEm));
 

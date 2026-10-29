@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ComponentType } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  AlarmClock,
   Bell,
   CalendarClock,
   Cake,
@@ -27,6 +28,8 @@ import {
   aniversariantes,
   captacaoById,
   captacaoTitulo,
+  DIAS_ATRASO,
+  leadsAtrasados,
   leadsSemAtendimento,
   pessoa,
   usoDoPlano,
@@ -99,6 +102,21 @@ function useAvisos(): Aviso[] {
       quando: sem[0].criadoEm,
       to: "/app/negocios/leads",
     });
+
+  // Leads em aberto há mais de 5 dias sem contato (o aviso volta a cada dia enquanto houver atrasados)
+  const atrasados = leadsAtrasados(admin ? {} : { corretorId: user.id });
+  if (atrasados.length) {
+    const hoje = new Date();
+    hoje.setHours(8, 0, 0, 0);
+    out.push({
+      id: `atrasados-${hoje.toISOString().slice(0, 10)}-${atrasados.length}`,
+      icone: AlarmClock,
+      titulo: `${atrasados.length} ${atrasados.length === 1 ? "lead atrasado" : "leads atrasados"}`,
+      texto: `Há mais de ${DIAS_ATRASO} dias sem contato${atrasados.length === 1 ? `: ${atrasados[0].nome}` : ""}.`,
+      quando: hoje.toISOString(),
+      to: "/app/negocios/leads?atrasados=1",
+    });
+  }
 
   for (const c of compromissos.filter((x) => x.donoId === user.id)) {
     const ini = new Date(c.inicio).getTime();

@@ -4,8 +4,11 @@ import { ArrowLeft } from "lucide-react";
 import { site } from "@/content";
 import { Logo } from "./ui";
 
-/** Moldura das páginas públicas avulsas (para imobiliárias, para corretores, simulador, calculadora, exclusão de dados). */
-export function PaginaSimples({ titulo, largura = "max-w-4xl", children }: { titulo: string; largura?: string; children: ReactNode }) {
+/**
+ * Moldura das páginas públicas avulsas (para imobiliárias, para corretores, simulador, calculadora, exclusão de dados).
+ * `livre`: o conteúdo ocupa a largura toda e cuida das próprias margens (páginas com banner, como as por público).
+ */
+export function PaginaSimples({ titulo, largura = "max-w-4xl", livre, children }: { titulo: string; largura?: string; livre?: boolean; children: ReactNode }) {
   useEffect(() => {
     document.title = `${titulo} · ${site.name}`;
     window.scrollTo(0, 0);
@@ -22,7 +25,7 @@ export function PaginaSimples({ titulo, largura = "max-w-4xl", children }: { tit
           </Link>
         </div>
       </header>
-      <main className={`mx-auto ${largura} px-5 pb-24 pt-12 sm:px-8 sm:pt-16`}>{children}</main>
+      {livre ? <main className="overflow-x-clip pb-24">{children}</main> : <main className={`mx-auto ${largura} px-5 pb-24 pt-12 sm:px-8 sm:pt-16`}>{children}</main>}
       <footer className="border-t border-line">
         <div className={`mx-auto flex ${largura} flex-wrap gap-x-5 gap-y-2 px-5 py-6 text-sm text-muted sm:px-8`}>
           <Link to="/para-imobiliarias" className="hover:text-ink">Para imobiliárias</Link>

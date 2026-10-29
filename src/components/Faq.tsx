@@ -4,10 +4,11 @@ import { Plus } from "lucide-react";
 import { faq, site } from "@/content";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 
-export function Faq() {
+/** Perguntas frequentes: a primeira já vem aberta; + abre e vira X para fechar. Sem itens, usa as da home. */
+export function Faq({ itens = faq.items, className = "pt-28 sm:pt-40" }: { itens?: readonly { q: string; a: string }[]; className?: string }) {
   const [open, setOpen] = useState<number | null>(0);
   return (
-    <section id="duvidas" className="pt-28 sm:pt-40">
+    <section id="duvidas" className={className}>
       <div className="mx-auto grid w-full max-w-[70rem] gap-10 px-5 sm:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.7fr)] lg:gap-16">
         <motion.header
           initial={{ opacity: 0, y: 24 }}
@@ -28,7 +29,7 @@ export function Faq() {
         </motion.header>
 
         <ul>
-          {faq.items.map((it, i) => {
+          {itens.map((it, i) => {
             const isOpen = open === i;
             return (
               <motion.li

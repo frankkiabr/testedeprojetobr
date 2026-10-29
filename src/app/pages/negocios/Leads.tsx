@@ -1,9 +1,9 @@
 import { useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { BadgeDollarSign, CalendarClock, Columns3, List, Phone, Plus, Users } from "lucide-react";
+import { AlarmClock, BadgeDollarSign, CalendarClock, Columns3, List, MessageCircleMore, Phone, Plus, Users } from "lucide-react";
 import { CHECKLIST_LEAD, ETAPAS } from "@/data/demo";
-import { atendido, corretoresAtivos, leadById, leadsOf, pessoa, userById } from "@/data/queries";
+import { atendido, atrasado, corretoresAtivos, DIAS_ATRASO, diasSemContato, emAberto, leadById, leadsOf, pessoa, userById } from "@/data/queries";
 import { useStore } from "@/data/store";
 import type { EtapaLead, Lead } from "@/data/types";
 import { dateTime, relTime } from "@/lib/format";
@@ -19,6 +19,20 @@ const PERIODOS = [
   { value: "all", label: "Todo o período" },
 ];
 
+/** Há quantos dias o lead está sem contato: cinza até 2 dias, âmbar de 3 a 5, vermelho depois ("Atrasado"). */
+function SemContato({ lead, longo }: { lead: Lead; longo?: boolean }) {
+  if (!emAberto(lead)) return <span className="text-muted">{relTime(lead.ultimoContato ?? lead.criadoEm)}</span>;
+  const d = diasSemContato(lead);
+  const texto = d === 0 ? "contato hoje" : `${d} ${d === 1 ? "dia" : "dias"} sem contato`;
+  if (atrasado(lead))
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 font-semibold text-rose-700">
+        <AlarmClock className="size-3" /> {longo ? `Atrasado · ${texto}` : `${d} dias`}
+      </span>
+    );
+  return <span className={d >= 3 ? "font-semibold text-amber-700" : "text-muted"}>{texto}</span>;
+}
+
 function LeadCard({ lead, showCorretor, onOpen }: { lead: Lead; showCorretor: boolean; onOpen: () => void }) {
   const passos = lead.checklist.filter(Boolean).length;
   const c = pessoa(lead.corretorId);
@@ -28,7 +42,7 @@ function LeadCard({ lead, showCorretor, onOpen }: { lead: Lead; showCorretor: bo
       draggable
       onDragStart={(e) => e.dataTransfer.setData("text/plain", lead.id)}
       onClick={onOpen}
-      className="w-full cursor-grab rounded-2xl border border-line bg-bg p-3.5 text-left shadow-[0_1px_2px_rgb(15_26_51/0.04)] transition-[box-shadow,transform] hover:-translate-y-0.5 hover:shadow-soft active:cursor-grabbing"
+      className={`w-full cursor-grab rounded-2xl border ${atrasado(lead) ? "border-rose-200" : "border-line"} bg-bg p-3.5 text-left shadow-[0_1px_2px_rgb(15_26_51/0.04)] transition-[box-shadow,transform] hover:-translate-y-0.5 hover:shadow-soft active:cursor-grabbing`}
     >
       <div className="flex items-start justify-between gap-2">
         <p className="text-sm font-semibold leading-snug">{lead.nome}</p>
@@ -48,7 +62,7 @@ function LeadCard({ lead, showCorretor, onOpen }: { lead: Lead; showCorretor: bo
             <CalendarClock className="size-3" /> {relTime(lead.visitaEm)}
           </span>
         ) : (
-          <span>{relTime(lead.criadoEm)}</span>
+          <SemContato lead={lead} />
         )}
       </div>
     </button>
@@ -116,6 +130,7 @@ function ListView({ leads, showCorretor, onOpen }: { leads: Lead[]; showCorretor
               <th className="px-3 py-3 font-semibold">Atendimento</th>
               <th className="px-3 py-3 font-semibold">Origem</th>
               {showCorretor && <th className="px-3 py-3 font-semibold">Corretor</th>}
+              <th className="px-3 py-3 font-semibold">Último contato</th>
               <th className="px-5 py-3 text-right font-semibold">Cadastro</th>
             </tr>
           </thead>
@@ -147,6 +162,9 @@ function ListView({ leads, showCorretor, onOpen }: { leads: Lead[]; showCorretor
                       </span>
                     </td>
                   )}
+                  <td className="px-3 py-3 text-xs">
+                    <SemContato lead={l} longo />
+                  </td>
                   <td className="px-5 py-3 text-right text-muted">{relTime(l.criadoEm)}</td>
                 </tr>
               );
@@ -160,7 +178,7 @@ function ListView({ leads, showCorretor, onOpen }: { leads: Lead[]; showCorretor
 }
 
 function LeadDrawer({ id, onClose }: { id: string | null; onClose: () => void }) {
-  const { updateLead, toggleLeadStep } = useStore();
+  const { updateLead, toggleLeadStep, registrarContato } = useStore();
   const { isAdmin, solo } = useScope();
   const navigate = useNavigate();
   const lead = id ? leadById(id) : undefined;
@@ -199,10 +217,10 @@ function LeadDrawer({ id, onClose }: { id: string | null; onClose: () => void })
         <div className="space-y-7">
           {/* Contato */}
           <div className="flex flex-wrap items-center gap-2">
-            <a href={waLink(lead.telefone)} target="_blank" rel="noreferrer" className={btn.whatsapp}>
+            <a href={waLink(lead.telefone)} target="_blank" rel="noreferrer" onClick={() => registrarContato(lead.id, false)} className={btn.whatsapp}>
               <WhatsAppIcon className="size-4" /> WhatsApp
             </a>
-            <a href={`tel:+${lead.telefone}`} className={btn.outline}>
+            <a href={`tel:+${lead.telefone}`} onClick={() => registrarContato(lead.id, false)} className={btn.outline}>
               <Phone className="size-4" /> {formatPhone(lead.telefone)}
             </a>
           </div>
@@ -235,6 +253,19 @@ function LeadDrawer({ id, onClose }: { id: string | null; onClose: () => void })
             <div className="rounded-2xl bg-canvas p-3.5">
               <dt className="text-xs text-muted">Cadastrado</dt>
               <dd className="mt-0.5 font-semibold">{relTime(lead.criadoEm)}</dd>
+            </div>
+            <div className={`col-span-2 flex flex-wrap items-center justify-between gap-3 rounded-2xl p-3.5 ${atrasado(lead) ? "bg-rose-50" : "bg-canvas"}`}>
+              <div>
+                <dt className="text-xs text-muted">Último contato</dt>
+                <dd className="mt-0.5 text-xs">
+                  <SemContato lead={lead} longo />
+                </dd>
+              </div>
+              {emAberto(lead) && (
+                <button onClick={() => registrarContato(lead.id)} className={`${btn.outline} h-9 px-3 text-xs`}>
+                  <MessageCircleMore className="size-3.5" /> Registrei um contato
+                </button>
+              )}
             </div>
             {isAdmin && !solo && (
               <div className="col-span-2 flex items-center gap-3 rounded-2xl bg-canvas p-3.5">
@@ -312,6 +343,7 @@ export default function Leads() {
   const [busca, setBusca] = useState("");
   const [periodo, setPeriodo] = useState("90");
   const [corretor, setCorretor] = useState("");
+  const soAtrasados = params.get("atrasados") === "1";
 
   const openId = params.get("lead");
   const novo = params.get("novo") === "1";
@@ -323,13 +355,18 @@ export default function Leads() {
   };
 
   const all = leadsOf(isAdmin && corretor ? { corretorId: corretor } : scope);
+  const qtdAtrasados = all.filter(atrasado).length;
   const list = useMemo(() => {
-    const limite = periodo === "all" ? 0 : Date.now() - Number(periodo) * 864e5;
+    // "Atrasados" vale para qualquer período: um lead antigo esquecido é justamente o que precisa aparecer
+    const limite = periodo === "all" || soAtrasados ? 0 : Date.now() - Number(periodo) * 864e5;
     const q = busca.trim().toLowerCase();
     return all.filter(
-      (l) => new Date(l.criadoEm).getTime() >= limite && (!q || `${l.nome} ${l.interesse} ${l.origem}`.toLowerCase().includes(q)),
+      (l) =>
+        new Date(l.criadoEm).getTime() >= limite &&
+        (!soAtrasados || atrasado(l)) &&
+        (!q || `${l.nome} ${l.interesse} ${l.origem}`.toLowerCase().includes(q)),
     );
-  }, [all, periodo, busca]);
+  }, [all, periodo, busca, soAtrasados]);
 
   const atendidos = list.filter(atendido).length;
 
@@ -339,6 +376,17 @@ export default function Leads() {
         <div className="flex flex-wrap items-center gap-2">
           <SearchInput value={busca} onChange={setBusca} placeholder="Buscar lead..." />
           <Select label="Período" value={periodo} onChange={setPeriodo} options={PERIODOS} />
+          {(qtdAtrasados > 0 || soAtrasados) && (
+            <button
+              onClick={() => setParam("atrasados", soAtrasados ? null : "1")}
+              title={`Leads em aberto há mais de ${DIAS_ATRASO} dias sem contato`}
+              className={`inline-flex h-10 items-center gap-2 rounded-full px-4 text-sm font-semibold transition ${
+                soAtrasados ? "bg-rose-600 text-white" : "border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100"
+              }`}
+            >
+              <AlarmClock className="size-4" /> Atrasados · {qtdAtrasados}
+            </button>
+          )}
           {isAdmin && corretoresAtivos().length > 0 && (
             <Select
               label="Corretor"
@@ -370,6 +418,7 @@ export default function Leads() {
         <span>
           <span className="font-semibold text-ink">{list.length}</span> leads ·{" "}
           <span className="font-semibold text-ink">{atendidos}</span> atendidos
+          {soAtrasados && <> · só os atrasados (mais de {DIAS_ATRASO} dias sem contato)</>}
           {view === "quadro" && <span className="hidden sm:inline"> · arraste os cartões para mudar a etapa</span>}
         </span>
       </p>

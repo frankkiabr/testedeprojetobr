@@ -243,6 +243,8 @@ export type Lead = {
   observacoes?: string;
   /** Quem cadastrou (vazio nos leads do portal e nos recém-criados por quem está usando). */
   criadoPor?: string;
+  /** Último contato com o cliente (vazio = conta desde a criação). */
+  ultimoContato?: string;
 };
 
 /** Proprietário pertence ao corretor que o cadastrou (o administrador vê todos). */

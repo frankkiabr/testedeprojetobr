@@ -99,6 +99,9 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
 - Rodapé: "Pergunte à IA" (`src/components/PergunteIA.tsx`); resumo para IAs em `public/llms.txt` (atualize se mudar preço ou plano).
 - Campos de R$: `mascaraMoeda` (ao digitar) e `moeda` (valor inicial) de `src/lib/moeda.ts` (reexportados em `src/app/forms.tsx`) → "1.000.000,00". Botão com
   confirmação "Salvo": `BotaoSalvar` (mesmo arquivo).
+- Follow-up de leads: `leads.ultimo_contato` muda ao marcar passo do checklist, mudar etapa/visita/observação, abrir WhatsApp ou
+  ligar, ou em "Registrei um contato" (`registrarContato`). Em aberto há mais de 5 dias = "Atrasado" (`atrasado`, `DIAS_ATRASO` em
+  `queries.ts`): selo no cartão, filtro "Atrasados" (`?atrasados=1`) e aviso diário no sino.
 - Visão geral: "Primeiros passos" (`src/app/PrimeirosPassos.tsx`) e sino de avisos (`src/app/Notificacoes.tsx`), calculados dos dados.
 - Página de captura dos anúncios: `/conheca-a-frankkia` (`src/pages/Captura.tsx`), tudo leva ao WhatsApp de `contato` em
   `src/content.ts` (`?utm_source=instagram|youtube` entra na mensagem). Página `/sobre` (`src/pages/Sobre.tsx`, dados em `criador`;

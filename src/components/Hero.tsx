@@ -35,7 +35,7 @@ function useTypewriter(phrases: string[], start: boolean) {
   return text;
 }
 
-function Word({ children, i }: { children: React.ReactNode; i: number }) {
+export function Word({ children, i }: { children: React.ReactNode; i: number }) {
   return (
     <span className="inline-block overflow-hidden pb-[0.08em] align-top">
       <motion.span
@@ -50,7 +50,7 @@ function Word({ children, i }: { children: React.ReactNode; i: number }) {
   );
 }
 
-function Underline() {
+export function Underline() {
   return (
     <svg
       viewBox="0 0 240 20"
@@ -81,8 +81,6 @@ export function Hero() {
   const { scrollYProgress } = useScroll({ target: frame, offset: ["start end", "start 0.25"] });
   const rotateX = useTransform(scrollYProgress, [0, 1], [18, 0]);
   const scale = useTransform(scrollYProgress, [0, 1], [0.92, 1]);
-  const chips = [...ecosystem.modules, ...ecosystem.modules, ...ecosystem.modules, ...ecosystem.modules];
-
   useEffect(() => {
     const id = setTimeout(() => setReady(true), 1100);
     return () => clearTimeout(id);
@@ -140,6 +138,16 @@ export function Hero() {
         <p className="mt-4 text-center text-xs text-subtle">Interface demonstrativa com dados ilustrativos.</p>
       </div>
 
+      <FaixaModulos />
+    </section>
+  );
+}
+
+/** Faixa infinita com os módulos da plataforma (home e páginas por público). */
+export function FaixaModulos() {
+  const chips = [...ecosystem.modules, ...ecosystem.modules, ...ecosystem.modules, ...ecosystem.modules];
+  return (
+    <>
       {/* Faixa infinita com os módulos */}
       <div className="mt-10 sm:mt-14">
         <div className="group relative overflow-hidden py-6 [mask-image:linear-gradient(to_right,transparent,black_6%,black_94%,transparent)]">
@@ -158,6 +166,6 @@ export function Hero() {
           </ul>
         </div>
       </div>
-    </section>
+    </>
   );
 }

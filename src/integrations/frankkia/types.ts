@@ -1282,6 +1282,7 @@ export type Database = {
           observacoes: string | null
           origem: string
           telefone: string
+          ultimo_contato: string | null
           visita_em: string | null
         }
         Insert: {
@@ -1297,6 +1298,7 @@ export type Database = {
           observacoes?: string | null
           origem?: string
           telefone: string
+          ultimo_contato?: string | null
           visita_em?: string | null
         }
         Update: {
@@ -1312,6 +1314,7 @@ export type Database = {
           observacoes?: string | null
           origem?: string
           telefone?: string
+          ultimo_contato?: string | null
           visita_em?: string | null
         }
         Relationships: [

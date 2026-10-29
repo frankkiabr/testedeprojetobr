@@ -303,6 +303,8 @@ export const publicos = {
     titulo: "Para imobiliárias",
     eyebrow: "Para imobiliárias",
     title: "Sua equipe inteira, num só lugar.",
+    /** Palavra do título com o sublinhado animado. */
+    destaque: 1,
     text: "Leads, captações, vendas e metas de todos os corretores na mesma tela. Você acompanha a operação sem precisar perguntar a ninguém.",
     cta: { label: "Testar grátis por 7 dias", plano: "Equipe 10" },
     dores: [
@@ -331,6 +333,7 @@ export const publicos = {
     titulo: "Para corretores autônomos",
     eyebrow: "Para corretores autônomos",
     title: "Tudo de uma imobiliária, só para você.",
+    destaque: 6,
     text: "Organize clientes e captações, anuncie no portal com a sua página e mostre ao proprietário quanto vale o imóvel, sem planilha e sem caderno.",
     cta: { label: "Testar grátis por 7 dias", plano: "Solo" },
     dores: [
