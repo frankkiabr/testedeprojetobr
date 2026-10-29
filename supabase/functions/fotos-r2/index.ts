@@ -1,5 +1,6 @@
 // Fotos dos anúncios no Cloudflare R2.
 // "assinar": devolve um endereço temporário (10 min) para o navegador enviar a foto direto ao R2.
+//   Fotos em WebP ganham também um endereço para a versão JPG, que é a aceita pelos portais (ZAP, VivaReal, OLX).
 // "remover": apaga a foto do R2. Só o administrador da imobiliária ou o corretor captador podem.
 import { AwsClient } from "npm:aws4fetch@1.0.20";
 import { admin, cors, json, usuarioDoPedido } from "../_shared/comum.ts";
@@ -40,14 +41,23 @@ Deno.serve(async (req) => {
 
     if (acao === "assinar") {
       const ext = tipo === "image/jpeg" ? "jpg" : "webp";
-      const novaChave = `${pasta}${crypto.randomUUID()}.${ext}`;
-      const assinado = await r2.sign(new Request(`${base}/${novaChave}?X-Amz-Expires=600`, { method: "PUT" }), { aws: { signQuery: true } });
-      return json({ uploadUrl: assinado.url, chave: novaChave, url: `${publico}/${novaChave}` });
+      const nome = crypto.randomUUID();
+      const novaChave = `${pasta}${nome}.${ext}`;
+      const assinar = async (k: string) =>
+        (await r2.sign(new Request(`${base}/${k}?X-Amz-Expires=600`, { method: "PUT" }), { aws: { signQuery: true } })).url;
+      const resposta: Record<string, string> = { uploadUrl: await assinar(novaChave), chave: novaChave, url: `${publico}/${novaChave}` };
+      if (ext === "webp") {
+        const chaveJpg = `${pasta}${nome}.jpg`;
+        Object.assign(resposta, { uploadUrlJpg: await assinar(chaveJpg), urlJpg: `${publico}/${chaveJpg}` });
+      } else resposta.urlJpg = resposta.url;
+      return json(resposta);
     }
 
     if (acao === "remover") {
       if (typeof chave !== "string" || !chave.startsWith(pasta)) return json({ erro: "CHAVE_INVALIDA" }, 400);
       const r = await r2.fetch(`${base}/${chave}`, { method: "DELETE" });
+      // Versão JPG (portais), quando existe
+      if (chave.endsWith(".webp")) await r2.fetch(`${base}/${chave.replace(/\.webp$/, ".jpg")}`, { method: "DELETE" });
       return json({ removido: r.ok || r.status === 404 });
     }
 

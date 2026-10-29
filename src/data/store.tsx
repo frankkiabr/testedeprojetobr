@@ -460,6 +460,33 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       if (aviso) toast(aviso);
     },
 
+    /** Liga/desliga o envio ao Canal Pro (ZAP, VivaReal e OLX) e o tipo de destaque. */
+    salvarPortais(captacaoId: string, patch: Pick<Anuncio, "portais" | "portaisDestaque">) {
+      const a = anuncioDe(captacaoId);
+      Object.assign(a, patch);
+      gravar(
+        () => garantirAnuncio(captacaoId),
+        () =>
+          supabase
+            .from("anuncios")
+            .update({ portais: !!a.portais, portais_destaque: a.portaisDestaque ?? "STANDARD" })
+            .eq("captacao_id", captacaoId),
+      );
+      bump();
+      toast("portais" in patch ? (a.portais ? "Imóvel marcado para os portais." : "Imóvel tirado dos portais.") : "Destaque atualizado.");
+    },
+
+    /** Link do arquivo dos portais da imobiliária (só administrador). Com `novo`, troca o código e o link antigo para de funcionar. */
+    async linkPortais(novo = false): Promise<string | null> {
+      if (!ehReal()) return "demonstracao0000000000000000000000";
+      const { data, error } = await supabase.rpc("link_portais", { p_imob: imobiliaria.id, p_novo: novo });
+      if (error) {
+        toast(mensagemErro(error));
+        return null;
+      }
+      return data as string;
+    },
+
     /** Publica ou tira do portal. Devolve o motivo, se o banco recusar (sem CRECI, limite do plano...). */
     async publicarAnuncio(captacaoId: string, publicar: boolean): Promise<string | null> {
       const a = anuncioDe(captacaoId);
@@ -498,17 +525,24 @@ function createActions(bump: () => void, toast: (text: string) => void) {
             const g = await enfileirar(async () => await garantirAnuncio(captacaoId));
             if (g.error) throw new Error(mensagemPortal(g.error));
             const { data, error } = await supabase.functions.invoke("fotos-r2", { body: { acao: "assinar", captacaoId, tipo: f.tipo } });
-            const d = data as { uploadUrl?: string; chave?: string; url?: string } | null;
+            const d = data as { uploadUrl?: string; chave?: string; url?: string; uploadUrlJpg?: string; urlJpg?: string } | null;
             if (error || !d?.uploadUrl) throw new Error(error ? "As fotos ainda não estão configuradas (Cloudflare R2)." : "Falha ao preparar o envio.");
             const put = await fetch(d.uploadUrl, { method: "PUT", body: f.blob, headers: { "Content-Type": f.tipo } });
             if (!put.ok) throw new Error("O envio da foto falhou. Tente de novo.");
-            Object.assign(foto, { chave: d.chave!, url: d.url! });
+            // Versão JPG para os portais (se falhar, a foto continua valendo no portal da Frankkia)
+            let urlJpg = d.urlJpg;
+            if (d.uploadUrlJpg) {
+              const putJpg = await fetch(d.uploadUrlJpg, { method: "PUT", body: f.jpg, headers: { "Content-Type": "image/jpeg" } }).catch(() => null);
+              if (!putJpg?.ok) urlJpg = undefined;
+            }
+            Object.assign(foto, { chave: d.chave!, url: d.url!, urlJpg });
             const ins = await supabase.from("anuncio_fotos").insert({
               id: foto.id,
               captacao_id: captacaoId,
               imobiliaria_id: ctxDados.imobId,
               chave: foto.chave,
               url: foto.url,
+              url_jpg: foto.urlJpg ?? null,
               ordem: foto.ordem,
               largura: f.largura,
               altura: f.altura,

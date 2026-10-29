@@ -73,6 +73,7 @@ export type Database = {
           ordem: number
           tamanho_bytes: number | null
           url: string
+          url_jpg: string | null
         }
         Insert: {
           altura?: number | null
@@ -85,6 +86,7 @@ export type Database = {
           ordem?: number
           tamanho_bytes?: number | null
           url: string
+          url_jpg?: string | null
         }
         Update: {
           altura?: number | null
@@ -97,6 +99,7 @@ export type Database = {
           ordem?: number
           tamanho_bytes?: number | null
           url?: string
+          url_jpg?: string | null
         }
         Relationships: [
           {
@@ -125,6 +128,8 @@ export type Database = {
           descricao: string
           imobiliaria_id: string
           iptu: number | null
+          portais: boolean
+          portais_destaque: string
           publicado: boolean
           publicado_em: string | null
           quartos: number | null
@@ -142,6 +147,8 @@ export type Database = {
           descricao?: string
           imobiliaria_id: string
           iptu?: number | null
+          portais?: boolean
+          portais_destaque?: string
           publicado?: boolean
           publicado_em?: string | null
           quartos?: number | null
@@ -159,6 +166,8 @@ export type Database = {
           descricao?: string
           imobiliaria_id?: string
           iptu?: number | null
+          portais?: boolean
+          portais_destaque?: string
           publicado?: boolean
           publicado_em?: string | null
           quartos?: number | null
@@ -1039,6 +1048,32 @@ export type Database = {
             foreignKeyName: "fechamentos_informados_imobiliaria_id_fkey"
             columns: ["imobiliaria_id"]
             isOneToOne: false
+            referencedRelation: "imobiliarias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feeds_portais: {
+        Row: {
+          criado_em: string
+          imobiliaria_id: string
+          token: string
+        }
+        Insert: {
+          criado_em?: string
+          imobiliaria_id: string
+          token?: string
+        }
+        Update: {
+          criado_em?: string
+          imobiliaria_id?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feeds_portais_imobiliaria_id_fkey"
+            columns: ["imobiliaria_id"]
+            isOneToOne: true
             referencedRelation: "imobiliarias"
             referencedColumns: ["id"]
           },
@@ -2113,6 +2148,7 @@ export type Database = {
         Args: { p_confirmacao: string; p_imob: string }
         Returns: undefined
       }
+      feed_portais: { Args: { p_token: string }; Returns: Json }
       fila_rodizio: { Args: { p_imob: string }; Returns: string[] }
       gerar_codigo_imovel: { Args: never; Returns: string }
       google_enfileirar_futuros: {
@@ -2132,6 +2168,10 @@ export type Database = {
         Returns: boolean
       }
       liberar_upgrade: { Args: { p_pedido: string }; Returns: undefined }
+      link_portais: {
+        Args: { p_imob: string; p_novo?: boolean }
+        Returns: string
+      }
       minha_assinatura: {
         Args: { p_imob: string }
         Returns: {

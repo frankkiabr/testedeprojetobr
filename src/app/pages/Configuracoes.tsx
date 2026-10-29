@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { AtSign, BadgeCheck, Bell, Building2, Camera, Check, CreditCard, GraduationCap, Mail, Rocket, UserRound } from "lucide-react";
+import { AtSign, BadgeCheck, Bell, Building2, Camera, Check, CreditCard, Globe, GraduationCap, Mail, Rocket, UserRound } from "lucide-react";
 import { pricing, site } from "@/content";
 import { imobiliaria, UFS } from "@/data/demo";
 import { ehSolo, pedidoAberto, PLANOS } from "@/data/platform";
@@ -17,8 +17,9 @@ import { Link, useSearchParams } from "react-router-dom";
 import { CicloToggle } from "@/components/CicloToggle";
 import { mensalNoAnual, reais, totalAnual, valorPlano, type Ciclo } from "@/lib/planos";
 import { linkDaRede, REDES, redesLimpas, textoDaRede } from "@/lib/redes";
+import { PortaisConfig } from "../Portais";
 
-type Aba = "imobiliaria" | "plano" | "perfil" | "notificacoes";
+type Aba = "imobiliaria" | "plano" | "portais" | "perfil" | "notificacoes";
 
 function Section({ title, subtitle, children, footer }: { title: string; subtitle?: string; children: React.ReactNode; footer?: React.ReactNode }) {
   return (
@@ -636,7 +637,7 @@ export default function Configuracoes() {
   const { isAdmin, solo } = useScope();
   const abas: { value: Aba; label: string; icon: typeof Bell }[] = [
     ...(isAdmin && !solo ? [{ value: "imobiliaria" as const, label: "Imobiliária", icon: Building2 }] : []),
-    ...(isAdmin ? [{ value: "plano" as const, label: "Plano", icon: CreditCard }] : []),
+    ...(isAdmin ? [{ value: "plano" as const, label: "Plano", icon: CreditCard }, { value: "portais" as const, label: "Portais", icon: Globe }] : []),
     { value: "perfil", label: "Meu perfil", icon: UserRound },
     { value: "notificacoes", label: "Notificações", icon: Bell },
   ];
@@ -662,6 +663,7 @@ export default function Configuracoes() {
       <motion.div key={aba} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: EASE_OUT_EXPO }} className="max-w-4xl">
         {aba === "imobiliaria" && <ImobiliariaForm />}
         {aba === "plano" && <Plano />}
+        {aba === "portais" && <PortaisConfig />}
         {aba === "perfil" && <Perfil />}
         {aba === "notificacoes" && <Notificacoes />}
       </motion.div>

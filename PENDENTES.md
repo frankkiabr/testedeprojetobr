@@ -6,7 +6,17 @@
 - Google Agenda: a conexão real (Frankkia → Google) foi feita em 28/10/2026; falta testar, pedir a verificação do app ao Google
   (sem ela: só usuários de teste e reconexão a cada 7 dias) e, numa fase 2, trazer de volta as mudanças feitas no Google.
 - Zap/OLX/VivaReal: feito em 28/10/2026 o "colar link do anúncio" nas Avaliações (como o BrokerApp). Falta, se quiser: feed para o
-  Canal Pro (enviar os anúncios) e dados prontos de mercado (DataZAP+ é pago, sob consulta; FipeZAP é público).
+  Canal Pro (enviar os anúncios ao ZAP, VivaReal e OLX). **Feito em 29/10/2026 (beta):** Configurações → Portais e o link do arquivo.
+  Falta testar com uma conta real do Canal Pro (o dono não tem) e, depois, trazer os leads dos portais para o funil.
+
+## Importar imóveis por XML (pendente, não começar sem o OK do dono)
+
+**Ideia (29/10/2026):** o administrador cola o link do XML do sistema da imobiliária (ex.: feed da REMAX IMOB pela goiconnect,
+`Remax_72092.xml`) e a Frankkia importa e atualiza as captações todo dia, pelo código de cada anúncio. O XML não traz o proprietário.
+**Atribuição:** o código do anúncio (ex.: 720921023-56) começa com o da loja (72092); o trecho seguinte parece ser o do corretor.
+Plano: campo "Código REMAX" por corretor em Equipe → e-mail/telefone → senão fila "Sem corretor" para o administrador.
+**Antes de construir:** ver um imóvel do XML real (sem dados sensíveis) e confirmar com a franquia se o feed pode ser usado fora do BrokerApp.
+O link do feed tem um código que funciona como chave: não compartilhar.
 
 ## Revisão de segurança
 

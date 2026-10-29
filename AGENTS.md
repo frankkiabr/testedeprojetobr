@@ -113,6 +113,11 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
   `fila_rodizio` (quem recebeu há mais tempo primeiro). Com prazo, `rodizio_repassar()` (pg_cron a cada 5 min) passa o lead sem
   primeiro contato para o próximo e, depois de todos, devolve ao administrador (`leads.passou_por`, `voltou_ao_admin`). Esse
   repasse é a única exceção do `proteger_dono` (flag `frankkia.repasse`). Leads do portal não entram no rodízio.
+- Portais ZAP/VivaReal/OLX (beta): o administrador copia o link em Configurações → Portais (`src/app/Portais.tsx`, `link_portais`,
+  tabela `feeds_portais`) e cola no Canal Pro da imobiliária. A função `feed-portais?t=<código>` gera o XML VRSync
+  (`supabase/functions/_shared/vrsync.ts`, regras e mapeamentos; o app usa o mesmo arquivo para mostrar o que falta). Cada anúncio
+  liga `anuncios.portais` e o destaque; só entram captações ativas com 5+ fotos JPG (`anuncio_fotos.url_jpg`, gerada no envio da foto),
+  título 10–100, descrição 50–3.000, CEP. Não testado com conta real do Canal Pro.
 - Visão geral: "Primeiros passos" (`src/app/PrimeirosPassos.tsx`) e sino de avisos (`src/app/Notificacoes.tsx`), calculados dos dados.
 - Página de captura dos anúncios: `/conheca-a-frankkia` (`src/pages/Captura.tsx`), tudo leva ao WhatsApp de `contato` em
   `src/content.ts` (`?utm_source=instagram|youtube` entra na mensagem). Página `/sobre` (`src/pages/Sobre.tsx`, dados em `criador`;

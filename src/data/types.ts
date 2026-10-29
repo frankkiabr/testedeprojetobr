@@ -393,7 +393,8 @@ export type AcessoDemo = {
 
 // ---------- Portal: anúncio de cada captação ----------
 
-export type FotoAnuncio = { id: string; url: string; chave: string; ordem: number };
+/** `urlJpg`: versão JPG para os portais (ZAP, VivaReal, OLX); fotos antigas não têm. */
+export type FotoAnuncio = { id: string; url: string; chave: string; ordem: number; urlJpg?: string };
 
 /** Anúncio público de uma captação (fase 1: edição no painel; as páginas públicas vêm na fase 2). */
 export type Anuncio = {
@@ -412,4 +413,7 @@ export type Anuncio = {
   /** Endereço da página pública: frankkia.com/imovel/<slug> */
   slug?: string;
   fotos: FotoAnuncio[];
+  /** Enviar ao Canal Pro (ZAP, VivaReal e OLX) e o tipo de destaque contratado lá. */
+  portais?: boolean;
+  portaisDestaque?: "STANDARD" | "PREMIUM" | "SUPER_PREMIUM";
 };

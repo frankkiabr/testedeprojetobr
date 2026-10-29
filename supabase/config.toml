@@ -33,3 +33,6 @@ verify_jwt = false
 
 [functions.enviar-estudo]
 verify_jwt = false
+
+[functions.feed-portais]
+verify_jwt = false

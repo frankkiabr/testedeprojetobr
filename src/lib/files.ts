@@ -119,7 +119,7 @@ export function inspectPng(url: string): Promise<{ largura: number; altura: numb
  * Reduz a foto no navegador antes de enviar (até 1600 px, WebP ~80%): cerca de 150 KB por foto,
  * para o armazenamento render bem mais. Fotos menores que isso são mantidas no tamanho original.
  */
-export async function comprimirFoto(file: File, max = 1600): Promise<{ blob: Blob; tipo: string; largura: number; altura: number }> {
+export async function comprimirFoto(file: File, max = 1600): Promise<{ blob: Blob; tipo: string; largura: number; altura: number; jpg: Blob }> {
   const bmp = await createImageBitmap(file);
   const escala = Math.min(1, max / Math.max(bmp.width, bmp.height));
   const largura = Math.round(bmp.width * escala);
@@ -138,5 +138,7 @@ export async function comprimirFoto(file: File, max = 1600): Promise<{ blob: Blo
     tipo = "image/jpeg";
   }
   if (!blob) throw new Error("Não foi possível ler esta imagem.");
-  return { blob, tipo, largura, altura };
+  // Versão JPG para os portais (ZAP, VivaReal e OLX só aceitam JPG)
+  const jpg = tipo === "image/jpeg" ? blob : ((await new Promise<Blob | null>((ok) => canvas.toBlob(ok, "image/jpeg", 0.85))) ?? blob);
+  return { blob, tipo, largura, altura, jpg };
 }

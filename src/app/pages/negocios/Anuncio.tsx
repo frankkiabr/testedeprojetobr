@@ -6,6 +6,7 @@ import { anuncioDe, useStore } from "@/data/store";
 import type { Captacao } from "@/data/types";
 import { brl } from "@/lib/format";
 import { BotaoSalvar, btn, Field, inputCls, mascaraMoeda, moeda } from "../../forms";
+import { PortaisAnuncio } from "../../Portais";
 import { valorLabel } from "./shared";
 
 const numero = (s: string) => (s.trim() === "" ? undefined : Math.max(0, Math.min(50, Math.round(Number(s.replace(/\D/g, "")) || 0))));
@@ -210,6 +211,8 @@ export function AnuncioEditor({ captacao, onPublicado }: { captacao: Captacao; o
         No anúncio aparecem também: {valorLabel(captacao.finalidade, captacao.valor)} ({brl(captacao.valor / captacao.areaM2)}/m²), {captacao.areaM2} m², o
         endereço completo do imóvel e o nome, WhatsApp e CRECI do corretor responsável.
       </p>
+
+      {!fechada && <PortaisAnuncio captacao={captacao} />}
 
       {aviso && <p className="rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700">{aviso}</p>}
 

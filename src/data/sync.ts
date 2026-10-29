@@ -594,7 +594,7 @@ export async function carregarReal(conta: ContaDados) {
   const fotosDe = new Map<string, FotoAnuncio[]>();
   (fotosRows.data ?? []).forEach((f) => {
     const l = fotosDe.get(f.captacao_id) ?? [];
-    l.push({ id: f.id, url: f.url, chave: f.chave, ordem: f.ordem });
+    l.push({ id: f.id, url: f.url, chave: f.chave, ordem: f.ordem, urlJpg: u(f.url_jpg) });
     fotosDe.set(f.captacao_id, l);
   });
   trocarLista(
@@ -612,6 +612,8 @@ export async function carregarReal(conta: ContaDados) {
         iptu: a.iptu === null ? undefined : Number(a.iptu),
         caracteristicas: a.caracteristicas,
         publicado: a.publicado,
+        portais: a.portais,
+        portaisDestaque: a.portais_destaque as "STANDARD" | "PREMIUM" | "SUPER_PREMIUM",
         publicadoEm: u(a.publicado_em),
         slug: u(a.slug),
         fotos: fotosDe.get(a.captacao_id) ?? [],
