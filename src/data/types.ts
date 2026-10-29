@@ -361,7 +361,7 @@ export type Interessado = {
   equipe?: string;
   mensagem?: string;
   /** "cadastro" = criou a conta sozinho pelo site e já está no teste grátis. */
-  origem: "site" | "login" | "pagina" | "cadastro";
+  origem: "site" | "login" | "pagina" | "cadastro" | "lgpd";
   status: StatusInteressado;
   observacao?: string;
   criadoEm: string;

@@ -303,18 +303,9 @@ export function Toaster() {
   );
 }
 
-// ---------- Valores em R$ ----------
+// ---------- Valores em R$ (em src/lib/moeda.ts, para o portal usar também) ----------
 
-const fmt2 = (n: number) => n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-/** Campo de R$: a pessoa digita só números e aparece 1.000.000,00 (os dois últimos dígitos são os centavos). */
-export function mascaraMoeda(s: string) {
-  const d = s.replace(/\D/g, "").replace(/^0+/, "").slice(0, 15);
-  return d ? fmt2(Number(d) / 100) : "";
-}
-
-/** Número → texto do campo de R$ (vazio quando não há valor). */
-export const moeda = (n?: number | null) => (n ? fmt2(n) : "");
+export { mascaraMoeda, moeda } from "@/lib/moeda";
 
 // ---------- Utilidades de telefone e WhatsApp ----------
 

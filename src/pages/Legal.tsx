@@ -315,8 +315,9 @@ export function Privacidade() {
             <>
               <p>Não vendemos dados pessoais. Usamos fornecedores que nos ajudam a prestar o serviço:</p>
               <ul>
+                <li>Lovable: hospedagem do site e medição de visitas (veja "Cookies e armazenamento no navegador").</li>
                 <li>Supabase: banco de dados, login e arquivos (servidores em São Paulo).</li>
-                <li>Cloudflare: armazenamento e entrega das fotos dos anúncios.</li>
+                <li>Cloudflare: entrega do site, proteção contra ataques e robôs, e armazenamento das fotos dos anúncios.</li>
                 <li>Stripe: processamento dos pagamentos.</li>
                 <li>Resend: envio de e-mails (convites e avisos).</li>
                 <li>OpenStreetMap e Google Maps: exibição de mapas e busca de endereço. ViaCEP: busca do endereço pelo CEP.</li>
@@ -324,7 +325,7 @@ export function Privacidade() {
                 <li>WhatsApp: quando você toca em um botão de WhatsApp, a conversa acontece no aplicativo, sob a política da Meta.</li>
               </ul>
               <p>
-                Alguns desses fornecedores (Cloudflare, Stripe, Resend e Google) processam ou guardam dados em servidores fora do Brasil. Nesses
+                Alguns desses fornecedores (Lovable, Cloudflare, Stripe, Resend e Google) processam ou guardam dados em servidores fora do Brasil. Nesses
                 casos, a transferência internacional acontece para prestar o serviço que você contratou e com as garantias contratuais de proteção de
                 dados oferecidas por eles, conforme o art. 33 da LGPD.
               </p>
@@ -405,10 +406,21 @@ export function Privacidade() {
         {
           titulo: "Cookies e armazenamento no navegador",
           texto: (
-            <p>
-              Usamos apenas o armazenamento necessário para manter você conectado e lembrar preferências (como "lembrar de mim"). Não usamos cookies
-              de publicidade nem vendemos informações de navegação.
-            </p>
+            <>
+              <ul>
+                <li>
+                  <strong>Necessários:</strong> mantêm você conectado, lembram preferências (como "lembrar de mim" e este aviso) e protegem o site
+                  contra ataques e robôs (cookie de segurança da Cloudflare). Sem eles o site não funciona, por isso não dependem de autorização.
+                </li>
+                <li>
+                  <strong>Medição de visitas:</strong> a hospedagem do site (Lovable) conta as páginas visitadas, de onde a visita veio, o tipo de
+                  aparelho e o navegador, usando um cookie de sessão que dura 30 minutos. Os números são vistos apenas de forma agregada, para melhorar
+                  o site, e não identificam você pelo nome. Usamos essa medição com base no legítimo interesse; você pode apagar ou bloquear os cookies
+                  nas configurações do seu navegador a qualquer momento.
+                </li>
+              </ul>
+              <p>Não usamos cookies de publicidade, não fazemos anúncios direcionados e não vendemos informações de navegação.</p>
+            </>
           ),
         },
         {
@@ -453,7 +465,11 @@ export function Privacidade() {
                 <li>portabilidade, informação sobre compartilhamentos e revogação do consentimento, quando for o caso.</li>
               </ul>
               <p>
-                Muitos dados podem ser corrigidos por você mesmo em Configurações. Para os demais pedidos, escreva para {email}: respondemos em até{" "}
+                Muitos dados podem ser corrigidos por você mesmo em Configurações. Para os demais pedidos, use a página{" "}
+                <Link to="/exclusao-de-dados" className="font-semibold text-accent">
+                  Exclusão e pedidos sobre dados
+                </Link>{" "}
+                ou escreva para {email}: respondemos em até{" "}
                 <strong>15 dias</strong>. Se o pedido for
                 sobre dados cadastrados por uma imobiliária (por exemplo, um contato feito pelo portal), nós o encaminhamos a ela. Você também pode
                 procurar a Autoridade Nacional de Proteção de Dados (ANPD).

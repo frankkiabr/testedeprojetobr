@@ -129,10 +129,10 @@ export const pricing = {
   ctaTeste: "Começar teste grátis",
   ctaConversa: "Falar com o Luiz",
   plans: [
-    { name: "Equipe 5", seats: "1 administrador + até 5 corretores", equipe: "Até 5 corretores", price: "315", anuncios: "50 anúncios no portal, compartilhados pela equipe" },
-    { name: "Equipe 10", seats: "1 administrador + até 10 corretores", equipe: "Até 10 corretores", price: "525", anuncios: "100 anúncios no portal, compartilhados pela equipe", highlight: true },
+    { name: "Equipe 5", seats: "1 administrador + até 5 corretores", equipe: "Até 5 corretores", price: "315", anuncios: "100 anúncios no portal, compartilhados pela equipe" },
+    { name: "Equipe 10", seats: "1 administrador + até 10 corretores", equipe: "Até 10 corretores", price: "525", anuncios: "150 anúncios no portal, compartilhados pela equipe", highlight: true },
     { name: "Equipe 30", seats: "1 administrador + até 30 corretores", equipe: "Até 30 corretores", price: "1.450", anuncios: "300 anúncios no portal, compartilhados pela equipe" },
-    { name: "Equipe 60", seats: "1 administrador + até 60 corretores", equipe: "Até 60 corretores", price: "2.650", anuncios: "600 anúncios no portal, compartilhados pela equipe" },
+    { name: "Equipe 60", seats: "1 administrador + até 60 corretores", equipe: "Até 60 corretores", price: "2.650", anuncios: "1.000 anúncios no portal, compartilhados pela equipe" },
   ] as { name: string; seats: string; equipe: string; price: string; anuncios: string; highlight?: boolean }[],
   /** Plano para corretor autônomo: produto separado, sem equipe (não é um degrau dos planos de equipe). */
   solo: {
@@ -143,7 +143,7 @@ export const pricing = {
     seats: "1 corretor (sem equipe)",
     equipe: "Corretor autônomo (Solo)",
     price: "79,90",
-    anuncios: "15 anúncios no portal",
+    anuncios: "50 anúncios no portal",
   },
 };
 
@@ -178,7 +178,7 @@ export const faq = {
     },
     {
       q: "Os anúncios no portal têm custo extra?",
-      a: "Não. O portal está incluído em todos os planos. Cada plano tem um limite de imóveis publicados ao mesmo tempo (de 15 no Solo a 600 no Equipe 60), compartilhado pela equipe. O CRM continua sem limite.",
+      a: "Não. O portal está incluído em todos os planos. Cada plano tem um limite de imóveis publicados ao mesmo tempo (de 50 no Solo a 1.000 no Equipe 60), compartilhado pela equipe. O CRM continua sem limite.",
     },
     {
       q: "Para quem vão os contatos dos anúncios?",
@@ -261,7 +261,7 @@ export const captura = {
       {
         title: "Corretores autônomos",
         text: "Todas as ferramentas para quem trabalha sozinho, sem equipe para gerenciar: leads, captações, agenda, Academy e seus imóveis no portal.",
-        pontos: ["1 corretor, sem equipe", "15 anúncios no portal", "Relatório ao proprietário pelo WhatsApp"],
+        pontos: ["1 corretor, sem equipe", "50 anúncios no portal", "Relatório ao proprietário pelo WhatsApp"],
         planos: "Solo",
       },
     ],
@@ -278,5 +278,81 @@ export const captura = {
   final: {
     title: "Vamos organizar a sua imobiliária?",
     text: "Fale direto com quem criou a Frankkia.",
+  },
+};
+
+/** Páginas por público (/para-imobiliarias e /para-corretores) e o seletor logo abaixo do topo da home. */
+export const publicos = {
+  seletor: {
+    eyebrow: "Para quem é",
+    title: "Qual é o seu caso?",
+    cards: [
+      {
+        to: "/para-imobiliarias",
+        titulo: "Tenho uma imobiliária",
+        texto: "Equipe, metas, ranking e comissões num só lugar, com cada corretor vendo só o que é dele.",
+      },
+      {
+        to: "/para-corretores",
+        titulo: "Sou corretor autônomo",
+        texto: "Tudo o que uma imobiliária tem, só para você: leads, captações, portal e estudo de mercado.",
+      },
+    ],
+  },
+  imobiliarias: {
+    titulo: "Para imobiliárias",
+    eyebrow: "Para imobiliárias",
+    title: "Sua equipe inteira, num só lugar.",
+    text: "Leads, captações, vendas e metas de todos os corretores na mesma tela. Você acompanha a operação sem precisar perguntar a ninguém.",
+    cta: { label: "Testar grátis por 7 dias", plano: "Equipe 10" },
+    dores: [
+      { t: "Cada corretor guarda os clientes do seu jeito", d: "WhatsApp, caderno, planilha. Quando alguém sai, a carteira vai junto." },
+      { t: "Os números só aparecem no fim do mês", d: "Sem saber quem está atendendo, captando e vendendo, fica difícil cobrar e reconhecer." },
+      { t: "Captação sem acompanhamento esfria", d: "Documentos, autorização e retorno ao proprietário ficam para depois, e o imóvel vai para outra imobiliária." },
+    ],
+    recursos: [
+      { t: "Funil de leads da equipe", d: "Quadro por etapa, checklist de atendimento e filtro por corretor." },
+      { t: "Captações com checklist", d: "Documentação, autorização e relatório ao proprietário pelo WhatsApp." },
+      { t: "Ranking e metas", d: "VGV, locações, captações e leads atendidos, por corretor e por mês." },
+      { t: "Comissão protegida", d: "Cada corretor vê só a própria comissão. Você vê todas." },
+      { t: "Agenda da equipe", d: "Visitas e compromissos de todos, com o Google Agenda de cada um." },
+      { t: "Estudo de mercado", d: "Avaliação por amostras e apresentação pronta para o proprietário." },
+      { t: "Portal de imóveis", d: "Anúncios com página própria; quem pede contato vira lead do corretor." },
+      { t: "Academy e marketing", d: "Trilhas de treinamento e os materiais oficiais da sua marca para a equipe." },
+    ],
+    faq: [
+      { q: "Um corretor vê os clientes dos outros?", a: "Não. Cada corretor vê só os próprios leads, captações, proprietários e negócios. O administrador vê tudo." },
+      { q: "E se um corretor sair da imobiliária?", a: "Você desativa o acesso e tudo o que ele fez continua com a imobiliária: clientes, captações, vendas e o histórico no ranking." },
+      { q: "O administrador ocupa vaga?", a: "Não. O plano Equipe 10, por exemplo, tem o administrador mais 10 corretores." },
+      { q: "Posso testar antes?", a: "Sim: 7 dias grátis, sem cartão. Ao fim do teste, nada é cobrado automaticamente." },
+    ],
+  },
+  corretores: {
+    titulo: "Para corretores autônomos",
+    eyebrow: "Para corretores autônomos",
+    title: "Tudo de uma imobiliária, só para você.",
+    text: "Organize clientes e captações, anuncie no portal com a sua página e mostre ao proprietário quanto vale o imóvel, sem planilha e sem caderno.",
+    cta: { label: "Testar grátis por 7 dias", plano: "Solo" },
+    dores: [
+      { t: "Retornos esquecidos", d: "O cliente pediu para ligar semana que vem e a conversa se perdeu no WhatsApp." },
+      { t: "Clientes espalhados", d: "Contatos, imóveis e proprietários em conversas, fotos e anotações soltas." },
+      { t: "Sem vitrine própria", d: "Anunciar em portal grande custa caro, e o cliente nem sabe quem é você." },
+    ],
+    recursos: [
+      { t: "Funil de leads", d: "Etapas de atendimento, checklist e aviso de lead novo do portal." },
+      { t: "Captações e proprietários", d: "Checklist de documentos e relatório ao proprietário pelo WhatsApp." },
+      { t: "Sua página no portal", d: "Seus imóveis com fotos, mapa, seu CRECI e suas redes sociais." },
+      { t: "Estudo de mercado", d: "Valor de mercado por amostras e apresentação com a sua cara." },
+      { t: "Agenda", d: "Visitas e compromissos, com o Google Agenda no celular." },
+      { t: "Seus números", d: "VGV, honorários e meta do mês, sem dividir com ninguém." },
+      { t: "Simulador de financiamento", d: "Parcela SAC e Price para enviar ao cliente." },
+      { t: "Plano Solo", d: "Sem equipe para gerenciar. Montou uma equipe? A conta muda de plano e nada se perde." },
+    ],
+    faq: [
+      { q: "Preciso ter CRECI?", a: "Sim. O CRECI aparece nos seus anúncios, como exige o conselho." },
+      { q: "Meus clientes ficam visíveis para outras pessoas?", a: "Não. Leads, proprietários e negócios são só seus. No portal aparecem apenas os imóveis que você decidir anunciar." },
+      { q: "E se eu montar uma equipe depois?", a: "A Frankkia muda a sua conta para um plano de equipe e mantém todos os seus dados." },
+      { q: "Posso testar antes?", a: "Sim: 7 dias grátis, sem cartão. Ao fim do teste, nada é cobrado automaticamente." },
+    ],
   },
 };

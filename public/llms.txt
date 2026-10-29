@@ -1,0 +1,36 @@
+# Frankkia
+
+> Frankkia (frankkia.com) é uma plataforma brasileira para imobiliárias e corretores de imóveis: CRM de leads, captações, proprietários, vendas e locações, agenda, desempenho da equipe, estudo de mercado e um portal público de imóveis. Criada por Luiz Horizonte, corretor em Belém (PA).
+
+## Para quem é
+- Imobiliárias (dono/administrador + equipe de corretores): https://frankkia.com/para-imobiliarias
+- Corretores autônomos (plano Solo): https://frankkia.com/para-corretores
+
+## Principais funções
+- Funil de leads por etapa, com checklist de atendimento; cada corretor vê só os próprios clientes e o administrador vê todos.
+- Captações com checklist de documentos e relatório ao proprietário pelo WhatsApp.
+- Vendas e locações com VGV, honorários e comissão de cada participante (a comissão só é vista pelo próprio corretor e pelo administrador).
+- Ranking e metas da equipe; agenda com sincronização com o Google Agenda.
+- Estudo de mercado por amostras (valor de mercado, valor para venda rápida) com apresentação para o proprietário.
+- Portal de imóveis (https://frankkia.com/imoveis): cada captação pode virar anúncio com página própria; quem pede contato vira lead do corretor.
+- Academy (trilhas de treinamento da equipe) e Marketing (materiais oficiais da marca).
+
+## Planos (preço mensal)
+- Solo: R$ 79,90 — 1 corretor, sem equipe, 50 anúncios no portal.
+- Equipe 5: R$ 315 — administrador + até 5 corretores, 100 anúncios.
+- Equipe 10: R$ 525 — administrador + até 10 corretores, 150 anúncios.
+- Equipe 30: R$ 1.450 — administrador + até 30 corretores, 300 anúncios.
+- Equipe 60: R$ 2.650 — administrador + até 60 corretores, 1.000 anúncios.
+- O administrador não ocupa vaga. No plano anual, 12 meses pelo preço de 10. Teste grátis de 7 dias, sem cartão: https://frankkia.com/cadastro
+- O CRM não tem limite de leads e imóveis; o limite vale só para anúncios publicados no portal ao mesmo tempo.
+
+## Ferramentas grátis
+- Simulador de financiamento (SAC e Price): https://frankkia.com/simulador-de-financiamento
+- Calculadora de comissão de corretor: https://frankkia.com/calculadora-de-comissao
+
+## Mais
+- Sobre: https://frankkia.com/sobre
+- Termos de Uso: https://frankkia.com/termos
+- Política de Privacidade: https://frankkia.com/privacidade
+- Pedidos sobre dados pessoais (LGPD): https://frankkia.com/exclusao-de-dados
+- Contato: WhatsApp (91) 98095-9265 · frankkiabr@gmail.com

@@ -6,7 +6,8 @@ import { anuncios } from "@/data/demo";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { PartyPopper, BadgeDollarSign, FileText, Handshake, MapPin, Plus, Ruler, UserRound, Users } from "lucide-react";
+import { PartyPopper, BadgeDollarSign, Calculator, FileText, Handshake, MapPin, Plus, Ruler, UserRound, Users } from "lucide-react";
+import { Simulador } from "@/components/Simulador";
 import { CHECKLIST_CAPTACAO, CHECKLIST_MARKETING } from "@/data/demo";
 import {
   captacaoById,
@@ -34,7 +35,7 @@ import { brl, relTime } from "@/lib/format";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { useScope } from "../../session";
 import { Avatar, Card, ProgressBar, Segmented, Select } from "../../kit";
-import { btn, CheckItem, Drawer, EmptyState, Field, formatPhone, inputCls, mascaraMoeda, moeda, SearchInput, waLink } from "../../forms";
+import { btn, CheckItem, Drawer, EmptyState, Field, formatPhone, inputCls, mascaraMoeda, Modal, moeda, SearchInput, waLink } from "../../forms";
 import {
   CaptacaoFormModal,
   FinalidadeBadge,
@@ -238,6 +239,7 @@ function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: () => voi
   const [aba, setAba] = useState<AbaCaptacao>("imovel");
   const { isAdmin, user, solo } = useScope();
   const [report, setReport] = useState(false);
+  const [simular, setSimular] = useState(false);
   const [registrar, setRegistrar] = useState(false);
   const [informar, setInformar] = useState(false);
   const [editando, setEditando] = useState(false);
@@ -324,6 +326,11 @@ function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: () => voi
                       <button onClick={() => setReport(true)} className={btn.outline}>
                         <FileText className="size-4" /> Relatório ao proprietário
                       </button>
+                      {c.finalidade === "venda" && (
+                        <button onClick={() => setSimular(true)} className={btn.outline}>
+                          <Calculator className="size-4" /> Simular financiamento
+                        </button>
+                      )}
                     </>
                   ) : (
                     prop && (
@@ -462,6 +469,26 @@ function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: () => voi
         )}
       </Drawer>
       {c && <ReportModal captacao={c} open={report} onClose={() => setReport(false)} />}
+      {c && (
+        <Modal open={simular} onClose={() => setSimular(false)} title="Simular financiamento" subtitle={`${captacaoTitulo(c)} · para enviar ao cliente`}>
+          <Simulador
+            key={c.id}
+            valorInicial={c.valor}
+            acao={(resumo) => (
+              <a
+                href={`https://wa.me/?text=${encodeURIComponent(`${captacaoTitulo(c)}${c.codigo ? ` (Cód. ${c.codigo})` : ""}
+
+${resumo}`)}`}
+                target="_blank"
+                rel="noreferrer"
+                className={btn.whatsapp}
+              >
+                <WhatsAppIcon className="size-4" /> Enviar ao cliente pelo WhatsApp
+              </a>
+            )}
+          />
+        </Modal>
+      )}
       {im && <ImovelFormModal open={editarEndereco} onClose={() => setEditarEndereco(false)} imovel={im} />}
       {c && <TransacaoFormModal open={registrar} onClose={() => setRegistrar(false)} captacaoId={c.id} />}
       {c && <InformarFechamentoModal open={informar} onClose={() => setInformar(false)} captacaoId={c.id} />}

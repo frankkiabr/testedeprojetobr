@@ -90,7 +90,14 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
 - Plano Solo no app: use `useScope().solo` (dono da conta no Solo). Solo não tem Equipe nem Academy (menu e rotas), nem a aba
   "Imobiliária" em Configurações (nome e cidade da conta vêm do perfil); textos de "equipe/imobiliária" viram "você/seus".
   No portal, Solo sem logo mostra a foto e o nome do corretor no topo. O topo do portal tem o menu Início/Planos/Imóveis/Sobre.
-- Campos de R$: `mascaraMoeda` (ao digitar) e `moeda` (valor inicial) de `src/app/forms.tsx` → "1.000.000,00". Botão com
+- Páginas por público: `/para-imobiliarias` e `/para-corretores` (`src/pages/ParaPublico.tsx`, textos em `publicos` de `src/content.ts`),
+  com o seletor "Qual é o seu caso?" logo abaixo do topo da home (`src/components/Publicos.tsx`).
+- Ferramentas grátis: `/simulador-de-financiamento` e `/calculadora-de-comissao` (`src/pages/Ferramentas.tsx`; contas em
+  `src/lib/financiamento.ts`, sem dado externo). O componente `Simulador` também aparece no anúncio do portal (venda) e na
+  captação ("Simular financiamento"). Páginas avulsas usam a moldura `src/components/PaginaSimples.tsx`.
+- `/exclusao-de-dados` (`src/pages/ExclusaoDados.tsx`): pedido LGPD grava em `interessados` com origem `lgpd` (Painel → Interessados).
+- Rodapé: "Pergunte à IA" (`src/components/PergunteIA.tsx`); resumo para IAs em `public/llms.txt` (atualize se mudar preço ou plano).
+- Campos de R$: `mascaraMoeda` (ao digitar) e `moeda` (valor inicial) de `src/lib/moeda.ts` (reexportados em `src/app/forms.tsx`) → "1.000.000,00". Botão com
   confirmação "Salvo": `BotaoSalvar` (mesmo arquivo).
 - Visão geral: "Primeiros passos" (`src/app/PrimeirosPassos.tsx`) e sino de avisos (`src/app/Notificacoes.tsx`), calculados dos dados.
 - Página de captura dos anúncios: `/conheca-a-frankkia` (`src/pages/Captura.tsx`), tudo leva ao WhatsApp de `contato` em

@@ -25,6 +25,9 @@ import Apresentacao from "@/pages/Apresentacao";
 import Demo from "@/pages/Demo";
 import { Privacidade, Termos } from "@/pages/Legal";
 import Sobre from "@/pages/Sobre";
+import ParaPublico from "@/pages/ParaPublico";
+import { CalculadoraComissao, SimuladorFinanciamento } from "@/pages/Ferramentas";
+import ExclusaoDados from "@/pages/ExclusaoDados";
 import Captura from "@/pages/Captura";
 import Cadastro from "@/pages/Cadastro";
 import GoogleRetorno from "@/pages/GoogleRetorno";
@@ -62,6 +65,12 @@ export default function App() {
               <Route path="/termos" element={<Termos />} />
               <Route path="/privacidade" element={<Privacidade />} />
               <Route path="/sobre" element={<Sobre />} />
+              {/* Páginas por público e ferramentas grátis (atraem visitas pelo Google) */}
+              <Route path="/para-imobiliarias" element={<ParaPublico publico="imobiliarias" />} />
+              <Route path="/para-corretores" element={<ParaPublico publico="corretores" />} />
+              <Route path="/simulador-de-financiamento" element={<SimuladorFinanciamento />} />
+              <Route path="/calculadora-de-comissao" element={<CalculadoraComissao />} />
+              <Route path="/exclusao-de-dados" element={<ExclusaoDados />} />
               {/* Cadastro sem falar com ninguém: cria a conta já em teste grátis */}
               <Route path="/cadastro" element={<Cadastro />} />
               {/* Volta da tela do Google (conexão do Google Agenda) */}

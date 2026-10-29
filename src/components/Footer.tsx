@@ -5,6 +5,7 @@ import { Check, Copy, LogIn, Mail, Search } from "lucide-react";
 import { nav, site } from "@/content";
 import { EASE_OUT_EXPO, scrollToId } from "@/lib/scroll";
 import { Logo } from "./ui";
+import { PergunteIA } from "./PergunteIA";
 import { buscarTodos } from "@/portal/api";
 import { cidadesDe } from "@/portal/ui";
 
@@ -46,6 +47,7 @@ export function Footer({ onSearch }: { onSearch: () => void }) {
               <Logo className="text-[2.25rem] text-bg" />
               <p className="type-title mt-6 max-w-[30rem]">{site.slogan}</p>
               <p className="mt-4 max-w-[30rem] text-bg/60 sm:text-lg">{site.description}</p>
+              <PergunteIA className="mt-10" />
             </motion.div>
 
             <nav className="grid grid-cols-2 gap-x-10 gap-y-8 text-[0.9375rem] sm:grid-cols-[repeat(3,auto)] lg:pt-2">
@@ -67,6 +69,16 @@ export function Footer({ onSearch }: { onSearch: () => void }) {
                     </li>
                   ))}
                   <li>
+                    <Link to="/para-imobiliarias" className="whitespace-nowrap text-bg/80 transition-colors hover:text-bg">
+                      Para imobiliárias
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/para-corretores" className="whitespace-nowrap text-bg/80 transition-colors hover:text-bg">
+                      Para corretores
+                    </Link>
+                  </li>
+                  <li>
                     <Link to="/sobre" className="whitespace-nowrap text-bg/80 transition-colors hover:text-bg">
                       Sobre
                     </Link>
@@ -81,6 +93,16 @@ export function Footer({ onSearch }: { onSearch: () => void }) {
                       <Search className="size-4" />
                       Buscar imóveis
                     </a>
+                  </li>
+                  <li>
+                    <Link to="/simulador-de-financiamento" className="whitespace-nowrap text-bg/80 transition-colors hover:text-bg">
+                      Simulador de financiamento
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/calculadora-de-comissao" className="whitespace-nowrap text-bg/80 transition-colors hover:text-bg">
+                      Calculadora de comissão
+                    </Link>
                   </li>
                   {cidades.map((c) => (
                     <li key={c.slug}>
@@ -133,6 +155,9 @@ export function Footer({ onSearch }: { onSearch: () => void }) {
               </Link>
               <Link to="/privacidade" className="hover:text-bg/80">
                 Privacidade
+              </Link>
+              <Link to="/exclusao-de-dados" className="hover:text-bg/80">
+                Exclusão de dados
               </Link>
               <span>{site.email}</span>
             </p>

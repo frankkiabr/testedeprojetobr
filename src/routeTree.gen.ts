@@ -12,9 +12,14 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SplatRouteImport } from './routes/$'
 import { Route as CadastroRouteImport } from './routes/cadastro'
+import { Route as CalculadoraDeComissaoRouteImport } from './routes/calculadora-de-comissao'
 import { Route as ConhecaAFrankkiaRouteImport } from './routes/conheca-a-frankkia'
+import { Route as ExclusaoDeDadosRouteImport } from './routes/exclusao-de-dados'
 import { Route as ImoveisRouteImport } from './routes/imoveis'
+import { Route as ParaCorretoresRouteImport } from './routes/para-corretores'
+import { Route as ParaImobiliariasRouteImport } from './routes/para-imobiliarias'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
+import { Route as SimuladorDeFinanciamentoRouteImport } from './routes/simulador-de-financiamento'
 import { Route as SobreRouteImport } from './routes/sobre'
 import { Route as TermosRouteImport } from './routes/termos'
 import { Route as CorretorSlugRouteImport } from './routes/corretor.$slug'
@@ -38,9 +43,19 @@ const CadastroRoute = CadastroRouteImport.update({
   path: '/cadastro',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CalculadoraDeComissaoRoute = CalculadoraDeComissaoRouteImport.update({
+  id: '/calculadora-de-comissao',
+  path: '/calculadora-de-comissao',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ConhecaAFrankkiaRoute = ConhecaAFrankkiaRouteImport.update({
   id: '/conheca-a-frankkia',
   path: '/conheca-a-frankkia',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExclusaoDeDadosRoute = ExclusaoDeDadosRouteImport.update({
+  id: '/exclusao-de-dados',
+  path: '/exclusao-de-dados',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ImoveisRoute = ImoveisRouteImport.update({
@@ -48,11 +63,27 @@ const ImoveisRoute = ImoveisRouteImport.update({
   path: '/imoveis',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ParaCorretoresRoute = ParaCorretoresRouteImport.update({
+  id: '/para-corretores',
+  path: '/para-corretores',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ParaImobiliariasRoute = ParaImobiliariasRouteImport.update({
+  id: '/para-imobiliarias',
+  path: '/para-imobiliarias',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacidadeRoute = PrivacidadeRouteImport.update({
   id: '/privacidade',
   path: '/privacidade',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SimuladorDeFinanciamentoRoute =
+  SimuladorDeFinanciamentoRouteImport.update({
+    id: '/simulador-de-financiamento',
+    path: '/simulador-de-financiamento',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const SobreRoute = SobreRouteImport.update({
   id: '/sobre',
   path: '/sobre',
@@ -93,9 +124,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/cadastro': typeof CadastroRoute
+  '/calculadora-de-comissao': typeof CalculadoraDeComissaoRoute
   '/conheca-a-frankkia': typeof ConhecaAFrankkiaRoute
+  '/exclusao-de-dados': typeof ExclusaoDeDadosRoute
   '/imoveis': typeof ImoveisRoute
+  '/para-corretores': typeof ParaCorretoresRoute
+  '/para-imobiliarias': typeof ParaImobiliariasRoute
   '/privacidade': typeof PrivacidadeRoute
+  '/simulador-de-financiamento': typeof SimuladorDeFinanciamentoRoute
   '/sobre': typeof SobreRoute
   '/termos': typeof TermosRoute
   '/corretor/$slug': typeof CorretorSlugRoute
@@ -108,9 +144,14 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/cadastro': typeof CadastroRoute
+  '/calculadora-de-comissao': typeof CalculadoraDeComissaoRoute
   '/conheca-a-frankkia': typeof ConhecaAFrankkiaRoute
+  '/exclusao-de-dados': typeof ExclusaoDeDadosRoute
   '/imoveis': typeof ImoveisRoute
+  '/para-corretores': typeof ParaCorretoresRoute
+  '/para-imobiliarias': typeof ParaImobiliariasRoute
   '/privacidade': typeof PrivacidadeRoute
+  '/simulador-de-financiamento': typeof SimuladorDeFinanciamentoRoute
   '/sobre': typeof SobreRoute
   '/termos': typeof TermosRoute
   '/corretor/$slug': typeof CorretorSlugRoute
@@ -124,9 +165,14 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/cadastro': typeof CadastroRoute
+  '/calculadora-de-comissao': typeof CalculadoraDeComissaoRoute
   '/conheca-a-frankkia': typeof ConhecaAFrankkiaRoute
+  '/exclusao-de-dados': typeof ExclusaoDeDadosRoute
   '/imoveis': typeof ImoveisRoute
+  '/para-corretores': typeof ParaCorretoresRoute
+  '/para-imobiliarias': typeof ParaImobiliariasRoute
   '/privacidade': typeof PrivacidadeRoute
+  '/simulador-de-financiamento': typeof SimuladorDeFinanciamentoRoute
   '/sobre': typeof SobreRoute
   '/termos': typeof TermosRoute
   '/corretor/$slug': typeof CorretorSlugRoute
@@ -141,9 +187,14 @@ export interface FileRouteTypes {
     | '/'
     | '/$'
     | '/cadastro'
+    | '/calculadora-de-comissao'
     | '/conheca-a-frankkia'
+    | '/exclusao-de-dados'
     | '/imoveis'
+    | '/para-corretores'
+    | '/para-imobiliarias'
     | '/privacidade'
+    | '/simulador-de-financiamento'
     | '/sobre'
     | '/termos'
     | '/corretor/$slug'
@@ -156,9 +207,14 @@ export interface FileRouteTypes {
     | '/'
     | '/$'
     | '/cadastro'
+    | '/calculadora-de-comissao'
     | '/conheca-a-frankkia'
+    | '/exclusao-de-dados'
     | '/imoveis'
+    | '/para-corretores'
+    | '/para-imobiliarias'
     | '/privacidade'
+    | '/simulador-de-financiamento'
     | '/sobre'
     | '/termos'
     | '/corretor/$slug'
@@ -171,9 +227,14 @@ export interface FileRouteTypes {
     | '/'
     | '/$'
     | '/cadastro'
+    | '/calculadora-de-comissao'
     | '/conheca-a-frankkia'
+    | '/exclusao-de-dados'
     | '/imoveis'
+    | '/para-corretores'
+    | '/para-imobiliarias'
     | '/privacidade'
+    | '/simulador-de-financiamento'
     | '/sobre'
     | '/termos'
     | '/corretor/$slug'
@@ -187,9 +248,14 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SplatRoute: typeof SplatRoute
   CadastroRoute: typeof CadastroRoute
+  CalculadoraDeComissaoRoute: typeof CalculadoraDeComissaoRoute
   ConhecaAFrankkiaRoute: typeof ConhecaAFrankkiaRoute
+  ExclusaoDeDadosRoute: typeof ExclusaoDeDadosRoute
   ImoveisRoute: typeof ImoveisRoute
+  ParaCorretoresRoute: typeof ParaCorretoresRoute
+  ParaImobiliariasRoute: typeof ParaImobiliariasRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
+  SimuladorDeFinanciamentoRoute: typeof SimuladorDeFinanciamentoRoute
   SobreRoute: typeof SobreRoute
   TermosRoute: typeof TermosRoute
   CorretorSlugRoute: typeof CorretorSlugRoute
@@ -222,11 +288,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CadastroRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/calculadora-de-comissao': {
+      id: '/calculadora-de-comissao'
+      path: '/calculadora-de-comissao'
+      fullPath: '/calculadora-de-comissao'
+      preLoaderRoute: typeof CalculadoraDeComissaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/conheca-a-frankkia': {
       id: '/conheca-a-frankkia'
       path: '/conheca-a-frankkia'
       fullPath: '/conheca-a-frankkia'
       preLoaderRoute: typeof ConhecaAFrankkiaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/exclusao-de-dados': {
+      id: '/exclusao-de-dados'
+      path: '/exclusao-de-dados'
+      fullPath: '/exclusao-de-dados'
+      preLoaderRoute: typeof ExclusaoDeDadosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/imoveis': {
@@ -236,11 +316,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ImoveisRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/para-corretores': {
+      id: '/para-corretores'
+      path: '/para-corretores'
+      fullPath: '/para-corretores'
+      preLoaderRoute: typeof ParaCorretoresRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/para-imobiliarias': {
+      id: '/para-imobiliarias'
+      path: '/para-imobiliarias'
+      fullPath: '/para-imobiliarias'
+      preLoaderRoute: typeof ParaImobiliariasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacidade': {
       id: '/privacidade'
       path: '/privacidade'
       fullPath: '/privacidade'
       preLoaderRoute: typeof PrivacidadeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/simulador-de-financiamento': {
+      id: '/simulador-de-financiamento'
+      path: '/simulador-de-financiamento'
+      fullPath: '/simulador-de-financiamento'
+      preLoaderRoute: typeof SimuladorDeFinanciamentoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sobre': {
@@ -299,9 +400,14 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
   CadastroRoute: CadastroRoute,
+  CalculadoraDeComissaoRoute: CalculadoraDeComissaoRoute,
   ConhecaAFrankkiaRoute: ConhecaAFrankkiaRoute,
+  ExclusaoDeDadosRoute: ExclusaoDeDadosRoute,
   ImoveisRoute: ImoveisRoute,
+  ParaCorretoresRoute: ParaCorretoresRoute,
+  ParaImobiliariasRoute: ParaImobiliariasRoute,
   PrivacidadeRoute: PrivacidadeRoute,
+  SimuladorDeFinanciamentoRoute: SimuladorDeFinanciamentoRoute,
   SobreRoute: SobreRoute,
   TermosRoute: TermosRoute,
   CorretorSlugRoute: CorretorSlugRoute,

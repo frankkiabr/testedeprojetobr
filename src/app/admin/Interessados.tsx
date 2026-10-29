@@ -15,7 +15,9 @@ type Filtro = "abertos" | "todos";
 
 const primeiroNome = (n: string) => n.trim().split(/\s+/)[0];
 const msgContato = (i: Interessado) =>
-  i.origem === "cadastro"
+  i.origem === "lgpd"
+    ? `Olá, ${primeiroNome(i.nome)}! Aqui é da Frankkia. Recebemos o seu pedido sobre dados pessoais (${i.imobiliaria.replace("Pedido LGPD: ", "")}). Para confirmar que é você, pode responder por aqui?`
+    : i.origem === "cadastro"
     ? `Olá, ${primeiroNome(i.nome)}! Aqui é o ${contato.primeiroNome}, da Frankkia. Vi que você começou o teste grátis da ${i.imobiliaria}. Posso te ajudar a configurar?`
     : `Olá, ${primeiroNome(i.nome)}! Aqui é da Frankkia. Recebemos seu pedido de apresentação para a ${i.imobiliaria}. Qual o melhor dia e horário para conversarmos?`;
 const msgDemo = (nome: string, link: string, dias: number) =>
@@ -89,6 +91,7 @@ export default function Interessados() {
                       <p className="font-semibold">{i.nome}</p>
                       <Badge tone={STATUS_INTERESSADO[i.status].tone}>{STATUS_INTERESSADO[i.status].label}</Badge>
                       {i.origem === "cadastro" && <Badge tone="verified">Teste grátis</Badge>}
+                      {i.origem === "lgpd" && <Badge tone="warn">Pedido LGPD · responder em 15 dias</Badge>}
                     </div>
                     <p className="mt-0.5 text-sm text-muted">
                       {i.imobiliaria}
@@ -113,7 +116,7 @@ export default function Interessados() {
                       <Mail className="size-3.5" /> E-mail
                     </a>
                     {/* Quem criou conta pelo site já usa a Frankkia de verdade: não precisa de demonstração */}
-                    {i.origem !== "cadastro" && (
+                    {i.origem !== "cadastro" && i.origem !== "lgpd" && (
                       <button
                         onClick={() => setLiberar({ nome: `${i.nome} · ${i.imobiliaria}`, telefone: i.telefone, interessadoId: i.id })}
                         className={`${btn.outline} h-9 px-3 text-xs`}

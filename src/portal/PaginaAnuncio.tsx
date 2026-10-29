@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, Bath, BedDouble, Car, Check, ExternalLink, MapPin, Ruler } from "lucide-react";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
+import { Simulador } from "@/components/Simulador";
 import { enviarContato, type AnuncioPublico } from "./api";
 import { Galeria } from "./Galeria";
 import { BotaoCompartilhar } from "./Filtros";
@@ -127,6 +128,36 @@ export default function PaginaAnuncio({ a, url }: { a: AnuncioPublico; url: stri
               <ExternalLink className="size-4" /> Abrir no Google Maps
             </a>
           </Surge>
+
+          {a.finalidade === "venda" && (
+            <Surge>
+              <h2 className="font-display text-lg font-semibold">Simule o financiamento</h2>
+              <p className="mt-1 text-sm text-muted">Parcelas estimadas nos sistemas SAC e Price para este imóvel.</p>
+              <div className="mt-4 rounded-3xl border border-line p-5">
+                <Simulador
+                  valorInicial={a.valor}
+                  fixo
+                  acao={(resumo) => {
+                    const tel = numeroWhats(a.corretor.telefone);
+                    return tel ? (
+                      <a
+                        href={linkWhats(tel, `Olá, ${a.corretor.nome.split(" ")[0]}! Vi o imóvel ${a.titulo} (Cód. ${a.codigo}) e fiz esta simulação:
+
+${resumo}
+
+Pode me ajudar com o financiamento?`)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex h-11 items-center gap-2 rounded-full bg-[#25d366] px-5 text-sm font-semibold text-white transition hover:brightness-95"
+                      >
+                        <WhatsAppIcon className="size-4" /> Falar com o corretor sobre o financiamento
+                      </a>
+                    ) : null;
+                  }}
+                />
+              </div>
+            </Surge>
+          )}
         </div>
 
         <aside className="lg:sticky lg:top-24 lg:self-start">

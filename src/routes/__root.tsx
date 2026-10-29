@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-router";
 import appCss from "../index.css?url";
 import { ConteudoServidor } from "@/components/ConteudoServidor";
+import { AvisoCookies } from "@/components/AvisoCookies";
 
 /**
  * O app da Frankkia (site + plataforma) roda inteiro no navegador, com as próprias rotas (react-router).
@@ -24,7 +25,7 @@ const App = lazy(() => import("../App"));
 const PORTAL = /^\/(imoveis(\/|$)|(imovel|corretor|imobiliaria|estudo)\/)/;
 
 /** Páginas públicas do site: o servidor já entrega o texto principal e os links (Google, verificação do app). */
-const PUBLICAS = /^\/(sobre|conheca-a-frankkia|cadastro|termos|privacidade)?$/;
+const PUBLICAS = /^\/(sobre|conheca-a-frankkia|cadastro|termos|privacidade|para-imobiliarias|para-corretores|simulador-de-financiamento|calculadora-de-comissao|exclusao-de-dados)?$/;
 
 const TITULO = "Frankkia — Seu universo imobiliário, em um só lugar.";
 const DESCRICAO =
@@ -74,13 +75,22 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const caminho = useRouterState({ select: (s) => s.location.pathname });
-  if (PORTAL.test(caminho)) return <Outlet />;
+  if (PORTAL.test(caminho))
+    return (
+      <>
+        <Outlet />
+        <ClientOnly>
+          <AvisoCookies />
+        </ClientOnly>
+      </>
+    );
   const espera = PUBLICAS.test(caminho) ? <ConteudoServidor caminho={caminho} /> : <div className="min-h-screen bg-bg" />;
   return (
     <ClientOnly fallback={espera}>
       <Suspense fallback={<div className="min-h-screen bg-bg" />}>
         <App />
       </Suspense>
+      <AvisoCookies />
     </ClientOnly>
   );
 }

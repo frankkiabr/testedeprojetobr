@@ -15,11 +15,11 @@ import type { AcessoDemo, Chamado, Cliente, ClienteStatus, ErroSistema, Interess
  * `anuncios` = imóveis publicados no portal (em breve), compartilhados pela equipe. O CRM é ilimitado.
  */
 export const PLANOS: Record<PlanoNome, { limite: number; preco: number; anuncios: number; solo?: boolean }> = {
-  Solo: { limite: 0, preco: 79.9, anuncios: 15, solo: true },
-  "Equipe 5": { limite: 5, preco: 315, anuncios: 50 },
-  "Equipe 10": { limite: 10, preco: 525, anuncios: 100 },
+  Solo: { limite: 0, preco: 79.9, anuncios: 50, solo: true },
+  "Equipe 5": { limite: 5, preco: 315, anuncios: 100 },
+  "Equipe 10": { limite: 10, preco: 525, anuncios: 150 },
   "Equipe 30": { limite: 30, preco: 1450, anuncios: 300 },
-  "Equipe 60": { limite: 60, preco: 2650, anuncios: 600 },
+  "Equipe 60": { limite: 60, preco: 2650, anuncios: 1000 },
 };
 
 /** Planos de equipe, do menor ao maior (o Solo não faz upgrade de vagas: vira imobiliária com a Frankkia). */

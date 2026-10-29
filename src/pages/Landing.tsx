@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { scrollToId, startLenis } from "@/lib/scroll";
 import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
+import { Publicos } from "@/components/Publicos";
 import { Ecosystem } from "@/components/Ecosystem";
 import { Features } from "@/components/Features";
 import { Pricing } from "@/components/Pricing";
@@ -29,6 +30,7 @@ export default function Landing() {
       <Navbar />
       <main>
         <Hero />
+        <Publicos />
         <Ecosystem />
         <Features />
         <Vitrine />

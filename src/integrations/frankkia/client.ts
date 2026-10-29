@@ -67,7 +67,7 @@ export type NovoInteressado = {
   telefone: string;
   equipe?: string;
   mensagem?: string;
-  origem: "site" | "login" | "pagina";
+  origem: "site" | "login" | "pagina" | "lgpd";
 };
 
 /** Pedido de apresentação (qualquer visitante pode enviar; só a equipe Frankkia lê). Devolve o erro, ou null. */
