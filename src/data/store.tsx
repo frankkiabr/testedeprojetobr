@@ -559,6 +559,9 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       transacoes.sort((a, b) => b.data.localeCompare(a.data));
       const c = captacoes.find((x) => x.id === input.captacaoId);
       if (c) c.status = input.tipo === "venda" ? "vendida" : "alugada";
+      // Vendido ou alugado sai do portal (o banco faz o mesmo); a contagem de anúncios já desconta
+      const an = anuncios.find((x) => x.captacaoId === input.captacaoId);
+      if (an) an.publicado = false;
       if (fechamentoId) {
         const f = fechamentos.find((x) => x.id === fechamentoId);
         if (f) f.status = "registrado";
@@ -1007,7 +1010,7 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       toast("Pedido de upgrade cancelado.");
     },
 
-    updateUsuario(id: string, patch: Partial<Pick<Usuario, "nome" | "email" | "telefone" | "aniversario" | "creci" | "creciUF" | "estagiario" | "redes">>) {
+    updateUsuario(id: string, patch: Partial<Pick<Usuario, "nome" | "email" | "telefone" | "aniversario" | "creci" | "creciUF" | "estagiario" | "redes" | "bio">>) {
       const u = id === admin.id ? admin : corretores.find((x) => x.id === id);
       if (!u) return;
       const emailNovo = patch.email && patch.email.toLowerCase() !== u.email.toLowerCase() ? patch.email.trim().toLowerCase() : null;
@@ -1026,6 +1029,7 @@ function createActions(bump: () => void, toast: (text: string) => void) {
             creci_uf: u.creciUF ?? null,
             estagiario: !!u.estagiario,
             redes: u.redes ?? {},
+            bio: u.bio?.trim() || null,
           })
           .eq("id", id),
       );

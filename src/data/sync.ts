@@ -435,6 +435,7 @@ export async function carregarReal(conta: ContaDados) {
       estagiario: p?.estagiario ?? false,
       fotoUrl: u(p?.foto_url ?? null),
       redes: (p?.redes ?? {}) as Usuario["redes"],
+      bio: u(p?.bio ?? null),
     };
   });
   const admins = pessoas.filter((p) => p.papel === "admin");

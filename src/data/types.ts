@@ -46,6 +46,8 @@ export type Usuario = {
   fotoUrl?: string;
   /** Redes sociais (links completos), mostradas na página pública do corretor no portal. */
   redes?: Redes;
+  /** "Sobre mim": aparece na apresentação do estudo de mercado. */
+  bio?: string;
 };
 
 export type RedeChave = "instagram" | "facebook" | "linkedin" | "tiktok" | "youtube" | "site";

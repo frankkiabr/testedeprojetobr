@@ -1597,6 +1597,7 @@ export type Database = {
       perfis: {
         Row: {
           aniversario: string | null
+          bio: string | null
           creci: string | null
           creci_uf: string | null
           criado_em: string
@@ -1612,6 +1613,7 @@ export type Database = {
         }
         Insert: {
           aniversario?: string | null
+          bio?: string | null
           creci?: string | null
           creci_uf?: string | null
           criado_em?: string
@@ -1627,6 +1629,7 @@ export type Database = {
         }
         Update: {
           aniversario?: string | null
+          bio?: string | null
           creci?: string | null
           creci_uf?: string | null
           criado_em?: string

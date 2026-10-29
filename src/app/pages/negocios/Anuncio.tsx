@@ -43,6 +43,9 @@ export function AnuncioEditor({ captacao, onPublicado }: { captacao: Captacao; o
 
   const limite = PLANOS[imobiliaria.plano]?.anuncios ?? 0;
   const publicados = anuncios.filter((x) => x.publicado).length;
+  // Vendido ou alugado: o banco tira do portal sozinho, então não há o que publicar nem retirar
+  const fechada = captacao.status !== "ativa";
+  const noAr = a.publicado && !fechada;
   const mudou = JSON.stringify(f) !== JSON.stringify(inicial());
 
   const salvar = () =>
@@ -86,15 +89,23 @@ export function AnuncioEditor({ captacao, onPublicado }: { captacao: Captacao; o
   return (
     <div className="mt-4 space-y-6">
       {/* Situação */}
-      <div className={`flex flex-wrap items-center gap-3 rounded-2xl p-4 ${a.publicado ? "bg-verified-soft" : "bg-canvas"}`}>
-        {a.publicado ? <CheckCircle2 className="size-5 text-verified" /> : <Globe className="size-5 text-muted" />}
+      <div className={`flex flex-wrap items-center gap-3 rounded-2xl p-4 ${noAr ? "bg-verified-soft" : "bg-canvas"}`}>
+        {noAr ? <CheckCircle2 className="size-5 text-verified" /> : <Globe className="size-5 text-muted" />}
         <div className="min-w-0 flex-1 text-sm">
-          <p className="font-semibold">{a.publicado ? "Publicado no portal" : "Rascunho (não publicado)"}</p>
+          <p className="font-semibold">
+            {fechada
+              ? `Fora do portal: imóvel ${captacao.status === "vendida" ? "vendido" : "alugado"}`
+              : noAr
+                ? "Publicado no portal"
+                : "Rascunho (não publicado)"}
+          </p>
           <p className="text-xs text-muted">
-            {publicados} de {limite} anúncios publicados no plano {imobiliaria.plano}.
+            {fechada
+              ? "Imóveis vendidos ou alugados saem do portal automaticamente."
+              : `${publicados} de ${limite} anúncios publicados no plano ${imobiliaria.plano}.`}
           </p>
         </div>
-        {a.publicado && a.slug && !a.slug.startsWith("exemplo-") && (
+        {noAr && a.slug && !a.slug.startsWith("exemplo-") && (
           <a href={`/imovel/${a.slug}`} target="_blank" rel="noreferrer" className="text-sm font-semibold text-accent">
             Ver página pública
           </a>
@@ -203,7 +214,7 @@ export function AnuncioEditor({ captacao, onPublicado }: { captacao: Captacao; o
       {aviso && <p className="rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700">{aviso}</p>}
 
       <div className="space-y-3 border-t border-line pt-5">
-        {!a.publicado && (
+        {!noAr && !fechada && (
           <label className="flex cursor-pointer items-start gap-2 text-sm">
             <input type="checkbox" className="mt-0.5 size-4 accent-accent" checked={autorizado} onChange={(e) => setAutorizado(e.target.checked)} />
             Tenho autorização do proprietário para anunciar este imóvel, com fotos e endereço completo.
@@ -213,12 +224,12 @@ export function AnuncioEditor({ captacao, onPublicado }: { captacao: Captacao; o
           <BotaoSalvar disabled={!mudou} onSalvar={salvar} className={btn.outline}>
             Atualizar
           </BotaoSalvar>
-          {a.publicado ? (
+          {fechada ? null : noAr ? (
             <button disabled={publicando} onClick={() => publicar(false)} className={`${btn.outline} text-rose-600`}>
               Retirar do portal
             </button>
           ) : (
-            <button disabled={!autorizado || publicando || captacao.status !== "ativa"} onClick={() => publicar(true)} className={btn.accent}>
+            <button disabled={!autorizado || publicando} onClick={() => publicar(true)} className={btn.accent}>
               <Globe className="size-4" /> {publicando ? "Publicando..." : "Publicar no portal"}
             </button>
           )}

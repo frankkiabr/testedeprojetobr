@@ -280,7 +280,7 @@ function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: () => voi
                   { value: "imovel", label: "Imóvel" },
                   { value: "captacao", label: `Captação · ${doneCaptacao(c)}/${CHECKLIST_CAPTACAO.length}` },
                   { value: "marketing", label: `Marketing · ${feitos}/${CHECKLIST_MARKETING.length}` },
-                  { value: "anuncio", label: an?.publicado ? "Anúncio · no ar" : "Anúncio" },
+                  { value: "anuncio", label: an?.publicado && !fechada ? "Anúncio · no ar" : "Anúncio" },
                 ]}
               />
             </div>

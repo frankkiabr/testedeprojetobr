@@ -121,7 +121,7 @@ export function Compartilhar({
           </Field>
           <div className="flex flex-wrap gap-2">
             <a href={link} target="_blank" rel="noreferrer" className={btn.outline}>
-              <ExternalLink className="size-4" /> Ver como o proprietário vê
+              <ExternalLink className="size-4" /> Apresentação
             </a>
             <a
               href={whatsappProprietario ? waLink(whatsappProprietario, msg) : `https://wa.me/?text=${encodeURIComponent(msg)}`}

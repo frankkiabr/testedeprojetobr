@@ -387,6 +387,7 @@ function Perfil() {
     estagiario: !!user.estagiario,
     redes: Object.fromEntries(REDES.map((r) => [r.chave, textoDaRede(r.chave, user.redes?.[r.chave])])) as Record<string, string>,
     cidade: imobiliaria.cidade,
+    bio: user.bio ?? "",
   });
   const [f, setF] = useState(init);
   const [senha, setSenha] = useState({ atual: "", nova: "", confirma: "" });
@@ -418,6 +419,7 @@ function Perfil() {
                 creci: f.creci.trim() || undefined,
                 creciUF: f.creci.trim() ? f.creciUF : undefined,
                 redes: redesLimpas(f.redes),
+                bio: f.bio.trim() || undefined,
               });
             }}
           >
@@ -503,6 +505,18 @@ function Perfil() {
               <SelectField value={f.creciUF} onChange={(v) => setF({ ...f, creciUF: v })} options={UFS.map((u) => ({ value: u, label: u }))} />
             </Field>
           </div>
+        </div>
+
+        <div className="mt-6">
+          <Field label="Sobre mim" hint={`Aparece na apresentação dos seus estudos de mercado para o proprietário. ${f.bio.length}/800`}>
+            <textarea
+              className={`${inputCls} h-28 resize-y py-2.5`}
+              maxLength={800}
+              value={f.bio}
+              onChange={(e) => setF({ ...f, bio: e.target.value })}
+              placeholder="Conte em poucas linhas sua experiência, sua região de atuação e como você ajuda quem quer vender ou alugar."
+            />
+          </Field>
         </div>
 
         <div className="mt-6 rounded-2xl bg-canvas p-4">

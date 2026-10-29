@@ -179,6 +179,13 @@ export type EstudoPublico = {
   mostrar_urgencia: boolean;
   criado_em: string;
   atualizado_em: string;
+  foto?: string | null;
+  lat?: number | null;
+  lng?: number | null;
+  /** Primeiro nome do proprietário, para a saudação. */
+  proprietario?: string | null;
+  /** Etapas do negócio (para "Próximos passos"). */
+  etapas?: { visita: boolean; apresentado: boolean; exclusividade: boolean; vendido: boolean };
   amostras: {
     valor: number;
     area: number;
@@ -190,8 +197,13 @@ export type EstudoPublico = {
     endereco: string | null;
     foto: string | null;
     origem: string;
+    ano?: number | null;
+    portaria?: string | null;
+    infra?: string | null;
+    url?: string | null;
+    portal?: string | null;
   }[];
-  corretor: { nome: string; foto: string | null; creci: string | null; creci_uf: string | null; telefone: string | null; slug: string | null };
+  corretor: { nome: string; foto: string | null; creci: string | null; creci_uf: string | null; telefone: string | null; slug: string | null; bio?: string | null };
   imobiliaria: { nome: string; logo: string | null; solo: boolean; creci_j: string | null };
 };
 export const buscarEstudo = (token: string) => rpc<EstudoPublico>("estudo_publico", { p_token: token });
