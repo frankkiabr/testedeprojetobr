@@ -128,6 +128,8 @@ export const pricing = {
   cta: "Solicitar demonstração",
   ctaTeste: "Começar teste grátis",
   ctaConversa: "Falar com o Luiz",
+  /** Planos grandes começam por uma conversa; os menores (Solo, Equipe 5 e 10), pelo teste grátis imediato de 7 dias. */
+  conversa: ["Equipe 30", "Equipe 60"] as string[],
   plans: [
     { name: "Equipe 5", seats: "1 administrador + até 5 corretores", equipe: "Até 5 corretores", price: "315", anuncios: "100 anúncios no portal, compartilhados pela equipe" },
     { name: "Equipe 10", seats: "1 administrador + até 10 corretores", equipe: "Até 10 corretores", price: "525", anuncios: "150 anúncios no portal, compartilhados pela equipe", highlight: true },

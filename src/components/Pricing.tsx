@@ -48,7 +48,7 @@ export function Pricing() {
     navigate(`/cadastro?plano=${encodeURIComponent(plano)}`);
   };
   // Planos grandes começam por uma conversa; os menores, pelo teste grátis
-  const conversa = (plano: string) => plano === "Equipe 30" || plano === "Equipe 60";
+  const conversa = (plano: string) => pricing.conversa.includes(plano);
   const solo = pricing.solo;
   const [ciclo, setCiclo] = useState<Ciclo>("mensal");
 

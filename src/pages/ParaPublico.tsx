@@ -113,6 +113,16 @@ export default function ParaPublico({ publico }: { publico: "imobiliarias" | "co
               <WhatsAppIcon className="size-5 text-[#25d366]" /> Falar no WhatsApp
             </a>
           </motion.div>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.9, ease: EASE_OUT_EXPO }}
+            className="mt-4 text-sm text-muted"
+          >
+            {solo
+              ? "Plano Solo · 7 dias grátis, sem cartão. A conta fica pronta na hora."
+              : `Teste imediato nos planos ${pricing.plans.filter((x) => !pricing.conversa.includes(x.name)).map((x) => x.name).join(" e ")} · 7 dias grátis, sem cartão.`}
+          </motion.p>
         </div>
         <Painel corretor={solo} />
         <FaixaModulos />
@@ -126,12 +136,12 @@ export default function ParaPublico({ publico }: { publico: "imobiliarias" | "co
           </motion.div>
           <ul className="mt-8 grid gap-4 md:grid-cols-3">
             {p.dores.map((d, i) => (
-              <motion.li key={d.t} {...aparecer(i + 1)} className="rounded-[1.75rem] border border-line bg-canvas/60 p-6">
-                <span className="grid size-10 place-items-center rounded-2xl bg-bg text-rose-600 shadow-soft">
+              <motion.li key={d.t} {...aparecer(i + 1)} className="rounded-[1.75rem] bg-ink p-6 text-bg shadow-lift">
+                <span className="grid size-10 place-items-center rounded-2xl bg-white/10 text-rose-300">
                   <X className="size-5" />
                 </span>
                 <p className="mt-5 font-display text-lg font-semibold tracking-tight">{d.t}</p>
-                <p className="mt-1.5 text-sm leading-relaxed text-muted">{d.d}</p>
+                <p className="mt-1.5 text-sm leading-relaxed text-bg/70">{d.d}</p>
               </motion.li>
             ))}
           </ul>
@@ -177,19 +187,44 @@ export default function ParaPublico({ publico }: { publico: "imobiliarias" | "co
                   <span className={`text-base ${pl.highlight ? "text-bg/60" : "text-muted"}`}>/mês</span>
                 </p>
                 <p className={`mt-2 text-sm ${pl.highlight ? "text-bg/70" : "text-muted"}`}>{pl.anuncios}</p>
-                <Link
-                  to={`/cadastro?plano=${encodeURIComponent(pl.name)}`}
-                  className={`mt-6 inline-flex h-11 items-center justify-center gap-2 rounded-full text-sm font-semibold transition active:scale-[0.98] ${
-                    pl.highlight ? "bg-accent text-white hover:bg-accent-deep" : "border border-line-strong hover:bg-canvas"
-                  }`}
-                >
-                  Testar grátis
-                </Link>
+                <span className="flex-1" />
+                {pricing.conversa.includes(pl.name) ? (
+                  <>
+                    <a
+                      href={linkWhatsApp(`Olá, ${contato.primeiroNome}! Quero conhecer o plano ${pl.name} da Frankkia.`)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`mt-6 inline-flex h-11 items-center justify-center gap-2 rounded-full text-sm font-semibold transition active:scale-[0.98] ${
+                        pl.highlight ? "bg-accent text-white hover:bg-accent-deep" : "border border-line-strong hover:bg-canvas"
+                      }`}
+                    >
+                      <WhatsAppIcon className="size-4" /> {pricing.ctaConversa}
+                    </a>
+                    <Link to={`/cadastro?plano=${encodeURIComponent(pl.name)}`} className={`mt-3 text-center text-xs underline-offset-4 hover:underline ${pl.highlight ? "text-bg/60" : "text-muted"}`}>
+                      ou comece um teste grátis
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      to={`/cadastro?plano=${encodeURIComponent(pl.name)}`}
+                      className={`mt-6 inline-flex h-11 items-center justify-center gap-2 rounded-full text-sm font-semibold transition active:scale-[0.98] ${
+                        pl.highlight ? "bg-accent text-white hover:bg-accent-deep" : "border border-line-strong hover:bg-canvas"
+                      }`}
+                    >
+                      Testar grátis por 7 dias
+                    </Link>
+                    <p className={`mt-3 text-center text-xs ${pl.highlight ? "text-bg/60" : "text-muted"}`}>Começa na hora, sem cartão</p>
+                  </>
+                )}
               </motion.div>
             ))}
           </div>
           <p className="mt-4 text-sm text-muted">
-            7 dias grátis, sem cartão. No plano anual, 12 meses pelo preço de 10.{" "}
+            {solo
+              ? "7 dias grátis, sem cartão: a conta fica pronta na hora."
+              : `Teste grátis imediato de 7 dias, sem cartão, nos planos ${pricing.plans.filter((x) => !pricing.conversa.includes(x.name)).map((x) => x.name).join(" e ")}. Para ${pricing.conversa.join(" e ")}, a gente conversa antes para preparar a sua equipe.`}{" "}
+            No plano anual, 12 meses pelo preço de 10.{" "}
             <a href="/#planos" className="font-semibold text-accent">
               Ver todos os planos
             </a>
