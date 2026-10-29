@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { AlarmClock, BadgeDollarSign, CalendarClock, Columns3, List, MessageCircleMore, Phone, Plus, Users } from "lucide-react";
+import { AlarmClock, BadgeDollarSign, CalendarClock, Columns3, FileSpreadsheet, List, MessageCircleMore, Phone, Plus, Users } from "lucide-react";
 import { CHECKLIST_LEAD, ETAPAS } from "@/data/demo";
 import { atendido, atrasado, corretoresAtivos, DIAS_ATRASO, diasSemContato, emAberto, leadById, leadsOf, pessoa, userById } from "@/data/queries";
 import { useStore } from "@/data/store";
@@ -11,6 +11,7 @@ import { useScope } from "../../session";
 import { Avatar, Badge, Card, ProgressBar, Segmented, Select } from "../../kit";
 import { BotaoSalvar, btn, CheckItem, DateInput, Drawer, EmptyState, Field, formatPhone, inputCls, SearchInput, TimeInput, toLocalInput, waLink } from "../../forms";
 import { ETAPA_DOT, ETAPA_STYLE, LeadFormModal } from "./shared";
+import { ImportarLeadsModal } from "./ImportarLeads";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 
 const PERIODOS = [
@@ -347,6 +348,7 @@ export default function Leads() {
 
   const openId = params.get("lead");
   const novo = params.get("novo") === "1";
+  const importar = params.get("importar") === "1";
   const setParam = (k: string, v: string | null) => {
     const p = new URLSearchParams(params);
     if (v) p.set(k, v);
@@ -407,6 +409,9 @@ export default function Leads() {
               { value: "lista", label: "Lista" },
             ]}
           />
+          <button onClick={() => setParam("importar", "1")} className={btn.outline} title="Importar leads de uma planilha">
+            <FileSpreadsheet className="size-4" /> <span className="hidden sm:inline">Importar</span>
+          </button>
           <button onClick={() => setParam("novo", "1")} className={btn.accent}>
             <Plus className="size-4" /> Novo lead
           </button>
@@ -446,6 +451,7 @@ export default function Leads() {
 
       <LeadDrawer id={openId} onClose={() => setParam("lead", null)} />
       <LeadFormModal open={novo} onClose={() => setParam("novo", null)} />
+      <ImportarLeadsModal open={importar} onClose={() => setParam("importar", null)} />
     </div>
   );
 }

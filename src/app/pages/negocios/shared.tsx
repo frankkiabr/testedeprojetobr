@@ -126,7 +126,7 @@ export const valorLabel = (finalidade: Finalidade, valor: number) => (finalidade
 
 // ---------- Ajudas de formulário ----------
 
-function CorretorField({ value, onChange, label = "Corretor responsável" }: { value: string; onChange: (v: string) => void; label?: string }) {
+export function CorretorField({ value, onChange, label = "Corretor responsável" }: { value: string; onChange: (v: string) => void; label?: string }) {
   return (
     <Field label={label}>
       <SelectField value={value} onChange={onChange} placeholder="Selecione" options={corretoresAtivos().map((c) => ({ value: c.id, label: c.nome }))} />
@@ -135,7 +135,7 @@ function CorretorField({ value, onChange, label = "Corretor responsável" }: { v
 }
 
 /** Para o administrador, escolhe o corretor; para o corretor (e no plano Solo), é sempre ele mesmo. */
-function useTargetCorretor(open: boolean) {
+export function useTargetCorretor(open: boolean) {
   const { isAdmin: admin, user } = useScope();
   const isAdmin = admin && !ehSolo(imobiliaria.plano);
   const [corretorId, setCorretorId] = useState(isAdmin ? "" : user.id);

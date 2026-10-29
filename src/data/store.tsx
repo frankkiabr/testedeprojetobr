@@ -180,6 +180,25 @@ function createActions(bump: () => void, toast: (text: string) => void) {
   return {
     toast,
 
+    /** Importação de planilha: cria os leads de uma vez e grava no banco em lotes de 200. */
+    importarLeads(lista: Pick<Lead, "corretorId" | "nome" | "telefone" | "origem" | "interesse" | "etapa" | "observacoes">[]) {
+      const agora = Date.now();
+      // Milissegundos diferentes mantêm a ordem da planilha na lista (mais recentes primeiro)
+      const novos: Lead[] = lista.map((x, i) => ({
+        ...x,
+        id: uid("l"),
+        criadoEm: new Date(agora - i).toISOString(),
+        checklist: CHECKLIST_LEAD.map(() => false),
+      }));
+      leads.unshift(...novos);
+      for (let i = 0; i < novos.length; i += 200) {
+        const lote = novos.slice(i, i + 200);
+        gravar(() => supabase.from("leads").insert(lote.map(leadParaBanco)));
+      }
+      bump();
+      toast(`${novos.length} ${novos.length === 1 ? "lead importado" : "leads importados"}.`);
+    },
+
     addLead(input: Pick<Lead, "corretorId" | "nome" | "telefone" | "origem" | "interesse">) {
       const lead: Lead = {
         ...input,
