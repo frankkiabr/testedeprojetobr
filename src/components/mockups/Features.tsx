@@ -89,10 +89,10 @@ function CaptacaoMock({ active }: { active: boolean }) {
 /** Quadro de leads por etapa, como na aba Negócios › Leads. */
 function LeadsMock({ active }: { active: boolean }) {
   const colunas = [
-    { t: "Novo", dot: "bg-amber-400", cards: [["Juliana Prado", "0/6"], ["Pedro Melo", "0/6"]] },
-    { t: "Em contato", dot: "bg-sky-400", cards: [["Carla Nunes", "2/6"], ["Thiago Gomes", "1/6"]] },
-    { t: "Visita", dot: "bg-violet-400", cards: [["Renata Castro", "4/6"]] },
-    { t: "Proposta", dot: "bg-accent", cards: [["André Freitas", "5/6"]] },
+    { t: "Novo", dot: "bg-amber-400", cards: [["Juliana Prado", "0/6", "hoje"], ["Pedro Melo", "0/6", "2 dias"]] },
+    { t: "Em contato", dot: "bg-sky-400", cards: [["Carla Nunes", "2/6", "1 dia"], ["Thiago Gomes", "1/6", "7 dias"]] },
+    { t: "Visita", dot: "bg-violet-400", cards: [["Renata Castro", "4/6", "hoje"]] },
+    { t: "Proposta", dot: "bg-accent", cards: [["André Freitas", "5/6", "3 dias"]] },
   ];
   return (
     <Stage k="leads" icon={<Users className="size-4" />} title="Funil de leads">
@@ -105,15 +105,18 @@ function LeadsMock({ active }: { active: boolean }) {
               <span className="ml-auto text-muted">{c.cards.length}</span>
             </p>
             <div className="mt-1 space-y-1.5">
-              {c.cards.map(([nome, passos], i) => (
+              {c.cards.map(([nome, passos, contato], i) => (
                 <motion.div
                   key={nome}
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={active ? { opacity: 1, scale: 1 } : {}}
                   transition={{ delay: 0.4 + ci * 0.1 + i * 0.1 }}
-                  className="rounded-xl border border-line bg-white p-2"
+                  className={`rounded-xl border bg-white p-2 ${contato === "7 dias" ? "border-rose-200" : "border-line"}`}
                 >
                   <p className="truncate text-[11px] font-semibold">{nome}</p>
+                  <p className={`mt-0.5 text-[9px] ${contato === "7 dias" ? "font-semibold text-rose-600" : "text-muted"}`}>
+                    {contato === "hoje" ? "contato hoje" : contato === "7 dias" ? "Atrasado · 7 dias" : `${contato} sem contato`}
+                  </p>
                   <div className="mt-1.5 flex items-center gap-1">
                     <div className="h-1 flex-1 overflow-hidden rounded-full bg-canvas-deep">
                       <div className="h-full rounded-full bg-accent" style={{ width: `${(Number(passos[0]) / 6) * 100}%` }} />
@@ -237,49 +240,57 @@ function RelatorioMock({ active }: { active: boolean }) {
   );
 }
 
-/** Estudo de mercado: preço do m² por bairro. */
+/** Estudo de mercado: amostras de portais, os três valores e a apresentação para o proprietário. */
 function MercadoMock({ active }: { active: boolean }) {
-  const bairros = [
-    ["Jardins", 14600],
-    ["Itaim Bibi", 13900],
-    ["Moema", 12800],
-    ["Pinheiros", 12100],
-    ["Vila Mariana", 11200],
-  ] as const;
-  const max = bairros[0][1];
+  const amostras = [
+    ["VivaReal", "R$ 920.000", "98 m²", "R$ 9.388/m²"],
+    ["Zap", "R$ 885.000", "92 m²", "R$ 9.620/m²"],
+    ["Vendido", "R$ 860.000", "95 m²", "R$ 9.053/m²"],
+  ];
+  const valores = [
+    ["Pouco provável", "R$ 965 mil", "bg-rose-50 text-rose-700"],
+    ["Valor de mercado", "R$ 893 mil", "bg-accent text-white"],
+    ["Urgência", "R$ 804 mil", "bg-verified-soft text-verified"],
+  ];
   return (
     <Stage k="mercado" icon={<LineChart className="size-4" />} title="Estudo de mercado">
-      <div className="grid grid-cols-3 gap-2.5">
-        {[
-          ["Preço médio do m²", "R$ 12.756"],
-          ["Tempo para vender", "45 dias"],
-          ["Margem de negociação", "4,2%"],
-        ].map(([l, v], i) => (
-          <motion.div key={l} {...rise(active, 0.1 + i * 0.08)} className="rounded-xl bg-canvas p-3">
-            <p className="text-[10.5px] text-muted">{l}</p>
-            <p className="mt-1 font-display text-[17px] font-semibold">{v}</p>
+      <div className="flex items-end justify-between">
+        <div>
+          <p className="text-[12px] text-muted">Imóvel avaliado</p>
+          <p className="font-display text-[17px] font-semibold">Apto 3 quartos · 95 m²</p>
+        </div>
+        <p className="text-[12px] font-semibold text-accent">3 amostras</p>
+      </div>
+      <ul className="mt-3 space-y-1.5">
+        {amostras.map(([portal, valor, area, m2], i) => (
+          <motion.li key={portal} {...rise(active, 0.1 + i * 0.08)} className="flex items-center gap-3 rounded-xl border border-line px-3 py-2 text-[12px]">
+            <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${portal === "Vendido" ? "bg-verified-soft text-verified" : "bg-accent-soft text-accent"}`}>{portal}</span>
+            <span className="font-semibold">{valor}</span>
+            <span className="text-muted">{area}</span>
+            <span className="ml-auto text-muted">{m2}</span>
+          </motion.li>
+        ))}
+      </ul>
+      <div className="mt-4 grid grid-cols-3 gap-2">
+        {valores.map(([rotulo, valor, cls], i) => (
+          <motion.div
+            key={rotulo}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={active ? { opacity: 1, scale: 1 } : {}}
+            transition={{ delay: 0.5 + i * 0.12, type: "spring", stiffness: 260, damping: 22 }}
+            className={`rounded-xl p-2.5 ${cls}`}
+          >
+            <p className="text-[10px] font-semibold opacity-80">{rotulo}</p>
+            <p className="mt-0.5 font-display text-[15px] font-semibold">{valor}</p>
           </motion.div>
         ))}
       </div>
-      <p className="mt-5 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">Apartamentos · preço do m² por bairro</p>
-      <ul className="mt-3 space-y-3">
-        {bairros.map(([b, v], i) => (
-          <li key={b}>
-            <div className="mb-1 flex justify-between text-[12px]">
-              <span className="font-semibold">{b}</span>
-              <span className="text-muted">R$ {v.toLocaleString("pt-BR")}/m²</span>
-            </div>
-            <div className="h-2 overflow-hidden rounded-full bg-canvas-deep">
-              <motion.div
-                className="h-full rounded-full bg-accent"
-                initial={{ width: 0 }}
-                animate={active ? { width: `${(v / max) * 100}%` } : {}}
-                transition={{ duration: 1, delay: 0.4 + i * 0.08, ease: EASE_OUT_EXPO }}
-              />
-            </div>
-          </li>
-        ))}
-      </ul>
+      <motion.div {...rise(active, 1)} className="mt-4 flex gap-2">
+        <span className="inline-flex flex-1 items-center justify-center rounded-full border border-line-strong py-2 text-[12px] font-semibold">Apresentação</span>
+        <span className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full bg-[#25d366] py-2 text-[12px] font-semibold text-white">
+          <WhatsAppIcon className="size-3.5" /> Enviar ao proprietário
+        </span>
+      </motion.div>
     </Stage>
   );
 }

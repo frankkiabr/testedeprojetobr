@@ -93,14 +93,16 @@ export default function PaginaEstudo({ e }: { e: EstudoPublico }) {
     ["Em condomínio", e.em_condominio == null ? null : e.em_condominio ? "Sim" : "Não"],
   ].filter((x): x is [string, string] => !!x[1]);
 
+  // A apresentação existe para convencer o proprietário: os passos sempre levam à autorização,
+  // que é a decisão pedida a ele agora (não refletem o andamento interno do estudo no app).
   const passos = [
-    { t: "Visita ao imóvel", icon: Home, feito: !!e.etapas?.visita },
+    { t: "Visita ao imóvel", icon: Home, feito: true },
     { t: "Estudo de mercado", icon: SearchCheck, feito: true },
-    { t: "Apresentação", icon: Megaphone, feito: !!e.etapas?.apresentado },
-    { t: "Autorização", icon: FileSignature, feito: !!e.etapas?.exclusividade },
-    { t: loc ? "Locação" : "Venda", icon: Handshake, feito: !!e.etapas?.vendido },
+    { t: `Autorização de ${loc ? "locação" : "venda"}`, icon: FileSignature, feito: false },
+    { t: "Divulgação", icon: Megaphone, feito: false },
+    { t: loc ? "Locação" : "Venda", icon: Handshake, feito: false },
   ];
-  const atual = passos.findIndex((p) => !p.feito);
+  const atual = 2;
 
   return (
     <div className="min-h-screen bg-linear-to-b from-canvas/60 to-bg text-ink print:bg-white">
@@ -452,11 +454,11 @@ export default function PaginaEstudo({ e }: { e: EstudoPublico }) {
         {/* Próximos passos */}
         <Surge>
           <section>
-            <Titulo centro eyebrow={atual < 0 ? "Negócio concluído" : "Próximos passos"}>
-              {atual < 0 ? `Imóvel ${loc ? "alugado" : "vendido"}!` : `Vamos ${vender} o seu imóvel?`}
+            <Titulo centro eyebrow="Próximos passos">
+              Vamos {vender} o seu imóvel?
             </Titulo>
             <p className="mx-auto mt-3 max-w-xl text-center text-muted">
-              {atual < 0 ? "Obrigado pela confiança. Foi um prazer cuidar de cada etapa com você." : "O próximo passo depende de você. Será um prazer cuidar de cada etapa com você."}
+              O próximo passo é a autorização para eu cuidar da {loc ? "locação" : "venda"} do seu imóvel. Será um prazer acompanhar cada etapa com você.
             </p>
             <ol className="mt-10 grid grid-cols-5 gap-2 sm:gap-4">
               {passos.map((p, i) => {

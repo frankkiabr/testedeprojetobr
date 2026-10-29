@@ -96,8 +96,8 @@ export function Modal({
   subtitle?: ReactNode;
   children: ReactNode;
   footer?: ReactNode;
-  /** Janela mais larga (ex.: conferir uma tabela). */
-  largo?: boolean;
+  /** Janela mais larga (ex.: conferir uma tabela); "extra" para formulários com muitos campos por linha. */
+  largo?: boolean | "extra";
 }) {
   useEsc(open, onClose);
   // Sem animação de saída: ao fechar, a camada que cobre a tela some na hora (antes podia ficar presa e travar os cliques).
@@ -117,7 +117,7 @@ export function Modal({
             animate={{ y: 0, opacity: 1, scale: 1 }}
             transition={{ duration: 0.4, ease: EASE_OUT_EXPO }}
             onMouseDown={(e) => e.stopPropagation()}
-            className={`flex max-h-[92vh] w-full ${largo ? "max-w-3xl" : "max-w-lg"} flex-col overflow-hidden rounded-t-3xl bg-bg shadow-float sm:rounded-3xl`}
+            className={`flex max-h-[92vh] w-full ${largo === "extra" ? "max-w-5xl" : largo ? "max-w-3xl" : "max-w-lg"} flex-col overflow-hidden rounded-t-3xl bg-bg shadow-float sm:rounded-3xl`}
           >
             <div className="flex items-start justify-between gap-4 border-b border-line px-6 py-5">
               <div>

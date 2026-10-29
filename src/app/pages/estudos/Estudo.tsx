@@ -653,6 +653,7 @@ function EditarImovel({ open, a, onClose, onSalvar }: { open: boolean; a: Avalia
       open={open}
       onClose={onClose}
       title="Dados do imóvel avaliado"
+      largo="extra"
       footer={
         <>
           <button className={btn.outline} onClick={onClose}>

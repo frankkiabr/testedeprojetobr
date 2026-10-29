@@ -8,10 +8,12 @@
 
 ## Principais funções
 - Funil de leads por etapa, com checklist de atendimento; cada corretor vê só os próprios clientes e o administrador vê todos.
+- Follow-up: dias sem contato por lead e lista de atrasados; importação de leads por planilha (Excel/CSV); documentos anexados a cada cliente em área privada.
+- Planos de equipe: rodízio de leads entre os corretores, com repasse automático se ninguém fizer contato no prazo.
 - Captações com checklist de documentos e relatório ao proprietário pelo WhatsApp.
 - Vendas e locações com VGV, honorários e comissão de cada participante (a comissão só é vista pelo próprio corretor e pelo administrador).
 - Ranking e metas da equipe; agenda com sincronização com o Google Agenda.
-- Estudo de mercado por amostras (valor de mercado, valor para venda rápida) com apresentação para o proprietário.
+- Estudo de mercado por amostras de portais (valor máximo, valor de mercado e valor para venda rápida), com uma apresentação completa por link ou PDF para convencer o proprietário.
 - Portal de imóveis (https://frankkia.com/imoveis): cada captação pode virar anúncio com página própria; quem pede contato vira lead do corretor.
 - Academy (trilhas de treinamento da equipe) e Marketing (materiais oficiais da marca).
 

@@ -78,13 +78,13 @@ export const features = {
       key: "captacao",
       title: "Checklist de captação",
       tag: "Captação",
-      text: "Documentação, matrícula, avaliação e autorização: saiba exatamente o que falta para cada imóvel captado estar pronto para negociar.",
+      text: "Documentação, matrícula, avaliação e autorização: saiba o que falta para cada imóvel captado estar pronto para negociar, com os documentos do proprietário guardados em área privada.",
     },
     {
       key: "leads",
       title: "Funil de leads",
       tag: "Atendimento",
-      text: "Leads organizados por etapa, com checklist de atendimento e ranking de quem mais atende na equipe.",
+      text: "Leads por etapa, com checklist de atendimento e aviso de quem está há dias sem contato. Importe sua planilha e, na equipe, distribua os leads em rodízio.",
     },
     {
       key: "agenda",
@@ -101,7 +101,7 @@ export const features = {
       key: "mercado",
       title: "Estudo de mercado",
       tag: "Inteligência",
-      text: "Preço do m² por bairro, tempo médio de venda e margem de negociação, a partir dos negócios fechados pela imobiliária.",
+      text: "Compare o imóvel com anúncios parecidos (é só colar o link do portal), chegue ao valor de mercado e envie ao proprietário uma apresentação pronta para convencer.",
     },
   ] as { key: FeatureKey; title: string; tag?: string; text: string }[],
 };
@@ -124,7 +124,7 @@ export const pricing = {
   eyebrow: "Planos",
   title: "Planos para o tamanho da sua equipe.",
   text: "Planos mensais pela quantidade de corretores. O administrador da imobiliária não ocupa vaga.",
-  note: "Leads, captações, vendas, agenda, Academy e Marketing sem limite em todos os planos. O limite de anúncios vale só para imóveis publicados no portal de imóveis da Frankkia. Planos e condições sujeitos à disponibilidade comercial.",
+  note: "Leads, captações, vendas, agenda, estudos de mercado e Marketing sem limite em todos os planos (Academy nos planos de equipe). O limite de anúncios vale só para imóveis publicados no portal de imóveis da Frankkia. Planos e condições sujeitos à disponibilidade comercial.",
   cta: "Solicitar demonstração",
   ctaTeste: "Começar teste grátis",
   ctaConversa: "Falar com o Luiz",
@@ -156,15 +156,15 @@ export const faq = {
   items: [
     {
       q: "O que é Frankkia?",
-      a: "A Frankkia é uma proposta de ecossistema de tecnologia para o mercado imobiliário, reunindo gestão, performance, capacitação e ferramentas comerciais. Inclui um portal público onde os imóveis das imobiliárias e corretores clientes são anunciados.",
+      a: "A Frankkia é uma plataforma para o mercado imobiliário que reúne leads, captações, vendas, agenda, estudo de mercado, desempenho da equipe e capacitação. Inclui um portal público onde os imóveis das imobiliárias e corretores clientes são anunciados.",
     },
     {
       q: "Para quem a plataforma foi desenvolvida?",
-      a: "Para proprietários, diretores e gestores de imobiliárias, além dos corretores e equipes comerciais que participam da operação no dia a dia.",
+      a: "Para donos e gestores de imobiliárias e suas equipes de corretores, e também para o corretor autônomo, que tem o plano Solo.",
     },
     {
       q: "A contratação é individual ou por imobiliária?",
-      a: "O modelo de contratação previsto é por imobiliária, com planos mensais dimensionados pela quantidade de corretores. Os planos e as condições estão sujeitos à disponibilidade comercial.",
+      a: "Os dois. Imobiliárias contratam um plano de equipe pela quantidade de corretores (o administrador não ocupa vaga). O corretor autônomo contrata o plano Solo, só para ele.",
     },
     {
       q: "Como os corretores recebem acesso?",
@@ -172,7 +172,7 @@ export const faq = {
     },
     {
       q: "Posso importar dados de planilhas?",
-      a: "A importação de planilhas faz parte da proposta do módulo Frankkia Performance. Esse recurso está em desenvolvimento e ainda não pode ser utilizado nesta versão.",
+      a: "Sim. Em Leads, use “Importar” e envie a planilha do Excel ou do Google Planilhas (ou um CSV). A Frankkia reconhece as colunas, mostra uma prévia e deixa de fora telefones inválidos e clientes que já estão cadastrados.",
     },
     {
       q: "A Frankkia funciona para qualquer imobiliária?",
@@ -191,8 +191,8 @@ export const faq = {
       a: "Esse envio automático está em desenvolvimento. Por enquanto, os anúncios ficam no portal da Frankkia e podem ser compartilhados por link.",
     },
     {
-      q: "Como solicitar uma demonstração?",
-      a: "Clique em “Solicitar demonstração” e deixe seu nome, imobiliária, e-mail e WhatsApp. A equipe Frankkia fala com você pelo WhatsApp em até 24 horas para agendar uma apresentação sem compromisso.",
+      q: "Como começo a usar?",
+      a: "Nos planos Solo, Equipe 5 e Equipe 10, crie a conta e teste grátis por 7 dias, sem cartão. Nos planos maiores, ou se preferir uma apresentação antes, fale com a gente pelo WhatsApp.",
     },
   ],
 };
@@ -257,12 +257,12 @@ export const captura = {
       {
         title: "Imobiliárias",
         text: "O administrador vê a operação inteira: funil, captações, vendas, ranking e metas. Cada corretor vê só os próprios clientes e negócios.",
-        pontos: ["Planos de 5 a 60 corretores", "O administrador não ocupa vaga", "Academy para treinar a equipe"],
+        pontos: ["Planos de 5 a 60 corretores", "O administrador não ocupa vaga", "Rodízio de leads e Academy para a equipe"],
         planos: "Equipe",
       },
       {
         title: "Corretores autônomos",
-        text: "Todas as ferramentas para quem trabalha sozinho, sem equipe para gerenciar: leads, captações, agenda, Academy e seus imóveis no portal.",
+        text: "Todas as ferramentas para quem trabalha sozinho, sem equipe para gerenciar: leads, captações, agenda, estudo de mercado e seus imóveis no portal.",
         pontos: ["1 corretor, sem equipe", "50 anúncios no portal", "Relatório ao proprietário pelo WhatsApp"],
         planos: "Solo",
       },
@@ -316,18 +316,23 @@ export const publicos = {
     ],
     recursos: [
       { t: "Funil de leads da equipe", d: "Quadro por etapa, checklist de atendimento e filtro por corretor." },
+      { t: "Rodízio de leads", d: "Cada lead vai para o próximo corretor da fila; sem contato no prazo, passa para o seguinte." },
+      { t: "Ninguém esquecido", d: "Veja há quantos dias cada lead está sem contato e quais estão atrasados." },
       { t: "Captações com checklist", d: "Documentação, autorização e relatório ao proprietário pelo WhatsApp." },
       { t: "Ranking e metas", d: "VGV, locações, captações e leads atendidos, por corretor e por mês." },
       { t: "Comissão protegida", d: "Cada corretor vê só a própria comissão. Você vê todas." },
       { t: "Agenda da equipe", d: "Visitas e compromissos de todos, com o Google Agenda de cada um." },
-      { t: "Estudo de mercado", d: "Avaliação por amostras e apresentação pronta para o proprietário." },
+      { t: "Estudo de mercado", d: "Valor por amostras de portais e uma apresentação completa, pronta para convencer o proprietário." },
       { t: "Portal de imóveis", d: "Anúncios com página própria; quem pede contato vira lead do corretor." },
+      { t: "Traga sua base", d: "Importe os clientes da planilha do Excel ou do Google Planilhas em minutos." },
+      { t: "Documentos dos clientes", d: "RG, comprovantes e contratos anexados ao cliente, em área privada." },
       { t: "Academy e marketing", d: "Trilhas de treinamento e os materiais oficiais da sua marca para a equipe." },
     ],
     faq: [
       { q: "Um corretor vê os clientes dos outros?", a: "Não. Cada corretor vê só os próprios leads, captações, proprietários e negócios. O administrador vê tudo." },
       { q: "E se um corretor sair da imobiliária?", a: "Você desativa o acesso e tudo o que ele fez continua com a imobiliária: clientes, captações, vendas e o histórico no ranking." },
       { q: "O administrador ocupa vaga?", a: "Não. O plano Equipe 10, por exemplo, tem o administrador mais 10 corretores." },
+      { q: "Como os leads são distribuídos?", a: "Você escolhe o corretor ou usa o rodízio: cada lead vai para o próximo da fila e, se ninguém fizer contato no prazo, passa para o seguinte. Leads do portal vão para o corretor do anúncio." },
       { q: "Posso testar antes?", a: "Sim: 7 dias grátis, sem cartão. Ao fim do teste, nada é cobrado automaticamente." },
     ],
   },
@@ -345,17 +350,22 @@ export const publicos = {
     ],
     recursos: [
       { t: "Funil de leads", d: "Etapas de atendimento, checklist e aviso de lead novo do portal." },
+      { t: "Ninguém esquecido", d: "Veja há quantos dias cada cliente está sem contato e quais estão atrasados." },
       { t: "Captações e proprietários", d: "Checklist de documentos e relatório ao proprietário pelo WhatsApp." },
       { t: "Sua página no portal", d: "Seus imóveis com fotos, mapa, seu CRECI e suas redes sociais." },
-      { t: "Estudo de mercado", d: "Valor de mercado por amostras e apresentação com a sua cara." },
+      { t: "Estudo de mercado", d: "Valor por amostras de portais e uma apresentação completa, com a sua foto e o seu “Sobre mim”." },
       { t: "Agenda", d: "Visitas e compromissos, com o Google Agenda no celular." },
       { t: "Seus números", d: "VGV, honorários e meta do mês, sem dividir com ninguém." },
       { t: "Simulador de financiamento", d: "Parcela SAC e Price para enviar ao cliente." },
+      { t: "Traga sua base", d: "Importe seus clientes da planilha do Excel ou do Google Planilhas." },
+      { t: "Documentos dos clientes", d: "RG, comprovantes e contratos anexados ao cliente, em área privada." },
+      { t: "Avisos na hora", d: "Lead novo do portal, cliente atrasado e compromissos do dia aparecem no sino." },
       { t: "Plano Solo", d: "Sem equipe para gerenciar. Montou uma equipe? A conta muda de plano e nada se perde." },
     ],
     faq: [
       { q: "Preciso ter CRECI?", a: "Sim. O CRECI aparece nos seus anúncios, como exige o conselho." },
-      { q: "Meus clientes ficam visíveis para outras pessoas?", a: "Não. Leads, proprietários e negócios são só seus. No portal aparecem apenas os imóveis que você decidir anunciar." },
+      { q: "Meus clientes ficam visíveis para outras pessoas?", a: "Não. Leads, proprietários, documentos e negócios são só seus. No portal aparecem apenas os imóveis que você decidir anunciar." },
+      { q: "Consigo trazer meus clientes de outro sistema?", a: "Sim. Exporte uma planilha (Excel ou CSV) e use “Importar” em Leads. Quem já está cadastrado com o mesmo WhatsApp fica de fora." },
       { q: "E se eu montar uma equipe depois?", a: "A Frankkia muda a sua conta para um plano de equipe e mantém todos os seus dados." },
       { q: "Posso testar antes?", a: "Sim: 7 dias grátis, sem cartão. Ao fim do teste, nada é cobrado automaticamente." },
     ],
