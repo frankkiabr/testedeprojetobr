@@ -23,7 +23,7 @@ function Sidebar({ onNavigate, recolhido }: { onNavigate?: () => void; recolhido
     { to: "/admin", label: "Visão geral", icon: LayoutGrid, end: true },
     { to: "/admin/agenda", label: "Agenda", icon: CalendarDays },
     { to: "/admin/interessados", label: "Interessados", icon: Inbox, count: novosInteressados },
-    { to: "/admin/imobiliarias", label: "Imobiliárias", icon: Building2 },
+    { to: "/admin/imobiliarias", label: "Contas", icon: Building2 },
     { to: "/admin/corretores", label: "Corretores", icon: Users },
     { to: "/admin/creci", label: "CRECI", icon: BadgeCheck },
     { to: "/admin/upgrades", label: "Upgrades", icon: Rocket, count: aLiberar },

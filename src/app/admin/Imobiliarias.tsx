@@ -8,7 +8,7 @@ import type { ClienteStatus, PlanoNome } from "@/data/types";
 import { brl, int, relTime } from "@/lib/format";
 import { precoPlano } from "@/lib/planos";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
-import { Avatar, Badge, Card, PageHeader, ProgressBar, Select, stagger } from "../kit";
+import { Avatar, Badge, Card, PageHeader, ProgressBar, Segmented, Select, stagger } from "../kit";
 import { btn, Drawer, EmptyState, Field, inputCls, Modal, SearchInput, SelectField } from "../forms";
 import { useSession } from "../session";
 import { enviarConvitePorEmail, mensagemErro, supabase } from "@/integrations/frankkia/client";
@@ -353,7 +353,7 @@ function NovaImobiliariaModal({ open, onClose, onCreated }: { open: boolean; onC
           onClose();
           onCreated(criada.id);
         }}
-        title="Imobiliária criada"
+        title="Conta criada"
         subtitle={
           criada.enviado
             ? `Enviamos o link de primeiro acesso para ${f.adminEmail.trim().toLowerCase()}. Se quiser, mande também por WhatsApp.`
@@ -392,8 +392,8 @@ function NovaImobiliariaModal({ open, onClose, onCreated }: { open: boolean; onC
     <Modal
       open={open}
       onClose={onClose}
-      title="Nova imobiliária"
-      subtitle="Depois do pagamento, cadastre a imobiliária e envie o acesso do administrador."
+      title="Nova conta"
+      subtitle="Depois do pagamento, cadastre a imobiliária (ou o corretor Solo) e envie o acesso."
       footer={
         <>
           {erro ? (
@@ -467,6 +467,7 @@ export default function Imobiliarias() {
   const [busca, setBusca] = useState("");
   const [status, setStatus] = useState("");
   const [plano, setPlano] = useState("");
+  const [tipo, setTipo] = useState<"todas" | "equipe" | "solo">("todas");
   const [nova, setNova] = useState(false);
 
   const setParam = (k: string, v: string | null) => {
@@ -480,25 +481,35 @@ export default function Imobiliarias() {
   const list = useMemo(() => {
     const q = busca.trim().toLowerCase();
     return all
-      .filter((c) => (!status || c.status === status) && (!plano || c.plano === plano) && (!q || `${c.nome} ${c.cidade} ${c.adminNome} ${c.adminEmail}`.toLowerCase().includes(q)))
+      .filter((c) => (tipo === "todas" || (tipo === "solo") === ehSolo(c.plano)) && (!status || c.status === status) && (!plano || c.plano === plano) && (!q || `${c.nome} ${c.cidade} ${c.adminNome} ${c.adminEmail}`.toLowerCase().includes(q)))
       .sort((a, b) => a.nome.localeCompare(b.nome));
-  }, [all, busca, status, plano, all.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [all, busca, status, plano, tipo, all.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="space-y-5">
       <motion.div {...stagger(0)}>
         <PageHeader
-          title="Imobiliárias"
-          subtitle={`${all.length} imobiliárias no ecossistema Frankkia.`}
+          title="Contas"
+          subtitle={`${all.length} ${all.length === 1 ? "conta" : "contas"}: imobiliárias e corretores autônomos (Solo) que usam a Frankkia.`}
           actions={
             <button onClick={() => setNova(true)} className={btn.accent}>
-              <Plus className="size-4" /> Nova imobiliária
+              <Plus className="size-4" /> Nova conta
             </button>
           }
         />
       </motion.div>
 
       <motion.div {...stagger(1)} className="flex flex-wrap items-center gap-2">
+        <Segmented
+          id="contas-tipo"
+          value={tipo}
+          onChange={setTipo}
+          options={[
+            { value: "todas", label: `Todas (${all.length})` },
+            { value: "equipe", label: `Imobiliárias (${all.filter((c) => !ehSolo(c.plano)).length})` },
+            { value: "solo", label: `Corretores Solo (${all.filter((c) => ehSolo(c.plano)).length})` },
+          ]}
+        />
         <SearchInput value={busca} onChange={setBusca} placeholder="Buscar por nome, cidade ou administrador..." />
         <Select
           label="Status"
@@ -512,13 +523,13 @@ export default function Imobiliarias() {
       <motion.div {...stagger(2)}>
         <Card className="overflow-hidden">
           {list.length === 0 ? (
-            <EmptyState icon={<Building2 className="size-6" />} title="Nenhuma imobiliária encontrada" text="Ajuste a busca ou os filtros." />
+            <EmptyState icon={<Building2 className="size-6" />} title="Nenhuma conta encontrada" text="Ajuste a busca ou os filtros." />
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[56rem] text-sm">
                 <thead>
                   <tr className="border-b border-line text-left text-xs text-muted">
-                    <th className="px-5 py-3 font-semibold">Imobiliária</th>
+                    <th className="px-5 py-3 font-semibold">{tipo === "solo" ? "Corretor" : tipo === "equipe" ? "Imobiliária" : "Conta"}</th>
                     <th className="px-3 py-3 font-semibold">Plano</th>
                     <th className="px-3 py-3 font-semibold">Vagas</th>
                     <th className="px-3 py-3 font-semibold">Status</th>

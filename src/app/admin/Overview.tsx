@@ -113,7 +113,7 @@ export default function AdminOverview() {
       <motion.div {...stagger(0)}>
         <PageHeader
           title={`${greeting()}, ${user.nome.split(" ")[0]}`}
-          subtitle="Como a Frankkia está indo em todas as imobiliárias."
+          subtitle="Como a Frankkia está indo em todas as contas."
           foto={<Avatar user={user} className="size-12 translate-y-0.5 bg-ink text-base text-bg sm:size-14 sm:translate-y-1 sm:text-lg" />}
         />
       </motion.div>
@@ -166,7 +166,7 @@ export default function AdminOverview() {
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
         <motion.div {...stagger(5)}>
           <Card className="h-full">
-            <CardHeader title="Evolução da receita mensal" subtitle="Soma dos planos das imobiliárias pagantes." />
+            <CardHeader title="Evolução da receita mensal" subtitle="Soma dos planos das contas pagantes." />
             <div className="px-5 pb-6 pt-6 sm:px-6">
               <LineArea data={serie} format={brl} />
             </div>
@@ -279,7 +279,7 @@ export default function AdminOverview() {
 
         <motion.div {...stagger(9)}>
           <Card className="h-full">
-            <CardHeader title="Módulos mais usados" subtitle="Ações nos últimos 30 dias, somando todas as imobiliárias." />
+            <CardHeader title="Módulos mais usados" subtitle="Ações nos últimos 30 dias, somando todas as contas." />
             <ul className="space-y-4 px-6 pb-6 pt-6">
               {modulos.map((x, i) => (
                 <li key={x.nome}>
@@ -299,7 +299,7 @@ export default function AdminOverview() {
               ))}
             </ul>
             <Link to="/admin/imobiliarias" className="mx-6 mb-6 inline-flex items-center gap-1.5 text-sm font-semibold text-accent">
-              Ver imobiliárias <ArrowRight className="size-4" />
+              Ver contas <ArrowRight className="size-4" />
             </Link>
           </Card>
         </motion.div>
