@@ -4,8 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, Check, CheckCircle2, Clock, CreditCard, Rocket, Sparkles } from "lucide-react";
 import { pricing } from "@/content";
+import { linkWhatsApp } from "@/lib/whatsapp";
+import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 import { imobiliaria } from "@/data/demo";
-import { pedidoAberto, PLANOS, PLANOS_EQUIPE } from "@/data/platform";
+import { ehSolo, pedidoAberto, PLANOS, PLANOS_EQUIPE } from "@/data/platform";
 import { usoDoPlano, vagasUsadas } from "@/data/queries";
 import { useStore } from "@/data/store";
 import type { PlanoNome } from "@/data/types";
@@ -33,10 +35,22 @@ export function UpgradeModal({ open, onClose }: { open: boolean; onClose: () => 
   const { modo, conta } = useSession();
   // No teste grátis, dá para contratar o próprio plano do teste (ou um maior)
   const emTeste = modo === "real" && conta?.imobiliaria?.status === "teste";
-  const opcoes = ORDEM.filter((p) =>
-    emTeste
-      ? PLANOS[p].limite >= imobiliaria.limiteCorretores
-      : PLANOS[p].limite > imobiliaria.limiteCorretores,
+  // Corretor Solo: contrata o próprio Solo; virar equipe é combinado com a Frankkia
+  const solo = ehSolo(imobiliaria.plano);
+  const opcoes: PlanoNome[] = solo
+    ? emTeste
+      ? ["Solo"]
+      : []
+    : ORDEM.filter((p) => (emTeste ? PLANOS[p].limite >= imobiliaria.limiteCorretores : PLANOS[p].limite > imobiliaria.limiteCorretores));
+  const falarEquipe = (
+    <a
+      href={linkWhatsApp(`Olá! Sou corretor no plano Solo da Frankkia e quero montar uma equipe.`)}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-1.5 font-semibold text-accent hover:underline"
+    >
+      <WhatsAppIcon className="size-4" /> Fale com a Frankkia
+    </a>
   );
   const [plano, setPlano] = useState<PlanoNome | null>(opcoes[0] ?? null);
   const [ciclo, setCiclo] = useState<Ciclo>("mensal");
@@ -50,7 +64,7 @@ export function UpgradeModal({ open, onClose }: { open: boolean; onClose: () => 
       open={open}
       onClose={onClose}
       title={emTeste ? "Contratar um plano" : "Fazer upgrade do plano"}
-      subtitle={`Hoje: ${imobiliaria.plano} · ${vagasUsadas()} de ${imobiliaria.limiteCorretores} vagas em uso.`}
+      subtitle={solo ? (emTeste ? "Hoje: teste grátis do plano Solo · corretor autônomo." : "Hoje: plano Solo · corretor autônomo.") : `Hoje: ${imobiliaria.plano} · ${vagasUsadas()} de ${imobiliaria.limiteCorretores} vagas em uso.`}
       footer={
         opcoes.length ? (
           <>
@@ -77,7 +91,7 @@ export function UpgradeModal({ open, onClose }: { open: boolean; onClose: () => 
             <CicloToggle ciclo={ciclo} onChange={setCiclo} />
           </div>
           {opcoes.map((p) => {
-            const info = pricing.plans.find((x) => x.name === p)!;
+            const info = p === "Solo" ? pricing.solo : pricing.plans.find((x) => x.name === p)!;
             const sel = plano === p;
             return (
               <button
@@ -113,14 +127,23 @@ export function UpgradeModal({ open, onClose }: { open: boolean; onClose: () => 
               </button>
             );
           })}
+          {solo && <p className="text-sm text-muted">Quer montar uma equipe com outros corretores? {falarEquipe}</p>}
           <p className="text-xs text-subtle">
-            Pagamento por cartão, PIX ou boleto. As novas vagas são liberadas assim que o pagamento
-            é confirmado. {pricing.note}
+            {solo
+              ? "Pagamento por cartão, PIX ou boleto. O acesso continua sem interrupção assim que o pagamento é confirmado."
+              : "Pagamento por cartão, PIX ou boleto. As novas vagas são liberadas assim que o pagamento é confirmado."}{" "}
+            {pricing.note}
           </p>
         </div>
       ) : (
         <p className="text-sm text-muted">
-          Você já está no maior plano. Para equipes acima de 60 corretores, fale com a Frankkia.
+          {solo ? (
+            <>
+              Você está no plano Solo, para corretor autônomo. Para montar uma equipe com outros corretores, {falarEquipe}.
+            </>
+          ) : (
+            "Você já está no maior plano. Para equipes acima de 60 corretores, fale com a Frankkia."
+          )}
         </p>
       )}
     </Modal>
