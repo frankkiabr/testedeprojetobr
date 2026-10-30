@@ -27,10 +27,14 @@ const TOM = { pendente: "warn", verificado: "verified", irregular: "danger" } as
 
 /**
  * Não há API oficial do COFECI/CRECI e cada estado tem o seu site de consulta.
- * O botão abre a busca pela consulta pública do CRECI do estado (o primeiro resultado é o site oficial).
+ * Estados com a página de consulta conhecida abrem direto nela (o número é copiado no botão ao lado);
+ * os outros abrem a busca pela consulta pública do CRECI do estado (o primeiro resultado é o site oficial).
  */
+const CONSULTA_POR_UF: Record<string, string> = {
+  PA: "https://www.crecipa.conselho.net.br/form_pesquisa_cadastro_geral_site.php",
+};
 const linkConsulta = (l: Linha) =>
-  `https://www.google.com/search?q=${encodeURIComponent(`CRECI-${l.uf || ""} consulta corretor inscrito ${l.creci}`)}`;
+  CONSULTA_POR_UF[l.uf] ?? `https://www.google.com/search?q=${encodeURIComponent(`CRECI-${l.uf || ""} consulta corretor inscrito ${l.creci}`)}`;
 
 const data = (s: string | null) => (s ? new Date(s).toLocaleDateString("pt-BR") : "");
 
