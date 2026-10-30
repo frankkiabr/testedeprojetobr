@@ -1,4 +1,5 @@
 import { Trilha } from "@/components/Trilha";
+import { RodapeLinks } from "@/components/PaginaSimples";
 import { useEffect, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -69,6 +70,7 @@ function PaginaLegal({ titulo, intro, secoes, outra }: { titulo: string; intro: 
           </Link>
         </div>
       </motion.main>
+      <RodapeLinks largura="max-w-3xl" />
     </div>
   );
 }
