@@ -1,5 +1,6 @@
 /** Janelas (modal e painel lateral), campos de formulário, checklist e avisos. */
 import { useEffect, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, ChevronDown, Search, X } from "lucide-react";
 import { useStore } from "@/data/store";
@@ -25,24 +26,32 @@ export function BotaoSalvar({
   disabled,
   className = btn.primary,
   children = "Salvar",
+  depois,
 }: {
+  /** Devolve `false` quando não salvou (ex.: erro já avisado), e aí o "Salvo" não aparece. */
   onSalvar: () => unknown;
   disabled?: boolean;
   className?: string;
   children?: ReactNode;
+  /** Chamado logo depois do "Salvo" aparecer (ex.: fechar a janela). */
+  depois?: () => void;
 }) {
   const [salvo, setSalvo] = useState(false);
+  const [salvando, setSalvando] = useState(false);
   useEffect(() => {
     if (!salvo) return;
-    const t = setTimeout(() => setSalvo(false), 2200);
+    const t = setTimeout(() => (depois ? depois() : setSalvo(false)), depois ? 900 : 2200);
     return () => clearTimeout(t);
-  }, [salvo]);
+  }, [salvo]); // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <button
       className={`${className} min-w-28 ${salvo ? "!border-verified !bg-verified !text-white !opacity-100" : ""}`}
-      disabled={disabled}
+      disabled={disabled || salvando || (salvo && !!depois)}
       onClick={async () => {
-        if ((await onSalvar()) !== false) setSalvo(true);
+        setSalvando(true);
+        const r = await onSalvar();
+        setSalvando(false);
+        if (r !== false) setSalvo(true);
       }}
     >
       <motion.span
@@ -62,15 +71,6 @@ export function BotaoSalvar({
       </motion.span>
     </button>
   );
-}
-
-function useEsc(open: boolean, onClose: () => void) {
-  useEffect(() => {
-    if (!open) return;
-    const f = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    window.addEventListener("keydown", f);
-    return () => window.removeEventListener("keydown", f);
-  }, [open, onClose]);
 }
 
 function CloseButton({ onClose }: { onClose: () => void }) {
@@ -99,16 +99,17 @@ export function Modal({
   /** Janela mais larga (ex.: conferir uma tabela); "extra" para formulários com muitos campos por linha. */
   largo?: boolean | "extra";
 }) {
-  useEsc(open, onClose);
+  // Clicar fora ou apertar Esc não fecha: assim ninguém perde o que preencheu. Fecha pelo X, por Cancelar ou ao salvar.
   // Sem animação de saída: ao fechar, a camada que cobre a tela some na hora (antes podia ficar presa e travar os cliques).
-  return (
+  if (!open) return null;
+  // Vai direto para o fim da página: uma janela aberta de dentro de outra (ex.: confirmar exclusão) fica por cima dela, e não presa dentro.
+  return createPortal(
     <>
       {open && (
         <motion.div
           className="fixed inset-0 z-[60] flex items-end justify-center bg-ink/30 backdrop-blur-xs sm:items-center sm:p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          onMouseDown={onClose}
         >
           <motion.div
             role="dialog"
@@ -116,22 +117,22 @@ export function Modal({
             initial={{ y: 40, opacity: 0, scale: 0.98 }}
             animate={{ y: 0, opacity: 1, scale: 1 }}
             transition={{ duration: 0.4, ease: EASE_OUT_EXPO }}
-            onMouseDown={(e) => e.stopPropagation()}
             className={`flex max-h-[92vh] w-full ${largo === "extra" ? "max-w-5xl" : largo ? "max-w-3xl" : "max-w-lg"} flex-col overflow-hidden rounded-t-3xl bg-bg shadow-float sm:rounded-3xl`}
           >
             <div className="flex items-start justify-between gap-4 border-b border-line px-6 py-5">
-              <div>
+              <div className="min-w-0">
                 <h2 className="font-display text-xl font-semibold tracking-tight">{title}</h2>
-                {subtitle && <p className="mt-0.5 text-sm text-muted">{subtitle}</p>}
+                {subtitle && <div className="mt-0.5 text-sm text-muted">{subtitle}</div>}
               </div>
               <CloseButton onClose={onClose} />
             </div>
-            <div className="overflow-y-auto px-6 py-5">{children}</div>
-            {footer && <div className="flex justify-end gap-2 border-t border-line bg-canvas/50 px-6 py-4">{footer}</div>}
+            <div className="flex-1 overflow-y-auto px-6 py-5">{children}</div>
+            {footer && <div className="flex flex-wrap justify-end gap-2 border-t border-line bg-canvas/50 px-6 py-4">{footer}</div>}
           </motion.div>
         </motion.div>
       )}
-    </>
+    </>,
+    document.body,
   );
 }
 
@@ -142,6 +143,7 @@ export function Drawer({
   subtitle,
   children,
   footer,
+  centro,
 }: {
   open: boolean;
   onClose: () => void;
@@ -149,8 +151,16 @@ export function Drawer({
   subtitle?: ReactNode;
   children: ReactNode;
   footer?: ReactNode;
+  /** Janela larga no meio da tela (como os itens de Negócios), em vez da gaveta lateral. */
+  centro?: boolean;
 }) {
-  useEsc(open, onClose);
+  if (centro)
+    return (
+      <Modal open={open} onClose={onClose} title={title} subtitle={subtitle} footer={footer} largo="extra">
+        {children}
+      </Modal>
+    );
+  // Clicar fora ou apertar Esc não fecha (para não perder o que foi preenchido).
   // Sem animação de saída: ao fechar, o fundo escurecido some na hora (antes podia ficar presa e travar os cliques).
   return (
     <>
@@ -160,7 +170,6 @@ export function Drawer({
             className="fixed inset-0 z-[55] bg-ink/25 backdrop-blur-[2px]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            onClick={onClose}
           />
           <motion.aside
             role="dialog"

@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Bath, BedDouble, Car, MapPin, Menu, Ruler, X } from "lucide-react";
+import { Bath, BadgeCheck, BedDouble, Car, MapPin, Menu, Ruler, X } from "lucide-react";
 import { Logo, LogoMark } from "@/components/ui";
 import { EntradaPagina, Surge } from "./anim";
 import type { CartaoAnuncio, CorretorResumo, Finalidade, ImobResumo } from "./api";
@@ -79,6 +79,19 @@ export const linkWhats = (tel: string, texto: string) =>
 
 export const creciTexto = (c: { creci: string | null; creci_uf: string | null }) =>
   c.creci ? `CRECI ${c.creci}${c.creci_uf ? `-${c.creci_uf}` : ""}` : "";
+
+/** Selo "CRECI verificado": a Frankkia conferiu o número no site do CRECI do estado. */
+export function SeloCreci({ c }: { c: { creci_verificado?: boolean } }) {
+  if (!c.creci_verificado) return null;
+  return (
+    <span
+      title="A Frankkia conferiu este CRECI no site do conselho regional"
+      className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700"
+    >
+      <BadgeCheck className="size-3.5" /> CRECI verificado
+    </span>
+  );
+}
 
 /** Moldura das páginas do portal: topo com a imobiliária (ou a Frankkia) e rodapé simples. */
 /** Menu do portal: leva de volta ao site da Frankkia. */

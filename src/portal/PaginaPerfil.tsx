@@ -4,7 +4,7 @@ import type { CorretorPublico, ImobiliariaPublica } from "./api";
 import { Surge } from "./anim";
 import { BotaoCompartilhar, ImoveisComFiltro } from "./Filtros";
 import { REDES } from "@/lib/redes";
-import { creciTexto, FotoPessoa, linkWhats, numeroWhats, PortalShell } from "./ui";
+import { creciTexto, FotoPessoa, linkWhats, numeroWhats, PortalShell, SeloCreci } from "./ui";
 
 const contagem = (n: number) => `${n} ${n === 1 ? "imóvel anunciado" : "imóveis anunciados"}`;
 
@@ -46,6 +46,11 @@ export function PaginaCorretor({ c }: { c: CorretorPublico }) {
               .filter(Boolean)
               .join(" · ")}
           </p>
+          {c.creci_verificado && (
+            <div className="mt-2">
+              <SeloCreci c={c} />
+            </div>
+          )}
           {redes.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-2">
               {redes.map(({ chave, nome, Icone }) => (
@@ -136,6 +141,7 @@ export function PaginaImobiliaria({ i }: { i: ImobiliariaPublica }) {
                   <div className="min-w-0">
                     <p className="truncate font-semibold">{p.nome}</p>
                     <p className="text-xs text-muted">{creciTexto(p)}</p>
+                    {p.creci_verificado && <div className="mt-1"><SeloCreci c={p} /></div>}
                   </div>
                 </Link>
               </Surge>

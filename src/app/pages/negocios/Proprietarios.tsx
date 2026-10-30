@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ChevronRight, Plus, UserRound, Users } from "lucide-react";
 import { CHECKLIST_MARKETING, proprietarios } from "@/data/demo";
@@ -9,18 +9,27 @@ import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { useScope } from "../../session";
 import { Avatar, Card, ProgressBar, Select } from "../../kit";
 import { btn, Drawer, EmptyState, formatPhone, SearchInput, waLink } from "../../forms";
-import { ImovelCover, ProprietarioFormModal, StatusBadge, valorLabel } from "./shared";
+import { BotaoExcluir, ImovelCover, ProprietarioFormModal, StatusBadge, valorLabel } from "./shared";
+import { CaptacaoDrawer } from "./Captacoes";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 import { Documentos } from "../../Documentos";
 
 function ProprietarioDrawer({ id, onClose }: { id: string | null; onClose: () => void }) {
-  const navigate = useNavigate();
   const { isAdmin, solo } = useScope();
   const p = id ? proprietarios.find((x) => x.id === id) : undefined;
   const lista = p ? captacoesDoProprietario(p.id) : [];
+  const [captacao, setCaptacao] = useState<string | null>(null);
 
   return (
-    <Drawer open={!!p} onClose={onClose} title={p?.nome} subtitle={p && formatPhone(p.whatsapp)}>
+    <>
+    <Drawer
+      centro
+      open={!!p}
+      onClose={onClose}
+      title={p?.nome}
+      subtitle={p && formatPhone(p.whatsapp)}
+      footer={p && isAdmin && <BotaoExcluir tipo="proprietario" id={p.id} nome={p.nome} onExcluido={onClose} />}
+    >
       {p && (
         <div className="space-y-6">
           <div className="flex flex-wrap gap-2">
@@ -44,7 +53,7 @@ function ProprietarioDrawer({ id, onClose }: { id: string | null; onClose: () =>
                 {lista.map((c) => (
                   <li key={c.id}>
                     <button
-                      onClick={() => navigate(`/app/negocios/captacoes?captacao=${c.id}`)}
+                      onClick={() => setCaptacao(c.id)}
                       className="flex w-full items-center gap-3 rounded-2xl border border-line p-2.5 text-left transition hover:border-line-strong hover:bg-canvas"
                     >
                       <ImovelCover categoria={captacaoCategoria(c)} foto={fotoCapa(c.id)} className="size-14 shrink-0 rounded-xl [&_svg]:size-6" />
@@ -67,6 +76,8 @@ function ProprietarioDrawer({ id, onClose }: { id: string | null; onClose: () =>
         </div>
       )}
     </Drawer>
+    <CaptacaoDrawer id={captacao} onClose={() => setCaptacao(null)} />
+    </>
   );
 }
 

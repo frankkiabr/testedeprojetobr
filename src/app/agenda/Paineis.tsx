@@ -10,7 +10,7 @@ import { captacaoById, captacaoTitulo, captacoesOf, enderecoCompleto, imovelById
 import { useStore } from "@/data/store";
 import type { Compromisso, TipoCompromisso, Usuario } from "@/data/types";
 import { relTime } from "@/lib/format";
-import { btn, DateInput, Drawer, Field, inputCls, Modal, SelectField, TimeInput } from "../forms";
+import { BotaoSalvar, btn, DateInput, Drawer, Field, inputCls, Modal, SelectField, TimeInput } from "../forms";
 import { Avatar } from "../kit";
 import { useSession } from "../session";
 import { googleAgenda, mensagemErro } from "@/integrations/frankkia/client";
@@ -115,7 +115,6 @@ export function CompromissoForm({
     };
     if (editar) updateCompromisso(editar.id, dados);
     else addCompromisso(dados);
-    onClose();
   };
 
   return (
@@ -129,9 +128,9 @@ export function CompromissoForm({
           <button onClick={onClose} className={btn.outline}>
             Cancelar
           </button>
-          <button disabled={!ok} onClick={salvar} className={btn.primary}>
+          <BotaoSalvar disabled={!ok} onSalvar={salvar} depois={onClose}>
             {editar ? "Salvar" : "Criar compromisso"}
-          </button>
+          </BotaoSalvar>
         </>
       }
     >

@@ -16,7 +16,7 @@ export default function NegociosLayout() {
     { to: "leads", label: "Leads", icon: Users, count: leadsOf(scope).length },
     { to: "captacoes", label: "Captações", icon: ClipboardList, count: captacoesOf(scope).filter((c) => c.status === "ativa").length },
     { to: "proprietarios", label: "Proprietários", icon: UserRound, count: proprietariosOf(scope).length },
-    { to: "transacoes", label: "Vendas e locações", icon: BadgeDollarSign, count: transacoesOf(scope).length, alert: pendentes },
+    { to: "transacoes", label: "Vendas e Locações", icon: BadgeDollarSign, count: transacoesOf(scope).length, alert: pendentes },
     ...(isAdmin ? [{ to: "parceiros", label: "Parceiros", icon: Handshake, count: parceiros.length }] : []),
   ];
 

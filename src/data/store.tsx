@@ -30,6 +30,7 @@ import {
 import { captacaoTitulo, captacaoById, corretoresAtivos, vagasLivres } from "./queries";
 import { aplicarReducaoNaStripe, enviarConvitePorEmail, excluirImobiliariaNaStripe, mensagemErro } from "@/integrations/frankkia/client";
 import { comprimirFoto } from "@/lib/files";
+import { excluirDocumento, listarDocumentos } from "./documentos";
 import { aoMudar, compromissoParaBanco, configurarGravacao, contexto as ctxDados, ehReal, enfileirar, falhou, gravar, leadParaBanco, novoId, supabase } from "./sync";
 import { acessosDemo, clientes, errosSistema, frankkiaUser, interessados, linkDemo, nomeDaTela, novaReferencia, pedidoAberto, pedidoById, pedidosUpgrade, PLANOS, todosChamados } from "./platform";
 import type {
@@ -620,6 +621,72 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       bump();
       toast(input.tipo === "venda" ? "Venda registrada. VGV e VGC atualizados." : "Locação registrada. Volume de locação e VGC atualizados.");
       return t;
+    },
+
+    /**
+     * Excluir um item de Negócios (não é prática comum, mas fica disponível). Confere antes o que depende dele
+     * e, no login real, espera o banco aceitar para tirar da tela. Devolve a mensagem de erro ou null.
+     */
+    async excluir(tipo: "lead" | "proprietario" | "captacao" | "transacao" | "parceiro", id: string): Promise<string | null> {
+      const tira = <T extends { id: string }>(lista: T[]) => {
+        const i = lista.findIndex((x) => x.id === id);
+        if (i >= 0) lista.splice(i, 1);
+      };
+      const qtd = (n: number, um: string, varios: string) => `${n} ${n === 1 ? um : varios}`;
+      // O que impede a exclusão (o banco também recusaria)
+      if (tipo === "proprietario") {
+        const n = captacoes.filter((c) => c.proprietarioId === id).length;
+        if (n) return `Este proprietário tem ${qtd(n, "imóvel captado", "imóveis captados")}. Exclua as captações antes.`;
+      }
+      if (tipo === "captacao" && transacoes.some((t) => t.captacaoId === id))
+        return "Este imóvel tem venda ou locação registrada. Exclua-a em Vendas e Locações antes.";
+      if (tipo === "parceiro" && transacoes.some((t) => t.participantes.some((p) => p.tipo === "parceiro" && p.refId === id)))
+        return "Este parceiro participa de uma venda ou locação registrada. Exclua-a antes.";
+
+      if (ehReal()) {
+        const erro = await enfileirar(async () => {
+          // Documentos do cliente (arquivos no armazenamento) saem junto
+          if (tipo === "lead" || tipo === "proprietario") {
+            const docs = await listarDocumentos(tipo, id).catch(() => []);
+            for (const d of docs) await excluirDocumento(tipo, id, d).catch(() => undefined);
+          }
+          if (tipo === "captacao") {
+            await supabase.from("fechamentos_informados").delete().eq("captacao_id", id);
+            const fotos = anuncios.find((a) => a.captacaoId === id)?.fotos ?? [];
+            for (const f of fotos) await supabase.functions.invoke("fotos-r2", { body: { acao: "remover", captacaoId: id, chave: f.chave } });
+          }
+          const tabela = { lead: "leads", proprietario: "proprietarios", captacao: "captacoes", parceiro: "parceiros" } as const;
+          const { error } =
+            tipo === "transacao"
+              ? await supabase.rpc("excluir_transacao", { p_id: id })
+              : await supabase.from(tabela[tipo]).delete().eq("id", id).select("id").single();
+          return error ? mensagemErro(error) : null;
+        });
+        if (erro) return erro;
+      }
+
+      if (tipo === "lead") {
+        tira(leads);
+        for (const c of compromissos) if (c.leadId === id) c.leadId = undefined;
+      } else if (tipo === "proprietario") tira(proprietarios);
+      else if (tipo === "parceiro") tira(parceiros);
+      else if (tipo === "captacao") {
+        tira(captacoes);
+        const a = anuncios.findIndex((x) => x.captacaoId === id);
+        if (a >= 0) anuncios.splice(a, 1);
+        for (let i = fechamentos.length - 1; i >= 0; i--) if (fechamentos[i].captacaoId === id) fechamentos.splice(i, 1);
+      } else {
+        const t = transacoes.find((x) => x.id === id);
+        tira(transacoes);
+        if (t && !transacoes.some((x) => x.captacaoId === t.captacaoId)) {
+          const c = captacoes.find((x) => x.id === t.captacaoId);
+          if (c) c.status = "ativa";
+          for (const f of fechamentos) if (f.captacaoId === t.captacaoId && f.status === "registrado") f.status = "pendente";
+        }
+      }
+      bump();
+      toast({ lead: "Lead excluído.", proprietario: "Proprietário excluído.", captacao: "Captação excluída.", transacao: "Venda/locação excluída.", parceiro: "Parceiro excluído." }[tipo]);
+      return null;
     },
 
     addParceiro(input: Omit<Parceiro, "id">) {

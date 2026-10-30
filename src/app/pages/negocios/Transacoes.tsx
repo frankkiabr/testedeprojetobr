@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { BadgeDollarSign, Building, Calendar, Coins, Handshake, Home, KeyRound, Lock, Plus, Users, X } from "lucide-react";
 import {
@@ -25,6 +25,7 @@ import { useScope } from "../../session";
 import { AnimatedNumber, Avatar, Badge, Card, CardHeader, Select } from "../../kit";
 import { btn, EmptyState } from "../../forms";
 import { InformarFechamentoModal, TransacaoFormModal, valorLabel } from "./shared";
+import { CaptacaoDrawer } from "./Captacoes";
 
 function Stat({ label, icon: Icon, value, format, lock }: { label: string; icon: typeof Coins; value: number; format: (n: number) => string; lock?: boolean }) {
   return (
@@ -52,13 +53,13 @@ function Stat({ label, icon: Icon, value, format, lock }: { label: string; icon:
 export default function Transacoes() {
   const store = useStore();
   const { scope, isAdmin, solo } = useScope();
-  const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const months = lastMonths(6);
   const [month, setMonth] = useState("");
   const [corretor, setCorretor] = useState("");
   const [tipo, setTipo] = useState<"" | Finalidade>("");
   const [registrar, setRegistrar] = useState<FechamentoInformado | null>(null);
+  const [aberta, setAberta] = useState<string | null>(null);
 
   const setParam = (k: string, v: string | null) => {
     const p = new URLSearchParams(params);
@@ -207,7 +208,7 @@ export default function Transacoes() {
                       initial={{ opacity: 0, y: 6 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.4, delay: Math.min(i, 15) * 0.025, ease: EASE_OUT_EXPO }}
-                      onClick={() => c && navigate(`/app/negocios/captacoes?captacao=${c.id}`)}
+                      onClick={() => c && setAberta(c.id)}
                       className="cursor-pointer border-b border-line last:border-0 hover:bg-canvas/70"
                     >
                       <td className="whitespace-nowrap px-5 py-3 text-muted">{new Date(t.data).toLocaleDateString("pt-BR")}</td>
@@ -249,6 +250,7 @@ export default function Transacoes() {
         )}
       </Card>
 
+      <CaptacaoDrawer id={aberta} onClose={() => setAberta(null)} />
       <TransacaoFormModal open={params.get("nova") === "1" && isAdmin} onClose={() => setParam("nova", null)} />
       <TransacaoFormModal open={!!registrar} onClose={() => setRegistrar(null)} fechamento={registrar ?? undefined} />
       <InformarFechamentoModal open={params.get("informar") === "1" && !isAdmin} onClose={() => setParam("informar", null)} />

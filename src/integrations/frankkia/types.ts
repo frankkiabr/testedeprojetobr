@@ -1634,6 +1634,9 @@ export type Database = {
           aniversario: string | null
           bio: string | null
           creci: string | null
+          creci_conferido_em: string | null
+          creci_obs: string | null
+          creci_status: string
           creci_uf: string | null
           criado_em: string
           email: string
@@ -1650,6 +1653,9 @@ export type Database = {
           aniversario?: string | null
           bio?: string | null
           creci?: string | null
+          creci_conferido_em?: string | null
+          creci_obs?: string | null
+          creci_status?: string
           creci_uf?: string | null
           criado_em?: string
           email?: string
@@ -1666,6 +1672,9 @@ export type Database = {
           aniversario?: string | null
           bio?: string | null
           creci?: string | null
+          creci_conferido_em?: string | null
+          creci_obs?: string | null
+          creci_status?: string
           creci_uf?: string | null
           criado_em?: string
           email?: string
@@ -2072,6 +2081,10 @@ export type Database = {
       aplicar_reducao: { Args: { p_pedido: string }; Returns: undefined }
       aplicar_upgrade: { Args: { p_pedido: string }; Returns: undefined }
       compartilha_imobiliaria: { Args: { p_usuario: string }; Returns: boolean }
+      conferir_creci: {
+        Args: { p_obs?: string; p_status: string; p_usuario: string }
+        Returns: undefined
+      }
       configurar_rodizio: {
         Args: {
           p_ativo: boolean
@@ -2148,6 +2161,7 @@ export type Database = {
         Args: { p_confirmacao: string; p_imob: string }
         Returns: undefined
       }
+      excluir_transacao: { Args: { p_id: string }; Returns: undefined }
       feed_portais: { Args: { p_token: string }; Returns: Json }
       fila_rodizio: { Args: { p_imob: string }; Returns: string[] }
       gerar_codigo_imovel: { Args: never; Returns: string }
@@ -2216,6 +2230,22 @@ export type Database = {
           nome: string
           papel: string
           plano: string
+          usuario_id: string
+        }[]
+      }
+      painel_creci: {
+        Args: never
+        Returns: {
+          conferido_em: string
+          creci: string
+          creci_uf: string
+          desde: string
+          email: string
+          imobiliaria: string
+          nome: string
+          obs: string
+          plano: string
+          status: string
           usuario_id: string
         }[]
       }

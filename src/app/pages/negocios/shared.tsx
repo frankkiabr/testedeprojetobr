@@ -1,6 +1,6 @@
 /** Peças compartilhadas pelas abas de Negócios: capas, etiquetas e formulários de cadastro. */
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Briefcase, Building2, Home, Info, MapPin, Plus, Store, TreePine, Trash2, Warehouse } from "lucide-react";
 import {
   CATEGORIAS,
@@ -39,7 +39,7 @@ import { useStore } from "@/data/store";
 import type { Captacao, CategoriaImovel, EtapaLead, FechamentoInformado, Finalidade, Participante, Imovel } from "@/data/types";
 import { brl } from "@/lib/format";
 import { useScope } from "../../session";
-import { btn, DateInput, Field, inputCls, mascaraMoeda, Modal, moeda, normalizePhone, SelectField, waLink } from "../../forms";
+import { BotaoSalvar, btn, DateInput, Field, inputCls, mascaraMoeda, Modal, moeda, normalizePhone, SelectField, waLink } from "../../forms";
 import { Avatar, Segmented } from "../../kit";
 
 // ---------- Visual ----------
@@ -194,15 +194,19 @@ export function LeadFormModal({ open, onClose }: { open: boolean; onClose: () =>
           <button onClick={onClose} className={btn.outline}>
             Cancelar
           </button>
-          <button
+          <BotaoSalvar
             disabled={!ok || salvando}
-            onClick={async () => {
+            depois={onClose}
+            onSalvar={async () => {
               let dono = corretorId;
               if (dono === RODIZIO) {
                 setSalvando(true);
                 dono = (await filaRodizio())[0] ?? "";
                 setSalvando(false);
-                if (!dono) return toast("Ninguém na fila do rodízio. Confira em Equipe → Rodízio de leads.");
+                if (!dono) {
+                  toast("Ninguém na fila do rodízio. Confira em Equipe → Rodízio de leads.");
+                  return false;
+                }
               }
               addLead({
                 corretorId: dono,
@@ -213,12 +217,10 @@ export function LeadFormModal({ open, onClose }: { open: boolean; onClose: () =>
                 ...(corretorId === RODIZIO ? { rodizio: true, atribuidoEm: new Date().toISOString() } : {}),
               });
               if (corretorId === RODIZIO) toast(`Lead entregue a ${pessoa(dono).nome.split(" ")[0]} pelo rodízio.`);
-              onClose();
             }}
-            className={btn.primary}
           >
             {salvando ? "Cadastrando..." : "Cadastrar lead"}
-          </button>
+          </BotaoSalvar>
         </>
       }
     >
@@ -267,16 +269,15 @@ export function ProprietarioFormModal({ open, onClose }: { open: boolean; onClos
           <button onClick={onClose} className={btn.outline}>
             Cancelar
           </button>
-          <button
+          <BotaoSalvar
             disabled={!ok}
-            onClick={() => {
+            depois={onClose}
+            onSalvar={() => {
               addProprietario({ corretorId, nome: f.nome.trim(), whatsapp: normalizePhone(f.whatsapp) });
-              onClose();
             }}
-            className={btn.primary}
           >
             Cadastrar proprietário
-          </button>
+          </BotaoSalvar>
         </>
       }
     >
@@ -310,6 +311,7 @@ export function ImovelFormModal({
   imovel?: Imovel;
 }) {
   const { addImovel, updateImovel } = useStore();
+  const criado = useRef<string | null>(null);
   const cidadePadrao = imobiliaria.cidade.split(",")[0]?.trim() ?? "";
   const ufPadrao = imobiliaria.cidade.split(",")[1]?.trim() ?? "SP";
   const empty = () =>
@@ -377,23 +379,24 @@ export function ImovelFormModal({
           <button onClick={onClose} className={btn.outline}>
             Cancelar
           </button>
-          <button
+          <BotaoSalvar
             disabled={!ok}
-            className={btn.primary}
-            onClick={() => {
+            depois={() => {
+              onClose();
+              if (criado.current) onCreated?.(criado.current);
+            }}
+            onSalvar={() => {
+              criado.current = null;
               const dados = { categoria: f.categoria, nome: f.nome.trim() || undefined, endereco, cep: f.cep.length === 8 ? f.cep : undefined, lat: ponto?.lat, lng: ponto?.lng };
               if (imovel) {
                 updateImovel(imovel.id, dados);
-                onClose();
                 return;
               }
-              const im = addImovel(dados);
-              onClose();
-              onCreated?.(im.id);
+              criado.current = addImovel(dados).id;
             }}
           >
             {imovel ? "Salvar endereço" : "Cadastrar imóvel"}
-          </button>
+          </BotaoSalvar>
         </>
       }
     >
@@ -580,7 +583,6 @@ export function CaptacaoFormModal({ open, onClose }: { open: boolean; onClose: (
     const c = addCaptacao({ corretorId, proprietarioId, imovelId: imovelId!, unidade: f.unidade.trim() || undefined, finalidade: f.finalidade, valor, areaM2: area });
     const comodos = { quartos: inteiro(f.quartos), suites: inteiro(f.suites), banheiros: inteiro(f.banheiros), vagas: inteiro(f.vagas) };
     if (Object.values(comodos).some((x) => x !== undefined)) salvarAnuncio(c.id, comodos, "");
-    onClose();
   };
 
   const campoNum = (k: "quartos" | "suites" | "banheiros" | "vagas", label: string) => (
@@ -600,9 +602,9 @@ export function CaptacaoFormModal({ open, onClose }: { open: boolean; onClose: (
           <button onClick={onClose} className={btn.outline}>
             Cancelar
           </button>
-          <button disabled={!ok} onClick={save} className={btn.primary}>
+          <BotaoSalvar disabled={!ok} onSalvar={save} depois={onClose}>
             Cadastrar imóvel
-          </button>
+          </BotaoSalvar>
         </>
       }
     >
@@ -762,6 +764,7 @@ export function CaptacaoFormModal({ open, onClose }: { open: boolean; onClose: (
 
 export function ParceiroFormModal({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated?: (id: string) => void }) {
   const { addParceiro } = useStore();
+  const criado = useRef<string | null>(null);
   const [f, setF] = useState({ nome: "", creci: "", empresa: "", telefone: "" });
   useEffect(() => {
     if (open) setF({ nome: "", creci: "", empresa: "", telefone: "" });
@@ -778,22 +781,25 @@ export function ParceiroFormModal({ open, onClose, onCreated }: { open: boolean;
           <button onClick={onClose} className={btn.outline}>
             Cancelar
           </button>
-          <button
+          <BotaoSalvar
             disabled={!f.nome.trim()}
-            className={btn.primary}
-            onClick={() => {
+            depois={() => {
+              onClose();
+              if (criado.current) onCreated?.(criado.current);
+            }}
+            onSalvar={() => {
+              criado.current = null;
               const p = addParceiro({
                 nome: f.nome.trim(),
                 creci: f.creci.trim() || undefined,
                 empresa: f.empresa.trim() || undefined,
                 telefone: f.telefone ? normalizePhone(f.telefone) : undefined,
               });
-              onClose();
-              onCreated?.(p.id);
+              criado.current = p.id;
             }}
           >
             Cadastrar parceiro
-          </button>
+          </BotaoSalvar>
         </>
       }
     >
@@ -878,10 +884,11 @@ export function TransacaoFormModal({
             <button onClick={onClose} className={btn.outline}>
               Cancelar
             </button>
-            <button
+            <BotaoSalvar
               disabled={!ok}
               className={btn.accent}
-              onClick={() => {
+              depois={onClose}
+              onSalvar={() => {
                 addTransacao(
                   {
                     tipo,
@@ -894,11 +901,10 @@ export function TransacaoFormModal({
                   },
                   fechamento?.id,
                 );
-                onClose();
               }}
             >
               {tipo === "venda" ? "Registrar venda" : "Registrar locação"}
-            </button>
+            </BotaoSalvar>
           </>
         }
       >
@@ -1070,16 +1076,16 @@ export function InformarFechamentoModal({ open, onClose, captacaoId }: { open: b
           <button onClick={onClose} className={btn.outline}>
             Cancelar
           </button>
-          <button
+          <BotaoSalvar
             disabled={!cap || !valor}
             className={btn.accent}
-            onClick={() => {
+            depois={onClose}
+            onSalvar={() => {
               informarFechamento({ corretorId: user.id, captacaoId: cap!.id, tipo: cap!.finalidade, valor, data: new Date(`${f.data}T12:00:00`).toISOString(), observacao: f.obs.trim() || undefined });
-              onClose();
             }}
           >
             Enviar ao administrador
-          </button>
+          </BotaoSalvar>
         </>
       }
     >
@@ -1175,5 +1181,75 @@ export function ReportModal({ captacao, open, onClose }: { captacao: Captacao; o
       </div>
       <p className="mt-3 text-xs text-subtle">Ao enviar, a ação “Relatório ao proprietário” é marcada automaticamente no checklist.</p>
     </Modal>
+  );
+}
+
+// ---------- Excluir (lead, proprietário, captação, venda/locação, parceiro) ----------
+
+type TipoExcluir = "lead" | "proprietario" | "captacao" | "transacao" | "parceiro";
+const NOME_EXCLUIR: Record<TipoExcluir, string> = {
+  lead: "este lead",
+  proprietario: "este proprietário",
+  captacao: "esta captação",
+  transacao: "esta venda/locação",
+  parceiro: "este parceiro",
+};
+const AVISO_EXCLUIR: Record<TipoExcluir, string> = {
+  lead: "O histórico, a agenda ligada a ele e os documentos enviados também saem.",
+  proprietario: "Os documentos enviados também saem.",
+  captacao: "O anúncio e as fotos também saem do portal. O endereço continua cadastrado para outras captações.",
+  transacao: "Os valores saem do VGV, da locação e das comissões. O imóvel volta a ficar disponível.",
+  parceiro: "Ele deixa de aparecer na lista de parceiros.",
+};
+
+/** Botão "Excluir" com confirmação. Não é prática comum, mas fica disponível quando necessário. */
+export function BotaoExcluir({ tipo, id, nome, onExcluido, icone }: { tipo: TipoExcluir; id: string; nome: string; onExcluido?: () => void; icone?: boolean }) {
+  const { excluir, toast } = useStore();
+  const [aberto, setAberto] = useState(false);
+  const [indo, setIndo] = useState(false);
+  return (
+    <>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setAberto(true);
+        }}
+        title={`Excluir ${NOME_EXCLUIR[tipo]}`}
+        className={icone ? "grid size-8 place-items-center rounded-full text-muted transition hover:bg-rose-50 hover:text-rose-600" : `${btn.outline} mr-auto text-rose-600`}
+      >
+        <Trash2 className="size-4" /> {!icone && "Excluir"}
+      </button>
+      <Modal
+        open={aberto}
+        onClose={() => setAberto(false)}
+        title={`Excluir ${NOME_EXCLUIR[tipo]}?`}
+        subtitle={nome}
+        footer={
+          <>
+            <button onClick={() => setAberto(false)} className={btn.outline}>
+              Cancelar
+            </button>
+            <button
+              disabled={indo}
+              onClick={async () => {
+                setIndo(true);
+                const erro = await excluir(tipo, id);
+                setIndo(false);
+                if (erro) return toast(erro);
+                setAberto(false);
+                onExcluido?.();
+              }}
+              className={`${btn.primary} !bg-rose-600 hover:!bg-rose-700`}
+            >
+              <Trash2 className="size-4" /> {indo ? "Excluindo..." : "Excluir"}
+            </button>
+          </>
+        }
+      >
+        <p className="text-sm text-muted">
+          {AVISO_EXCLUIR[tipo]} <span className="font-semibold text-ink">Não dá para desfazer.</span>
+        </p>
+      </Modal>
+    </>
   );
 }

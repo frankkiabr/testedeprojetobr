@@ -10,7 +10,7 @@ import { dateTime, relTime } from "@/lib/format";
 import { useScope } from "../../session";
 import { Avatar, Badge, Card, ProgressBar, Segmented, Select } from "../../kit";
 import { BotaoSalvar, btn, CheckItem, DateInput, Drawer, EmptyState, Field, formatPhone, inputCls, SearchInput, TimeInput, toLocalInput, waLink } from "../../forms";
-import { ETAPA_DOT, ETAPA_STYLE, LeadFormModal } from "./shared";
+import { ETAPA_DOT, ETAPA_STYLE, LeadFormModal, BotaoExcluir } from "./shared";
 import { ImportarLeadsModal } from "./ImportarLeads";
 import { Documentos } from "../../Documentos";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
@@ -120,6 +120,12 @@ function Board({ leads, showCorretor, onOpen }: { leads: Lead[]; showCorretor: b
   );
 }
 
+/** Iniciais do lead (primeiro e último nome), no círculo colorido do Avatar. */
+const iniciaisLead = (nome: string) => {
+  const p = nome.trim().split(/\s+/).filter(Boolean);
+  return ((p[0]?.[0] ?? "") + (p.length > 1 ? p[p.length - 1][0] : "")).toUpperCase() || "?";
+};
+
 function ListView({ leads, showCorretor, onOpen }: { leads: Lead[]; showCorretor: boolean; onOpen: (id: string) => void }) {
   return (
     <Card className="overflow-hidden">
@@ -143,8 +149,13 @@ function ListView({ leads, showCorretor, onOpen }: { leads: Lead[]; showCorretor
               return (
                 <tr key={l.id} onClick={() => onOpen(l.id)} className="cursor-pointer border-b border-line last:border-0 hover:bg-canvas/70">
                   <td className="px-5 py-3">
-                    <p className="font-semibold">{l.nome}</p>
-                    <p className="text-xs text-muted">{l.interesse}</p>
+                    <div className="flex items-center gap-3">
+                      <Avatar user={{ id: l.id, iniciais: iniciaisLead(l.nome) }} className="size-9 shrink-0 text-xs" />
+                      <div className="min-w-0">
+                        <p className="font-semibold">{l.nome}</p>
+                        <p className="text-xs text-muted">{l.interesse}</p>
+                      </div>
+                    </div>
                   </td>
                   <td className="px-3 py-3">
                     <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${ETAPA_STYLE[l.etapa]}`}>{ETAPAS.find((e) => e.id === l.etapa)!.label}</span>
@@ -193,6 +204,7 @@ function LeadDrawer({ id, onClose }: { id: string | null; onClose: () => void })
 
   return (
     <Drawer
+      centro
       open={!!lead}
       onClose={onClose}
       title={lead?.nome}
@@ -206,12 +218,13 @@ function LeadDrawer({ id, onClose }: { id: string | null; onClose: () => void })
       }
       footer={
         <>
+          {lead && <BotaoExcluir tipo="lead" id={lead.id} nome={lead.nome} onExcluido={onClose} />}
           {lead?.etapa === "fechado" && (
             <button onClick={() => navigate(isAdmin ? "/app/negocios/transacoes?nova=1" : "/app/negocios/transacoes?informar=1")} className={btn.accent}>
               <BadgeDollarSign className="size-4" /> {isAdmin ? "Registrar venda ou locação" : "Informar fechamento"}
             </button>
           )}
-          <BotaoSalvar onSalvar={salvar}>Salvar</BotaoSalvar>
+          <BotaoSalvar onSalvar={salvar} depois={onClose}>Salvar</BotaoSalvar>
         </>
       }
     >
@@ -364,7 +377,7 @@ export default function Leads() {
   useStore();
   const { scope, isAdmin, solo } = useScope();
   const [params, setParams] = useSearchParams();
-  const [view, setView] = useState<"quadro" | "lista">("quadro");
+  const [view, setView] = useState<"quadro" | "lista">("lista");
   const [busca, setBusca] = useState("");
   const [periodo, setPeriodo] = useState("90");
   const [corretor, setCorretor] = useState("");

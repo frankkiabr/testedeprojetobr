@@ -82,6 +82,9 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
 - Termos de Uso e Política de Privacidade: `/termos` e `/privacidade` (`src/pages/Legal.tsx`), com links no rodapé, no
   portal, no formulário de contato, na apresentação e no primeiro acesso.
 - CRECI: obrigatório para corretor de equipe (ou estagiário) e sempre para o dono da conta Solo (`checar_creci`, `aceitar_convite`).
+- CRECI verificado: não há API oficial; a Frankkia confere no site do CRECI do estado em Painel → CRECI (`src/app/admin/Creci.tsx`,
+  `painel_creci`, `conferir_creci`; colunas `perfis.creci_status` pendente/verificado/irregular). Verificado = selo no portal (`SeloCreci`).
+  Irregular = anúncios saem do portal e dos portais (gatilho `bloquear_anuncio_creci_irregular`) e aviso no app. Trocar o CRECI volta a pendente.
 - Plano anual: 12 meses pelo preço de 10 (-17%, `src/lib/planos.ts`); `pedidos_upgrade.ciclo` (mensal/anual) e `tipo`
   (upgrade/reducao). O preço vem sempre da tabela `planos` (gatilho `preco_do_pedido`; a função `criar-checkout` cobra por ano no anual).
 - Plano menor: `solicitar_reducao` (só se ativos + convites cabem no plano novo) → a Frankkia aplica em Upgrades (`aplicar_reducao`).
@@ -97,6 +100,11 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
   captação ("Simular financiamento"). Páginas avulsas usam a moldura `src/components/PaginaSimples.tsx`.
 - `/exclusao-de-dados` (`src/pages/ExclusaoDados.tsx`): pedido LGPD grava em `interessados` com origem `lgpd` (Painel → Interessados).
 - Rodapé: "Pergunte à IA" (`src/components/PergunteIA.tsx`); resumo para IAs em `public/llms.txt` (atualize se mudar preço ou plano).
+- Janelas (`Modal`, `Drawer centro` em `src/app/forms.tsx`): abrem no meio da tela (itens de Negócios no tamanho do "Editar" do estudo,
+  `largo="extra"`), por cima de tudo (portal no `body`) e NÃO fecham ao clicar fora nem com Esc; fecham pelo X, Cancelar ou ao salvar.
+  Botões de salvar usam `BotaoSalvar` com `depois={onClose}` (mostra "Salvo" e fecha).
+- Excluir em Negócios: `BotaoExcluir` (`negocios/shared.tsx`) + `excluir()` do store (confere o que depende antes; venda/locação
+  pela função `excluir_transacao`, que devolve o imóvel a "ativa"). Lead: o corretor dono ou o administrador; o resto só o administrador.
 - Campos de R$: `mascaraMoeda` (ao digitar) e `moeda` (valor inicial) de `src/lib/moeda.ts` (reexportados em `src/app/forms.tsx`) → "1.000.000,00". Botão com
   confirmação "Salvo": `BotaoSalvar` (mesmo arquivo).
 - Follow-up de leads: `leads.ultimo_contato` muda ao marcar passo do checklist, mudar etapa/visita/observação, abrir WhatsApp ou

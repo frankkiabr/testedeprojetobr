@@ -44,7 +44,7 @@ import { buscarTodos, type CartaoAnuncio } from "@/portal/api";
 import { mensagemErro } from "@/integrations/frankkia/client";
 import { brl } from "@/lib/format";
 import { Badge, Card, CardHeader, stagger } from "../../kit";
-import { btn, Field, formatPhone, inputCls, mascaraMoeda, Modal, moeda, SelectField } from "../../forms";
+import { BotaoSalvar, btn, Field, formatPhone, inputCls, mascaraMoeda, Modal, moeda, SelectField } from "../../forms";
 import { useScope } from "../../session";
 import {
   CamposEndereco,
@@ -110,8 +110,10 @@ export default function Estudo() {
       await atualizarAvaliacao(real, a, patch);
       atualizar();
       if (aviso) toast(aviso);
+      return true;
     } catch (e) {
       toast(mensagemErro(e));
+      return false;
     }
   };
 
@@ -534,7 +536,7 @@ export default function Estudo() {
         onLiberar={() => salvar({ linkLiberado: true }, "Link liberado.")}
       />
 
-      <EditarImovel open={editar} a={a} onClose={() => setEditar(false)} onSalvar={(p) => salvar(p, "Dados do imóvel salvos.").then(() => setEditar(false))} />
+      <EditarImovel open={editar} a={a} onClose={() => setEditar(false)} onSalvar={(p) => salvar(p, "Dados do imóvel salvos.")} />
 
       {isAdmin && (
         <TrocarCorretor
@@ -638,7 +640,7 @@ function Valor({
 }
 
 /** Editar os dados do imóvel avaliado (endereço e características). */
-function EditarImovel({ open, a, onClose, onSalvar }: { open: boolean; a: Avaliacao; onClose: () => void; onSalvar: (p: Partial<Avaliacao>) => void }) {
+function EditarImovel({ open, a, onClose, onSalvar }: { open: boolean; a: Avaliacao; onClose: () => void; onSalvar: (p: Partial<Avaliacao>) => Promise<boolean> }) {
   const [f, setF] = useState<Partial<FormEndereco & FormImovel>>(a);
   const chave = useRef(0);
   useEffect(() => {
@@ -659,9 +661,9 @@ function EditarImovel({ open, a, onClose, onSalvar }: { open: boolean; a: Avalia
           <button className={btn.outline} onClick={onClose}>
             Cancelar
           </button>
-          <button className={btn.primary} disabled={!f.areaM2 || !f.logradouro || !f.cidade} onClick={() => onSalvar(f)}>
+          <BotaoSalvar disabled={!f.areaM2 || !f.logradouro || !f.cidade} onSalvar={() => onSalvar(f)} depois={onClose}>
             Salvar
-          </button>
+          </BotaoSalvar>
         </>
       }
     >

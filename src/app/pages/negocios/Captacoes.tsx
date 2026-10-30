@@ -35,7 +35,7 @@ import { brl, relTime } from "@/lib/format";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { useScope } from "../../session";
 import { Avatar, Card, ProgressBar, Segmented, Select } from "../../kit";
-import { btn, CheckItem, Drawer, EmptyState, Field, formatPhone, inputCls, mascaraMoeda, Modal, moeda, SearchInput, waLink } from "../../forms";
+import { BotaoSalvar, btn, CheckItem, Drawer, EmptyState, Field, formatPhone, inputCls, mascaraMoeda, Modal, moeda, SearchInput, waLink } from "../../forms";
 import {
   CaptacaoFormModal,
   FinalidadeBadge,
@@ -46,6 +46,7 @@ import {
   StatusBadge,
   TransacaoFormModal,
   valorLabel,
+  BotaoExcluir,
 } from "./shared";
 
 function CaptacaoCard({ c, showCorretor, onOpen, i }: { c: Captacao; showCorretor: boolean; onOpen: () => void; i: number }) {
@@ -218,23 +219,22 @@ function EditarDados({ c, categoria, onFim }: { c: Captacao; categoria: string; 
         <button onClick={onFim} className={btn.outline}>
           Cancelar
         </button>
-        <button
+        <BotaoSalvar
           disabled={!ok}
-          className={btn.primary}
-          onClick={() => {
+          depois={onFim}
+          onSalvar={() => {
             updateCaptacao(c.id, { valor: n(f.valor), areaM2: n(f.area), unidade: f.unidade.trim() || undefined });
             salvarAnuncio(c.id, { quartos: inteiro(f.quartos), suites: inteiro(f.suites), banheiros: inteiro(f.banheiros), vagas: inteiro(f.vagas) }, "");
-            onFim();
           }}
         >
           Salvar dados
-        </button>
+        </BotaoSalvar>
       </div>
     </div>
   );
 }
 
-function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: () => void }) {
+export function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: () => void }) {
   const { toggleMarketing, toggleCaptacao } = useStore();
   const [aba, setAba] = useState<AbaCaptacao>("imovel");
   const { isAdmin, user, solo } = useScope();
@@ -267,11 +267,26 @@ function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: () => voi
 
   return (
     <>
-      <Drawer open={!!c} onClose={onClose} title={c && captacaoTitulo(c)} subtitle={c && `${c.codigo ? `Cód. ${c.codigo} · ` : ""}${c.finalidade === "venda" ? "Venda" : "Locação"} · captada ${relTime(c.captadoEm)}`}>
+      <Drawer
+        centro
+        open={!!c}
+        onClose={onClose}
+        title={c && captacaoTitulo(c)}
+        subtitle={c && `${c.codigo ? `Cód. ${c.codigo} · ` : ""}${c.finalidade === "venda" ? "Venda" : "Locação"} · captada ${relTime(c.captadoEm)}`}
+        footer={
+          c &&
+          isAdmin &&
+          (t ? (
+            <BotaoExcluir tipo="transacao" id={t.id} nome={`${t.tipo === "venda" ? "Venda" : "Locação"} de ${captacaoTitulo(c)}`} />
+          ) : (
+            <BotaoExcluir tipo="captacao" id={c.id} nome={captacaoTitulo(c)} onExcluido={onClose} />
+          ))
+        }
+      >
         {c && im && (
           <div>
             {/* Abas fixas no topo enquanto a janela rola */}
-            <div className="sticky -top-6 z-10 -mx-6 -mt-6 mb-6 border-b border-line bg-bg/95 px-6 py-3 backdrop-blur">
+            <div className="sticky -top-5 z-10 -mx-6 -mt-5 mb-6 border-b border-line bg-bg/95 px-6 py-3 backdrop-blur">
               <Segmented
                 id="cap-abas"
                 value={aba}
@@ -500,7 +515,7 @@ export default function Captacoes() {
   useStore();
   const { scope, isAdmin, solo } = useScope();
   const [params, setParams] = useSearchParams();
-  const [status, setStatus] = useState<"ativa" | "fechadas" | "todas">("ativa");
+  const [status, setStatus] = useState<"ativa" | "fechadas" | "todas">("todas");
   const [finalidade, setFinalidade] = useState("");
   const [busca, setBusca] = useState("");
   const [corretor, setCorretor] = useState("");

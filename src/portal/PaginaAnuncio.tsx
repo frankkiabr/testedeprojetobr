@@ -11,6 +11,7 @@ import {
   area,
   brl,
   creciTexto,
+  SeloCreci,
   FotoPessoa,
   GradeImoveis,
   linkWhats,
@@ -188,6 +189,7 @@ Pode me ajudar com o financiamento?`)}
               <div className="min-w-0">
                 <p className="truncate font-semibold">{a.corretor.nome}</p>
                 <p className="text-xs text-muted">{creciTexto(a.corretor)}</p>
+                <div className="mt-1"><SeloCreci c={a.corretor} /></div>
               </div>
             </Link>
 

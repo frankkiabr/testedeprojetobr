@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Link, NavLink, useLocation, useNavigate, useOutlet } from "react-router-dom";
-import { AlertOctagon, Building2, Camera, Users, CalendarDays, ExternalLink, Inbox, LayoutGrid, LifeBuoy, LogOut, Menu, Rocket, X } from "lucide-react";
+import { AlertOctagon, BadgeCheck, Building2, Camera, Users, CalendarDays, ExternalLink, Inbox, LayoutGrid, LifeBuoy, LogOut, Menu, Rocket, X } from "lucide-react";
 import { errosSistema, interessados, pedidosUpgrade, todosChamados } from "@/data/platform";
 import { useStore } from "@/data/store";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
@@ -25,6 +25,7 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
     { to: "/admin/interessados", label: "Interessados", icon: Inbox, count: novosInteressados },
     { to: "/admin/imobiliarias", label: "Imobiliárias", icon: Building2 },
     { to: "/admin/corretores", label: "Corretores", icon: Users },
+    { to: "/admin/creci", label: "CRECI", icon: BadgeCheck },
     { to: "/admin/upgrades", label: "Upgrades", icon: Rocket, count: aLiberar },
     { to: "/admin/chamados", label: "Chamados", icon: LifeBuoy, count: abertos },
     { to: "/admin/erros", label: "Erros do sistema", icon: AlertOctagon, count: novos, danger: true },

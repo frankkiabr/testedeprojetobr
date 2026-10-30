@@ -9,7 +9,7 @@ import { brl } from "@/lib/format";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { Avatar, Card } from "../../kit";
 import { btn, EmptyState, formatPhone, waLink } from "../../forms";
-import { ParceiroFormModal } from "./shared";
+import { BotaoExcluir, ParceiroFormModal } from "./shared";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 
 /** Corretores externos (sem acesso), usados para registrar parcerias. Só o administrador vê. */
@@ -78,7 +78,8 @@ export default function Parceiros() {
                   <th className="px-3 py-3 font-semibold">CRECI</th>
                   <th className="px-3 py-3 font-semibold">Contato</th>
                   <th className="px-3 py-3 font-semibold">Parcerias</th>
-                  <th className="px-5 py-3 text-right font-semibold">Total pago</th>
+                  <th className="px-3 py-3 text-right font-semibold">Total pago</th>
+                  <th className="w-12 px-3 py-3" />
                 </tr>
               </thead>
               <tbody>
@@ -113,7 +114,10 @@ export default function Parceiros() {
                         )}
                       </td>
                       <td className="px-3 py-3 text-muted">{deles.length}</td>
-                      <td className="px-5 py-3 text-right font-semibold tabular-nums">{brl(pago)}</td>
+                      <td className="px-3 py-3 text-right font-semibold tabular-nums">{brl(pago)}</td>
+                      <td className="px-3 py-3 text-right">
+                        <BotaoExcluir icone tipo="parceiro" id={p.id} nome={p.nome} />
+                      </td>
                     </motion.tr>
                   );
                 })}

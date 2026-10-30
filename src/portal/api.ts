@@ -41,6 +41,8 @@ export type CorretorResumo = {
   foto: string | null;
   creci: string | null;
   creci_uf: string | null;
+  /** CRECI conferido pela Frankkia no site do conselho */
+  creci_verificado?: boolean;
 };
 export type ImobResumo = { nome: string; slug: string | null; logo: string | null; solo: boolean };
 

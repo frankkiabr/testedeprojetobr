@@ -3,7 +3,7 @@ import { FileText, GraduationCap, Upload, Video } from "lucide-react";
 import { useStore } from "@/data/store";
 import type { Trilha } from "@/data/types";
 import { ACCEPT_AULA, classifyAula, fmtBytes, linkDeVideo, MAX_DOCUMENTO } from "@/lib/files";
-import { btn, Field, inputCls, Modal } from "../../forms";
+import { BotaoSalvar, btn, Field, inputCls, Modal } from "../../forms";
 import { Segmented } from "../../kit";
 
 export function TrilhaCover({ trilha, className = "", children }: { trilha: Trilha; className?: string; children?: React.ReactNode }) {
@@ -56,18 +56,17 @@ export function TrilhaFormModal({
           <button onClick={onClose} className={btn.outline}>
             Cancelar
           </button>
-          <button
+          <BotaoSalvar
             disabled={!ok}
-            className={btn.primary}
-            onClick={() => {
+            depois={onClose}
+            onSalvar={() => {
               const data = { titulo: f.titulo.trim(), subtitulo: f.subtitulo.trim() };
               if (trilha) updateTrilha(trilha.id, data);
               else onCreated?.(addTrilha(data));
-              onClose();
             }}
           >
             {trilha ? "Salvar" : "Criar trilha"}
-          </button>
+          </BotaoSalvar>
         </>
       }
     >
