@@ -90,13 +90,13 @@ function Sidebar({ onNavigate, recolhido }: { onNavigate?: () => void; recolhido
         {recolhido ? <LogoMark className="size-9 text-lg" /> : <Logo className="text-[1.75rem]" />}
       </Link>
       {!recolhido && <p className="mt-4 px-3 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-subtle">Seu universo</p>}
-      <nav className="mt-3 space-y-1">
+      <nav className="mt-3 min-h-0 flex-1 space-y-1 overflow-y-auto [scrollbar-width:none]">
         {MENU.filter((m) => (!m.adminOnly || role === "admin") && !(solo && (m.to === "equipe" || m.to === "academy"))).map((m) => (
           <NavItem key={m.to} {...m} onClick={onNavigate} recolhido={recolhido} />
         ))}
       </nav>
 
-      <div className="mt-auto space-y-4">
+      <div className="mt-auto shrink-0 space-y-4 pt-3">
         {!recolhido && role === "admin" && solo && (
           <div className="rounded-2xl bg-canvas p-4 text-xs">
             <span className="font-semibold">Plano Solo</span>

@@ -44,7 +44,8 @@ function Sidebar({ onNavigate, recolhido }: { onNavigate?: () => void; recolhido
         )}
       </Link>
       {!recolhido && <p className="mt-4 px-3 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-bg/40">Plataforma</p>}
-      <nav className="mt-3 space-y-1">
+      {/* A lista rola em telas baixas; "Ver o site", "Foto de perfil" e "Sair" ficam sempre à vista embaixo */}
+      <nav className="mt-3 min-h-0 flex-1 space-y-1 overflow-y-auto [scrollbar-width:none]">
         {menu.map(({ to, label, icon: Icon, end, count, danger }) => (
           <NavLink
             key={to}
@@ -75,12 +76,7 @@ function Sidebar({ onNavigate, recolhido }: { onNavigate?: () => void; recolhido
         ))}
       </nav>
 
-      <div className="mt-auto space-y-3">
-        {!recolhido && (
-          <div className="rounded-2xl bg-white/5 p-4 text-xs leading-relaxed text-bg/60">
-            Você vê só dados de conta e volumes de uso. Leads, imóveis e vendas das imobiliárias ficam privados.
-          </div>
-        )}
+      <div className="shrink-0 space-y-1 pt-3">
         <Link
           to="/"
           title={recolhido ? "Ver o site" : undefined}
