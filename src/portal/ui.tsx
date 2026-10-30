@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Bath, BadgeCheck, BedDouble, Car, ChevronRight, MapPin, Menu, Ruler, X } from "lucide-react";
+import { ArrowRight, Bath, BadgeCheck, BedDouble, Car, ChevronRight, MapPin, Menu, Ruler, X } from "lucide-react";
 import { Logo, LogoMark } from "@/components/ui";
 import { EntradaPagina, Surge } from "./anim";
 import type { CartaoAnuncio, CorretorResumo, Finalidade, ImobResumo } from "./api";
@@ -218,6 +218,13 @@ export function PortalShell({
                 {m.label}
               </a>
             ))}
+            {/* Corretor e imobiliária entram direto na plataforma, sem voltar à home */}
+            <a
+              href="/login"
+              className="ml-2 inline-flex h-10 items-center gap-1.5 rounded-full bg-ink px-4 text-sm font-semibold text-bg transition hover:bg-ink/85"
+            >
+              Acessar <ArrowRight className="size-4" />
+            </a>
           </nav>
           <button
             onClick={() => setMenu((v) => !v)}
@@ -235,6 +242,9 @@ export function PortalShell({
                 {m.label}
               </a>
             ))}
+            <a href="/login" className="mt-1 flex items-center justify-center gap-1.5 rounded-xl bg-ink px-3 py-3 font-semibold text-bg">
+              Acessar <ArrowRight className="size-4" />
+            </a>
           </nav>
         )}
       </header>
