@@ -65,18 +65,18 @@ function Ilustracao() {
 /** Cartão de informação do topo (azul claro, como nos portais). */
 function Info({ icone, rotulo, valor, acao }: { icone: ReactNode; rotulo: string; valor: string; acao?: ReactNode }) {
   return (
-    <div className="flex flex-1 flex-col justify-center rounded-2xl bg-accent-soft p-5 text-ink">
-      <p className="flex items-center gap-2 text-sm text-ink/75">
+    <div className="flex flex-1 flex-col justify-center rounded-2xl bg-accent-soft px-4 py-3 text-ink">
+      <p className="flex items-center gap-2 text-xs text-ink/75">
         {icone} {rotulo}
       </p>
-      <p className="mt-1 font-display text-xl font-bold">{valor}</p>
+      <p className="mt-0.5 font-display text-base font-bold sm:text-lg">{valor}</p>
       {acao}
     </div>
   );
 }
 
 const verImoveis = (
-  <a href="#imoveis" className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-accent-deep hover:underline">
+  <a href="#imoveis" className="mt-0.5 inline-flex items-center gap-1 text-sm font-semibold text-accent-deep hover:underline">
     Ver imóveis <ChevronRight className="size-4" />
   </a>
 );
@@ -96,23 +96,23 @@ function Topo({ titulo, linha, selo, foto, total, desde, extra, acoes }: {
   acoes: ReactNode;
 }) {
   return (
-    <Surge y={16} className="overflow-hidden rounded-3xl bg-ink p-6 text-bg sm:p-8">
-      <h1 className="font-display text-3xl font-bold tracking-tight sm:text-5xl">{titulo}</h1>
-      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-bg/70">
+    <Surge y={16} className="overflow-hidden rounded-3xl bg-ink p-5 text-bg sm:p-6">
+      <h1 className="font-display text-2xl font-bold tracking-tight sm:text-4xl">{titulo}</h1>
+      <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-bg/70">
         {linha}
         {selo}
       </div>
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-[15rem_15rem_minmax(0,1fr)]">
-        <div className="aspect-[335/375] overflow-hidden rounded-2xl bg-white/10">{foto}</div>
-        <div className="flex flex-col gap-4">
+      <div className="mt-4 grid grid-cols-[6.5rem_minmax(0,1fr)] gap-3 sm:grid-cols-[9rem_16rem] lg:grid-cols-[9rem_16rem_minmax(0,1fr)]">
+        <div className="h-full min-h-[6.5rem] overflow-hidden rounded-2xl bg-white/10 sm:aspect-[4/5] sm:h-auto">{foto}</div>
+        <div className="flex flex-col gap-3">
           <Info icone={<House className="size-4 text-accent" />} rotulo="Imóveis anunciados" valor={imoveis(total)} acao={verImoveis} />
           {desde && <Info icone={<CalendarCheck className="size-4 text-accent" />} rotulo="Na Frankkia desde" valor={dataPorExtenso(desde)} />}
         </div>
-        <div className="hidden items-end lg:flex">
+        <div className="hidden h-44 items-end justify-end lg:flex">
           <Ilustracao />
         </div>
       </div>
-      <div className="mt-6 flex flex-wrap items-center gap-2">
+      <div className="mt-4 flex flex-wrap items-center gap-2">
         {acoes}
         {extra}
       </div>
@@ -125,7 +125,7 @@ function FotoGrande({ nome, foto }: { nome: string; foto: string | null }) {
   if (foto) return <img src={foto} alt={nome} className="size-full object-cover" />;
   return (
     <div className="grid size-full place-items-center">
-      <FotoPessoa p={{ nome, foto: null }} className="size-28 text-4xl" />
+      <FotoPessoa p={{ nome, foto: null }} className="size-20 text-2xl" />
     </div>
   );
 }
@@ -186,7 +186,7 @@ export function PaginaImobiliaria({ i }: { i: ImobiliariaPublica }) {
   const foto = i.solo ? (
     <FotoGrande nome={i.corretores[0]?.nome ?? i.nome} foto={i.corretores[0]?.foto ?? null} />
   ) : i.logo ? (
-    <div className="grid size-full place-items-center bg-white p-6">
+    <div className="grid size-full place-items-center bg-white p-3">
       <img src={i.logo} alt={i.nome} className="max-h-full max-w-full object-contain" />
     </div>
   ) : (
