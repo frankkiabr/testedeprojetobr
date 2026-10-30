@@ -9,7 +9,6 @@ import {
   KeyRound,
   Megaphone,
   PartyPopper,
-  Plus,
   Sparkles,
   Trophy,
   UserPlus,
@@ -89,28 +88,6 @@ export default function Overview() {
           foto={<Avatar user={user} className="size-12 translate-y-0.5 text-base sm:size-14 sm:translate-y-1 sm:text-lg" />}
           subtitle={
             isAdmin && !solo ? `Aqui está o que está acontecendo na ${imobiliaria.nome} hoje.` : "Aqui está o que precisa da sua atenção hoje."
-          }
-          actions={
-            <>
-              <button
-                onClick={() => navigate("/app/negocios/leads?novo=1")}
-                className="inline-flex h-10 items-center gap-2 rounded-full bg-accent px-4 text-sm font-semibold text-white transition hover:bg-accent-deep active:scale-[0.98]"
-              >
-                <Plus className="size-4" /> Novo lead
-              </button>
-              <button
-                onClick={() => navigate("/app/negocios/captacoes?novo=1")}
-                className="inline-flex h-10 items-center gap-2 rounded-full border border-line-strong bg-bg px-4 text-sm font-semibold transition hover:bg-canvas active:scale-[0.98]"
-              >
-                <Home className="size-4" /> Novo imóvel
-              </button>
-              <button
-                onClick={() => navigate(isAdmin ? "/app/negocios/transacoes?nova=1" : "/app/negocios/transacoes?informar=1")}
-                className="inline-flex h-10 items-center gap-2 rounded-full border border-line-strong bg-bg px-4 text-sm font-semibold transition hover:bg-canvas active:scale-[0.98]"
-              >
-                <BadgeDollarSign className="size-4" /> {isAdmin ? "Registrar venda ou locação" : "Informar fechamento"}
-              </button>
-            </>
           }
         />
       </motion.div>

@@ -5,12 +5,13 @@ import { AlertOctagon, BadgeCheck, Building2, Camera, Users, CalendarDays, Exter
 import { errosSistema, interessados, pedidosUpgrade, todosChamados } from "@/data/platform";
 import { useStore } from "@/data/store";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
-import { Logo } from "@/components/ui";
+import { Logo, LogoMark } from "@/components/ui";
+import { BotaoRecolher, useMenuRecolhido } from "../menuLateral";
 import { useSession } from "../session";
 import { RoleSwitcher } from "../AppLayout";
 import { Toaster } from "../forms";
 
-function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
+function Sidebar({ onNavigate, recolhido }: { onNavigate?: () => void; recolhido?: boolean }) {
   useStore();
   const { sair } = useSession();
   const navigate = useNavigate();
@@ -31,12 +32,18 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   ];
 
   return (
-    <div className="flex h-full flex-col px-4 pb-5">
-      <Link to="/" className="flex h-16 items-center gap-3 px-2">
-        <Logo className="text-[1.75rem] text-bg" />
-        <span className="rounded-full bg-accent px-2 py-0.5 text-[0.625rem] font-bold uppercase tracking-[0.12em] text-white">Criador</span>
+    <div className={`flex h-full flex-col pb-5 ${recolhido ? "px-3" : "px-4"}`}>
+      <Link to="/" className={`flex h-16 items-center gap-3 ${recolhido ? "justify-center" : "px-2"}`}>
+        {recolhido ? (
+          <LogoMark className="size-9 text-lg" />
+        ) : (
+          <>
+            <Logo className="text-[1.75rem] text-bg" />
+            <span className="rounded-full bg-accent px-2 py-0.5 text-[0.625rem] font-bold uppercase tracking-[0.12em] text-white">Criador</span>
+          </>
+        )}
       </Link>
-      <p className="mt-4 px-3 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-bg/40">Plataforma</p>
+      {!recolhido && <p className="mt-4 px-3 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-bg/40">Plataforma</p>}
       <nav className="mt-3 space-y-1">
         {menu.map(({ to, label, icon: Icon, end, count, danger }) => (
           <NavLink
@@ -44,8 +51,9 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
             to={to}
             end={end}
             onClick={onNavigate}
+            title={recolhido ? label : undefined}
             className={({ isActive }) =>
-              `relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${isActive ? "font-semibold text-bg" : "text-bg/60 hover:bg-white/5 hover:text-bg"}`
+              `relative flex items-center gap-3 rounded-xl py-2.5 text-sm transition-colors ${recolhido ? "justify-center" : "px-3"} ${isActive ? "font-semibold text-bg" : "text-bg/60 hover:bg-white/5 hover:text-bg"}`
             }
           >
             {({ isActive }) => (
@@ -53,11 +61,14 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                 {isActive && (
                   <motion.span layoutId="admin-active" className="absolute inset-0 rounded-xl bg-white/10" transition={{ type: "spring", stiffness: 500, damping: 40 }} />
                 )}
-                <Icon className="relative size-[18px]" />
-                <span className="relative flex-1">{label}</span>
-                {!!count && (
-                  <span className={`relative rounded-full px-2 py-0.5 text-[0.6875rem] font-bold ${danger ? "bg-rose-500 text-white" : "bg-accent text-white"}`}>{count}</span>
-                )}
+                <Icon className="relative size-[18px] shrink-0" />
+                {!recolhido && <span className="relative flex-1">{label}</span>}
+                {!!count &&
+                  (recolhido ? (
+                    <span className={`absolute right-2 top-1.5 size-2 rounded-full ${danger ? "bg-rose-500" : "bg-accent"}`} />
+                  ) : (
+                    <span className={`relative rounded-full px-2 py-0.5 text-[0.6875rem] font-bold ${danger ? "bg-rose-500 text-white" : "bg-accent text-white"}`}>{count}</span>
+                  ))}
               </>
             )}
           </NavLink>
@@ -65,21 +76,28 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       </nav>
 
       <div className="mt-auto space-y-3">
-        <div className="rounded-2xl bg-white/5 p-4 text-xs leading-relaxed text-bg/60">
-          Você vê só dados de conta e volumes de uso. Leads, imóveis e vendas das imobiliárias ficam privados.
-        </div>
-        <Link to="/" className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-bg/60 hover:bg-white/5 hover:text-bg">
-          <ExternalLink className="size-[18px]" /> Ver o site
+        {!recolhido && (
+          <div className="rounded-2xl bg-white/5 p-4 text-xs leading-relaxed text-bg/60">
+            Você vê só dados de conta e volumes de uso. Leads, imóveis e vendas das imobiliárias ficam privados.
+          </div>
+        )}
+        <Link
+          to="/"
+          title={recolhido ? "Ver o site" : undefined}
+          className={`flex items-center gap-3 rounded-xl py-2.5 text-sm text-bg/60 hover:bg-white/5 hover:text-bg ${recolhido ? "justify-center" : "px-3"}`}
+        >
+          <ExternalLink className="size-[18px] shrink-0" /> {!recolhido && "Ver o site"}
         </Link>
-        <FotoDoPainel />
+        <FotoDoPainel recolhido={recolhido} />
         <button
           onClick={async () => {
             await sair();
             navigate("/login");
           }}
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-bg/60 hover:bg-white/5 hover:text-bg"
+          title={recolhido ? "Sair" : undefined}
+          className={`flex w-full items-center gap-3 rounded-xl py-2.5 text-sm text-bg/60 hover:bg-white/5 hover:text-bg ${recolhido ? "justify-center" : "px-3"}`}
         >
-          <LogOut className="size-[18px]" /> Sair
+          <LogOut className="size-[18px] shrink-0" /> {!recolhido && "Sair"}
         </button>
       </div>
     </div>
@@ -87,7 +105,7 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 /** Foto da conta Frankkia (aparece na saudação da visão geral): trocar ou remover pelo menu lateral. */
-function FotoDoPainel() {
+function FotoDoPainel({ recolhido }: { recolhido?: boolean }) {
   const { user } = useSession();
   const { setFotoPerfil, toast } = useStore();
   const entrada = useRef<HTMLInputElement>(null);
@@ -104,9 +122,10 @@ function FotoDoPainel() {
     <div className="relative">
       <button
         onClick={() => setAberto(!aberto)}
-        className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-bg/60 hover:bg-white/5 hover:text-bg"
+        title={recolhido ? "Foto de perfil" : undefined}
+        className={`flex w-full items-center gap-3 rounded-xl py-2.5 text-sm text-bg/60 hover:bg-white/5 hover:text-bg ${recolhido ? "justify-center" : "px-3"}`}
       >
-        <Camera className="size-[18px]" /> {enviando ? "Enviando foto..." : "Foto de perfil"}
+        <Camera className="size-[18px] shrink-0" /> {!recolhido && (enviando ? "Enviando foto..." : "Foto de perfil")}
       </button>
       {aberto && (
         <div className="absolute bottom-full left-0 z-50 mb-1 w-48 overflow-hidden rounded-2xl border border-line bg-bg p-1.5 text-ink shadow-float">
@@ -141,6 +160,7 @@ export function AdminLayout() {
   const loc = useLocation();
   const outlet = useOutlet();
   const [drawer, setDrawer] = useState(false);
+  const { recolhido, alternar } = useMenuRecolhido("frankkia.menu-painel");
 
   useEffect(() => {
     setDrawer(false);
@@ -149,8 +169,8 @@ export function AdminLayout() {
 
   return (
     <div className="min-h-screen bg-canvas/60">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 bg-ink lg:block">
-        <Sidebar />
+      <aside className={`fixed inset-y-0 left-0 z-30 hidden bg-ink transition-[width] duration-300 lg:block ${recolhido ? "w-20" : "w-64"}`}>
+        <Sidebar recolhido={recolhido} />
       </aside>
 
       <>
@@ -172,11 +192,12 @@ export function AdminLayout() {
         )}
       </>
 
-      <div className="lg:pl-64">
+      <div className={`transition-[padding] duration-300 ${recolhido ? "lg:pl-20" : "lg:pl-64"}`}>
         <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-line bg-bg/85 px-4 backdrop-blur-md sm:px-8">
           <button onClick={() => setDrawer(true)} aria-label="Abrir menu" className="grid size-10 place-items-center rounded-full hover:bg-canvas lg:hidden">
             <Menu className="size-5" />
           </button>
+          <BotaoRecolher recolhido={recolhido} onClick={alternar} />
           <span className="hidden rounded-full bg-ink px-3 py-1 text-xs font-semibold text-bg sm:inline">Painel do criador</span>
           <div className="ml-auto flex items-center gap-3 sm:gap-5">
             <div className="hidden md:block">

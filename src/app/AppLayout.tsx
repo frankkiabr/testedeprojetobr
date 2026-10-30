@@ -25,7 +25,8 @@ import { clienteById, ehSolo } from "@/data/platform";
 import { useStore } from "@/data/store";
 import type { Role } from "@/data/types";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
-import { Logo } from "@/components/ui";
+import { Logo, LogoMark } from "@/components/ui";
+import { BotaoRecolher, useMenuRecolhido } from "./menuLateral";
 import { useSession } from "./session";
 import { ProgressBar } from "./kit";
 import { Toaster } from "./forms";
@@ -48,13 +49,14 @@ const BOTTOM = [
   { to: "ajuda", label: "Ajuda", icon: HelpCircle },
 ];
 
-function NavItem({ to, label, icon: Icon, onClick }: { to: string; label: string; icon: typeof LayoutGrid; onClick?: () => void }) {
+function NavItem({ to, label, icon: Icon, onClick, recolhido }: { to: string; label: string; icon: typeof LayoutGrid; onClick?: () => void; recolhido?: boolean }) {
   return (
     <NavLink
       to={`/app/${to}`}
       onClick={onClick}
+      title={recolhido ? label : undefined}
       className={({ isActive }) =>
-        `relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
+        `relative flex items-center gap-3 rounded-xl py-2.5 text-sm transition-colors ${recolhido ? "justify-center px-0" : "px-3"} ${
           isActive ? "font-semibold text-accent-deep" : "text-muted hover:bg-canvas hover:text-ink"
         }`
       }
@@ -68,40 +70,40 @@ function NavItem({ to, label, icon: Icon, onClick }: { to: string; label: string
               transition={{ type: "spring", stiffness: 500, damping: 40 }}
             />
           )}
-          <Icon className="relative size-[18px]" />
-          <span className="relative">{label}</span>
+          <Icon className="relative size-[18px] shrink-0" />
+          {!recolhido && <span className="relative">{label}</span>}
         </>
       )}
     </NavLink>
   );
 }
 
-function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
+function Sidebar({ onNavigate, recolhido }: { onNavigate?: () => void; recolhido?: boolean }) {
   const { role, sair } = useSession();
   const navigate = useNavigate();
   useStore();
   const used = vagasUsadas();
   const solo = ehSolo(imobiliaria.plano);
   return (
-    <div className="flex h-full flex-col px-4 pb-5">
-      <Link to="/" className="flex h-16 items-center px-2">
-        <Logo className="text-[1.75rem]" />
+    <div className={`flex h-full flex-col pb-5 ${recolhido ? "px-3" : "px-4"}`}>
+      <Link to="/" className={`flex h-16 items-center ${recolhido ? "justify-center" : "px-2"}`}>
+        {recolhido ? <LogoMark className="size-9 text-lg" /> : <Logo className="text-[1.75rem]" />}
       </Link>
-      <p className="mt-4 px-3 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-subtle">Seu universo</p>
+      {!recolhido && <p className="mt-4 px-3 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-subtle">Seu universo</p>}
       <nav className="mt-3 space-y-1">
         {MENU.filter((m) => (!m.adminOnly || role === "admin") && !(solo && (m.to === "equipe" || m.to === "academy"))).map((m) => (
-          <NavItem key={m.to} {...m} onClick={onNavigate} />
+          <NavItem key={m.to} {...m} onClick={onNavigate} recolhido={recolhido} />
         ))}
       </nav>
 
       <div className="mt-auto space-y-4">
-        {role === "admin" && solo && (
+        {!recolhido && role === "admin" && solo && (
           <div className="rounded-2xl bg-canvas p-4 text-xs">
             <span className="font-semibold">Plano Solo</span>
             <p className="mt-1 text-[0.6875rem] text-muted">Corretor autônomo · sem equipe</p>
           </div>
         )}
-        {role === "admin" && !solo && (
+        {!recolhido && role === "admin" && !solo && (
           <div className="rounded-2xl bg-canvas p-4">
             <div className="flex items-center justify-between text-xs">
               <span className="font-semibold">Plano {imobiliaria.plano}</span>
@@ -118,16 +120,17 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         )}
         <nav className="space-y-1">
           {BOTTOM.map((m) => (
-            <NavItem key={m.to} {...m} onClick={onNavigate} />
+            <NavItem key={m.to} {...m} onClick={onNavigate} recolhido={recolhido} />
           ))}
           <button
             onClick={async () => {
               await sair();
               navigate("/login");
             }}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-muted transition-colors hover:bg-canvas hover:text-ink"
+            title={recolhido ? "Sair" : undefined}
+            className={`flex w-full items-center gap-3 rounded-xl py-2.5 text-sm text-muted transition-colors hover:bg-canvas hover:text-ink ${recolhido ? "justify-center" : "px-3"}`}
           >
-            <LogOut className="size-[18px]" /> Sair
+            <LogOut className="size-[18px] shrink-0" /> {!recolhido && "Sair"}
           </button>
         </nav>
       </div>
@@ -180,6 +183,7 @@ export function AppLayout() {
   const loc = useLocation();
   const outlet = useOutlet();
   const [drawer, setDrawer] = useState(false);
+  const { recolhido, alternar } = useMenuRecolhido("frankkia.menu");
 
   useEffect(() => {
     setDrawer(false);
@@ -210,8 +214,8 @@ export function AppLayout() {
   return (
     <div className="min-h-screen bg-canvas/50">
       {/* Menu lateral fixo (telas grandes) */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-line bg-bg lg:block">
-        <Sidebar />
+      <aside className={`fixed inset-y-0 left-0 z-30 hidden border-r border-line bg-bg transition-[width] duration-300 lg:block ${recolhido ? "w-20" : "w-64"}`}>
+        <Sidebar recolhido={recolhido} />
       </aside>
 
       {/* Menu em gaveta (celular/tablet) */}
@@ -239,11 +243,12 @@ export function AppLayout() {
         )}
       </>
 
-      <div className="lg:pl-64">
+      <div className={`transition-[padding] duration-300 ${recolhido ? "lg:pl-20" : "lg:pl-64"}`}>
         <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-line bg-bg/85 px-4 backdrop-blur-md sm:px-8">
           <button onClick={() => setDrawer(true)} aria-label="Abrir menu" className="grid size-10 place-items-center rounded-full hover:bg-canvas lg:hidden">
             <Menu className="size-5" />
           </button>
+          <BotaoRecolher recolhido={recolhido} onClick={alternar} />
           <Link to="/" className="lg:hidden">
             <Logo className="text-xl" />
           </Link>
@@ -251,7 +256,6 @@ export function AppLayout() {
             <div className="hidden md:block">
               <RoleSwitcher />
             </div>
-            <span className="hidden text-sm text-muted xl:block">{nomeImob}</span>
             <Notificacoes />
           </div>
         </header>
