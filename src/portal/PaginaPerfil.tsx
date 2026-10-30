@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
-import { CalendarCheck, ChevronRight, House } from "lucide-react";
+import { BadgeCheck, CalendarCheck, ChevronRight, House, MapPin, Users } from "lucide-react";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 import type { CorretorPublico, ImobiliariaPublica } from "./api";
 import { Surge } from "./anim";
@@ -9,7 +9,7 @@ import { REDES } from "@/lib/redes";
 import { creciTexto, dataPorExtenso, FotoPessoa, linkWhats, numeroWhats, PortalShell, SeloCreci, Trilha } from "./ui";
 
 const imoveis = (n: number) => `${n} ${n === 1 ? "imóvel" : "imóveis"}`;
-const COMPARTILHAR_ESCURO = "!border-white/25 !bg-transparent !text-bg hover:!bg-white/10";
+const COMPARTILHAR_ESCURO = "!border-ink !bg-ink !text-bg hover:!bg-ink/85";
 
 function BotaoWhats({ tel, texto }: { tel: string | null; texto: string }) {
   const n = numeroWhats(tel);
@@ -26,54 +26,19 @@ function BotaoWhats({ tel, texto }: { tel: string | null; texto: string }) {
   );
 }
 
-/** Ilustração padrão do lado direito do topo (prédios e árvores, nas cores da Frankkia). */
-function Ilustracao() {
-  return (
-    <svg viewBox="0 0 420 300" className="h-full w-full" aria-hidden>
-      <g fill="#ffffff" opacity="0.07">
-        <rect x="40" y="70" width="90" height="230" rx="4" />
-        <rect x="150" y="20" width="110" height="280" rx="4" />
-        <rect x="280" y="95" width="100" height="205" rx="4" />
-      </g>
-      <g fill="#ffffff" opacity="0.16">
-        {[0, 1, 2, 3, 4, 5, 6].map((l) =>
-          [0, 1, 2].map((c) => <rect key={`a${l}${c}`} x={168 + c * 30} y={45 + l * 34} width="16" height="14" rx="2" />),
-        )}
-        {[0, 1, 2, 3, 4, 5].map((l) => [0, 1].map((c) => <rect key={`b${l}${c}`} x={58 + c * 32} y={92 + l * 34} width="16" height="14" rx="2" />))}
-        {[0, 1, 2, 3, 4].map((l) => [0, 1].map((c) => <rect key={`c${l}${c}`} x={300 + c * 36} y={118 + l * 34} width="18" height="14" rx="2" />))}
-      </g>
-      {/* árvores */}
-      <g>
-        <rect x="27" y="232" width="6" height="68" fill="#ffffff" opacity="0.25" />
-        <ellipse cx="30" cy="215" rx="28" ry="40" fill="#2f5bea" opacity="0.9" />
-        <ellipse cx="30" cy="190" rx="20" ry="28" fill="#4f7bff" />
-        <rect x="389" y="226" width="6" height="74" fill="#ffffff" opacity="0.25" />
-        <ellipse cx="392" cy="208" rx="26" ry="42" fill="#2f5bea" opacity="0.9" />
-        <ellipse cx="392" cy="182" rx="18" ry="28" fill="#4f7bff" />
-      </g>
-      {/* casinha */}
-      <g transform="translate(205 222)">
-        <path d="M0 30 L32 4 L64 30 V78 H0 Z" fill="#e8eeff" />
-        <path d="M-6 32 L32 0 L70 32" fill="none" stroke="#2f5bea" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
-        <rect x="24" y="48" width="16" height="30" rx="2" fill="#2f5bea" />
-      </g>
-      <rect x="0" y="296" width="420" height="4" rx="2" fill="#ffffff" opacity="0.2" />
-    </svg>
-  );
-}
-
 /** Cartão de informação do topo (azul claro, como nos portais). */
-function Info({ icone, rotulo, valor, acao }: { icone: ReactNode; rotulo: string; valor: string; acao?: ReactNode }) {
+function Info({ icone, rotulo, valor, acao }: CartaoInfo) {
   return (
-    <div className="flex flex-1 flex-col justify-center rounded-2xl bg-accent-soft px-4 py-3 text-ink">
+    <div className="flex min-w-0 flex-col justify-center rounded-2xl bg-accent-soft px-4 py-3 text-ink">
       <p className="flex items-center gap-2 text-xs text-ink/75">
         {icone} {rotulo}
       </p>
-      <p className="mt-0.5 font-display text-base font-bold sm:text-lg">{valor}</p>
+      <p className="mt-0.5 truncate font-display text-base font-bold sm:text-lg">{valor}</p>
       {acao}
     </div>
   );
 }
+type CartaoInfo = { icone: ReactNode; rotulo: string; valor: string; acao?: ReactNode };
 
 const verImoveis = (
   <a href="#imoveis" className="mt-0.5 inline-flex items-center gap-1 text-sm font-semibold text-accent-deep hover:underline">
@@ -81,47 +46,45 @@ const verImoveis = (
   </a>
 );
 
+/** Cidades onde há imóveis anunciados ("Belém - PA" ou "Belém - PA e mais 2"). */
+function atuaEm(anuncios: { cidade: string; uf: string }[]) {
+  const cidades = [...new Set(anuncios.map((a) => `${a.cidade} - ${a.uf}`))];
+  if (!cidades.length) return "";
+  return cidades.length === 1 ? cidades[0] : `${cidades[0]} e mais ${cidades.length - 1}`;
+}
+
 /**
- * Topo das páginas do corretor e da imobiliária, em dois blocos azul-escuros lado a lado:
- * à esquerda o nome, a foto (ou logo) e dois cartões (imóveis anunciados e desde quando está na Frankkia);
- * à direita a ilustração com os botões de WhatsApp e compartilhar (e as redes sociais) embaixo.
+ * Topo das páginas do corretor e da imobiliária, em fundo claro: nome e profissão; a foto (ou logo) com quatro
+ * cartões azul-claros (imóveis anunciados, na Frankkia desde, CRECI e onde atua); à direita, WhatsApp, compartilhar
+ * e as redes sociais.
  */
-function Topo({ titulo, linha, selo, foto, total, desde, extra, acoes }: {
+function Topo({ titulo, linha, foto, cartoes, acoes, redes }: {
   titulo: string;
   linha: string;
-  selo?: ReactNode;
   foto: ReactNode;
-  total: number;
-  desde?: string;
-  extra?: ReactNode;
+  cartoes: CartaoInfo[];
   acoes: ReactNode;
+  redes?: ReactNode[];
 }) {
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_26rem]">
-      <Surge y={16} className="overflow-hidden rounded-3xl bg-ink p-5 text-bg sm:p-8">
-        <h1 className="font-display text-2xl font-bold tracking-tight sm:text-4xl">{titulo}</h1>
-        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-bg/70">
-          {linha}
-          {selo}
-        </div>
-        <div className="mt-5 grid grid-cols-[6.5rem_minmax(0,1fr)] gap-3 sm:grid-cols-[11rem_minmax(0,1fr)] sm:gap-4">
-          <div className="h-full min-h-[6.5rem] overflow-hidden rounded-2xl bg-white/10 sm:aspect-[4/5] sm:h-auto">{foto}</div>
-          <div className="flex flex-col gap-3 sm:gap-4">
-            <Info icone={<House className="size-4 text-accent" />} rotulo="Imóveis anunciados" valor={imoveis(total)} acao={verImoveis} />
-            {desde && <Info icone={<CalendarCheck className="size-4 text-accent" />} rotulo="Na Frankkia desde" valor={dataPorExtenso(desde)} />}
+    <Surge y={16}>
+      <h1 className="font-display text-3xl font-bold tracking-tight text-ink sm:text-4xl">{titulo}</h1>
+      <p className="mt-1 text-sm text-muted">{linha}</p>
+      <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+        <div className="grid grid-cols-[6.5rem_minmax(0,1fr)] gap-3 sm:grid-cols-[11rem_minmax(0,1fr)] sm:gap-4">
+          <div className="h-full min-h-[6.5rem] overflow-hidden rounded-2xl bg-accent-soft sm:aspect-[4/5] sm:h-auto">{foto}</div>
+          <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">
+            {cartoes.map((c) => (
+              <Info key={c.rotulo} {...c} />
+            ))}
           </div>
         </div>
-      </Surge>
-      <Surge y={16} delay={0.08} className="flex flex-col justify-between gap-5 overflow-hidden rounded-3xl bg-ink p-5 text-bg sm:p-8">
-        <div className="mx-auto hidden h-48 w-full max-w-xs lg:block">
-          <Ilustracao />
+        <div className="flex flex-col items-center gap-3 lg:px-4">
+          <div className="flex w-full flex-wrap justify-center gap-2 [&>*]:flex-1 sm:[&>*]:flex-none">{acoes}</div>
+          {!!redes?.length && <div className="flex flex-wrap justify-center gap-2">{redes}</div>}
         </div>
-        <div className="space-y-3">
-          <div className="flex flex-wrap justify-center gap-2 [&>*]:flex-1 sm:[&>*]:flex-none">{acoes}</div>
-          {(Array.isArray(extra) ? extra.length > 0 : !!extra) && <div className="flex flex-wrap justify-center gap-2">{extra}</div>}
-        </div>
-      </Surge>
-    </div>
+      </div>
+    </Surge>
   );
 }
 
@@ -150,18 +113,23 @@ export function PaginaCorretor({ c }: { c: CorretorPublico }) {
       />
       <Topo
         titulo={c.nome}
-        linha={[creciTexto(c), c.imobiliaria.solo ? "Corretor de imóveis" : c.imobiliaria.nome].filter(Boolean).join(" · ")}
-        selo={c.creci_verificado ? <SeloCreci c={c} /> : null}
+        linha={c.imobiliaria.solo ? "Corretor de imóveis" : `Corretor de imóveis · ${c.imobiliaria.nome}`}
         foto={<FotoGrande nome={c.nome} foto={c.foto} />}
-        total={c.anuncios.length}
-        desde={c.desde}
+        cartoes={[
+          { icone: <House className="size-4 text-accent" />, rotulo: "Imóveis anunciados", valor: imoveis(c.anuncios.length), acao: verImoveis },
+          ...(c.creci
+            ? [{ icone: <BadgeCheck className="size-4 text-accent" />, rotulo: "CRECI", valor: creciTexto(c).replace("CRECI ", ""), acao: c.creci_verificado ? <div className="mt-1"><SeloCreci c={c} /></div> : undefined }]
+            : []),
+          ...(c.desde ? [{ icone: <CalendarCheck className="size-4 text-accent" />, rotulo: "Na Frankkia desde", valor: dataPorExtenso(c.desde) }] : []),
+          ...(atuaEm(c.anuncios) ? [{ icone: <MapPin className="size-4 text-accent" />, rotulo: "Atua em", valor: atuaEm(c.anuncios) }] : []),
+        ]}
         acoes={
           <>
             <BotaoWhats tel={c.telefone} texto={`Olá, ${c.nome.split(" ")[0]}! Vi seus imóveis no portal.`} />
             <BotaoCompartilhar titulo={c.nome} texto={`Imóveis de ${c.nome}`} className={COMPARTILHAR_ESCURO} />
           </>
         }
-        extra={redes.map(({ chave, nome, Icone }) => (
+        redes={redes.map(({ chave, nome, Icone }) => (
           <a
             key={chave}
             href={c.redes![chave]}
@@ -169,7 +137,7 @@ export function PaginaCorretor({ c }: { c: CorretorPublico }) {
             rel="noreferrer"
             aria-label={nome}
             title={nome}
-            className="grid size-9 place-items-center rounded-full border border-white/15 bg-white/10 text-bg transition hover:-translate-y-0.5 hover:bg-white/20"
+            className="grid size-10 place-items-center rounded-full bg-ink text-bg transition hover:-translate-y-0.5 hover:bg-ink/85"
           >
             <Icone className="size-4" />
           </a>
@@ -191,7 +159,7 @@ export function PaginaImobiliaria({ i }: { i: ImobiliariaPublica }) {
   const foto = i.solo ? (
     <FotoGrande nome={i.corretores[0]?.nome ?? i.nome} foto={i.corretores[0]?.foto ?? null} />
   ) : i.logo ? (
-    <div className="grid size-full place-items-center bg-white p-3">
+    <div className="grid size-full place-items-center border border-line bg-white p-3">
       <img src={i.logo} alt={i.nome} className="max-h-full max-w-full object-contain" />
     </div>
   ) : (
@@ -202,12 +170,16 @@ export function PaginaImobiliaria({ i }: { i: ImobiliariaPublica }) {
       <Trilha itens={[{ rotulo: "Início", href: "/" }, { rotulo: "Imóveis", href: "/imoveis" }, { rotulo: i.nome }]} />
       <Topo
         titulo={i.nome}
-        linha={[i.creci_j ? `CRECI-J ${i.creci_j}` : "", i.cidade, !i.solo && i.corretores.length ? `${i.corretores.length} ${i.corretores.length === 1 ? "corretor" : "corretores"}` : ""]
-          .filter(Boolean)
-          .join(" · ")}
+        linha={i.solo ? "Corretor de imóveis" : "Imobiliária"}
         foto={foto}
-        total={i.anuncios.length}
-        desde={i.desde}
+        cartoes={[
+          { icone: <House className="size-4 text-accent" />, rotulo: "Imóveis anunciados", valor: imoveis(i.anuncios.length), acao: verImoveis },
+          i.creci_j
+            ? { icone: <BadgeCheck className="size-4 text-accent" />, rotulo: "CRECI-J", valor: i.creci_j }
+            : { icone: <Users className="size-4 text-accent" />, rotulo: "Corretores", valor: String(Math.max(i.corretores.length, 1)) },
+          ...(i.desde ? [{ icone: <CalendarCheck className="size-4 text-accent" />, rotulo: "Na Frankkia desde", valor: dataPorExtenso(i.desde) }] : []),
+          ...(atuaEm(i.anuncios) ? [{ icone: <MapPin className="size-4 text-accent" />, rotulo: "Atua em", valor: atuaEm(i.anuncios) }] : []),
+        ]}
         acoes={
           <>
             <BotaoWhats tel={i.telefone} texto={`Olá! Vi os imóveis da ${i.nome} no portal.`} />

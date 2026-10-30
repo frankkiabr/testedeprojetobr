@@ -88,7 +88,7 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
   `src/components/Trilha.tsx` (site; `PaginaSimples` já põe "Início › página"). No anúncio: Início › Imóveis › Venda › UF ›
   "Apartamentos à venda em Belém" › bairro, com links que abrem a busca já filtrada (`?negocio=&tipo=&bairro=&uf=`).
 - Anúncio: cartão do corretor com total de imóveis e "Anunciando desde <data>"; características em abas Imóvel/Condomínio
-  (`ehDoCondominio`). Corretor/imobiliária: topo azul-escuro com foto grande, cartões (imóveis, desde) e ilustração.
+  (`ehDoCondominio`). Corretor/imobiliária: topo claro com foto, 4 cartões azul-claros (imóveis, CRECI, desde, atua em) e botões à direita.
 - Busca do portal: `/imoveis` e por cidade `/imoveis/<cidade-uf>` (ex.: `/imoveis/belem-pa`, rota `src/routes/imoveis_.$cidade.tsx`),
   dados de `portal_busca`. Home: seção "Seus imóveis na vitrine" (`src/components/Vitrine.tsx`); "Quem já usa" só com 3+ clientes.
 - Termos de Uso e Política de Privacidade: `/termos` e `/privacidade` (`src/pages/Legal.tsx`), com links no rodapé, no
