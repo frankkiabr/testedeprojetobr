@@ -7,6 +7,9 @@ import { REDES } from "@/lib/redes";
 import { creciTexto, FotoPessoa, linkWhats, numeroWhats, PortalShell, SeloCreci } from "./ui";
 
 const contagem = (n: number) => `${n} ${n === 1 ? "imóvel anunciado" : "imóveis anunciados"}`;
+/** "março de 2026" */
+const desde = (iso: string) => new Date(iso).toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+const COMPARTILHAR_ESCURO = "!border-white/25 !bg-transparent !text-bg hover:!bg-white/10";
 
 function BotaoWhats({ tel, texto }: { tel: string | null; texto: string }) {
   const n = numeroWhats(tel);
@@ -30,14 +33,14 @@ export function PaginaCorretor({ c }: { c: CorretorPublico }) {
     <PortalShell imob={c.imobiliaria} corretor={c}>
       <Surge
         y={16}
-        className="flex flex-col gap-5 rounded-3xl bg-canvas p-6 sm:flex-row sm:items-center sm:p-8"
+        className="flex flex-col gap-5 rounded-3xl bg-ink p-6 text-bg sm:flex-row sm:items-center sm:p-8"
       >
-        <FotoPessoa p={c} className="size-20 text-2xl" />
+        <FotoPessoa p={c} className="size-20 text-2xl ring-4 ring-white/10" />
         <div className="min-w-0 flex-1">
-          <h1 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
+          <h1 className="font-display text-2xl font-bold tracking-tight sm:text-4xl">
             {c.nome}
           </h1>
-          <p className="mt-1 text-sm text-muted">
+          <p className="mt-1.5 text-sm text-bg/70">
             {[
               creciTexto(c),
               c.imobiliaria.solo ? "" : c.imobiliaria.nome,
@@ -46,6 +49,7 @@ export function PaginaCorretor({ c }: { c: CorretorPublico }) {
               .filter(Boolean)
               .join(" · ")}
           </p>
+          {c.desde && <p className="mt-1 text-xs text-bg/55">Na Frankkia desde {desde(c.desde)}</p>}
           {c.creci_verificado && (
             <div className="mt-2">
               <SeloCreci c={c} />
@@ -61,7 +65,7 @@ export function PaginaCorretor({ c }: { c: CorretorPublico }) {
                   rel="noreferrer"
                   aria-label={nome}
                   title={nome}
-                  className="grid size-9 place-items-center rounded-full border border-line bg-bg text-ink transition hover:-translate-y-0.5 hover:border-line-strong"
+                  className="grid size-9 place-items-center rounded-full border border-white/15 bg-white/10 text-bg transition hover:-translate-y-0.5 hover:bg-white/20"
                 >
                   <Icone className="size-4" />
                 </a>
@@ -74,7 +78,7 @@ export function PaginaCorretor({ c }: { c: CorretorPublico }) {
             tel={c.telefone}
             texto={`Olá, ${c.nome.split(" ")[0]}! Vi seus imóveis no portal.`}
           />
-          <BotaoCompartilhar titulo={c.nome} texto={`Imóveis de ${c.nome}`} />
+          <BotaoCompartilhar titulo={c.nome} texto={`Imóveis de ${c.nome}`} className={COMPARTILHAR_ESCURO} />
         </div>
       </Surge>
       <Surge delay={0.1}>
@@ -91,7 +95,7 @@ export function PaginaImobiliaria({ i }: { i: ImobiliariaPublica }) {
     <PortalShell imob={i}>
       <Surge
         y={16}
-        className="flex flex-col gap-5 rounded-3xl bg-canvas p-6 sm:flex-row sm:items-center sm:p-8"
+        className="flex flex-col gap-5 rounded-3xl bg-ink p-6 text-bg sm:flex-row sm:items-center sm:p-8"
       >
         {/* Solo: a "imobiliária" é o próprio corretor, então aparece a foto dele (ou as iniciais). A logo fica no menu do topo. */}
         {i.solo ? (
@@ -101,20 +105,23 @@ export function PaginaImobiliaria({ i }: { i: ImobiliariaPublica }) {
           />
         ) : (
           i.logo && (
-            <img src={i.logo} alt={i.nome} className="h-16 w-auto max-w-[12rem] object-contain" />
+            <span className="rounded-2xl bg-white p-3">
+              <img src={i.logo} alt={i.nome} className="h-14 w-auto max-w-[12rem] object-contain" />
+            </span>
           )
         )}
         <div className="min-w-0 flex-1">
-          <h1 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
+          <h1 className="font-display text-2xl font-bold tracking-tight sm:text-4xl">
             {i.nome}
           </h1>
-          <p className="mt-1 text-sm text-muted">
+          <p className="mt-1.5 text-sm text-bg/70">
             {[i.creci_j ? `CRECI-J ${i.creci_j}` : "", i.cidade, contagem(i.anuncios.length)].filter(Boolean).join(" · ")}
           </p>
+          {i.desde && <p className="mt-1 text-xs text-bg/55">Na Frankkia desde {desde(i.desde)}</p>}
         </div>
         <div className="flex flex-wrap gap-2">
           <BotaoWhats tel={i.telefone} texto={`Olá! Vi os imóveis da ${i.nome} no portal.`} />
-          <BotaoCompartilhar titulo={i.nome} texto={`Imóveis da ${i.nome}`} />
+          <BotaoCompartilhar titulo={i.nome} texto={`Imóveis da ${i.nome}`} className={COMPARTILHAR_ESCURO} />
         </div>
       </Surge>
 

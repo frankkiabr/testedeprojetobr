@@ -1,3 +1,4 @@
+import { TIPOS_COM_UNIDADE, unidadeEhSala } from "@/lib/imovel";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 import { AnuncioEditor } from "./Anuncio";
 import { Carrossel } from "@/components/Carrossel";
@@ -179,7 +180,7 @@ function NesteEndereco({ imovelId, atualId, onAbrir }: { imovelId: string; atual
 function EditarDados({ c, categoria, onFim }: { c: Captacao; categoria: string; onFim: () => void }) {
   const { updateCaptacao, salvarAnuncio } = useStore();
   const an = anuncios.find((x) => x.captacaoId === c.id);
-  const comUnidade = categoria === "Apartamento" || categoria === "Sala comercial";
+  const comUnidade = TIPOS_COM_UNIDADE.includes(categoria);
   const [f, setF] = useState({
     valor: moeda(c.valor),
     area: String(c.areaM2),
@@ -207,7 +208,7 @@ function EditarDados({ c, categoria, onFim }: { c: Captacao; categoria: string; 
       <div className="grid grid-cols-2 gap-3">
         {campo("valor", c.finalidade === "venda" ? "Valor de venda" : "Aluguel mensal")}
         {campo("area", "Área (m²)")}
-        {comUnidade && <div className="col-span-2">{campo("unidade", categoria === "Sala comercial" ? "Número da sala" : "Número do apartamento", false)}</div>}
+        {comUnidade && <div className="col-span-2">{campo("unidade", unidadeEhSala(categoria) ? "Número da sala" : "Número do apartamento", false)}</div>}
       </div>
       <div className="grid grid-cols-4 gap-3">
         {campo("quartos", "Quartos")}

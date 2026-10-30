@@ -349,6 +349,21 @@ export function FotoPessoa({
 }
 
 /** Página não encontrada (anúncio retirado, vendido ou endereço errado). */
+/** Banner azul-escuro no topo da busca de imóveis (mesmo estilo do cartão do corretor). */
+export function BannerBusca({ titulo, texto }: { titulo: string; texto: string }) {
+  return (
+    <Surge y={16} className="mb-6 flex items-center gap-5 overflow-hidden rounded-3xl bg-ink p-6 text-bg sm:p-8">
+      <span className="hidden size-16 shrink-0 place-items-center rounded-2xl bg-white/10 sm:grid">
+        <LogoMark className="size-8" />
+      </span>
+      <div className="min-w-0">
+        <h1 className="font-display text-2xl font-bold tracking-tight sm:text-4xl">{titulo}</h1>
+        <p className="mt-1.5 text-sm text-bg/70">{texto}</p>
+      </div>
+    </Surge>
+  );
+}
+
 export function NaoEncontrado({ texto, children }: { texto: string; children?: ReactNode }) {
   return (
     <PortalShell>

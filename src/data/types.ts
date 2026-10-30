@@ -265,7 +265,26 @@ export type Proprietario = {
 };
 
 /** Apartamento = edifício residencial (a unidade — apto, cobertura, studio — fica na captação). */
-export type CategoriaImovel = "Apartamento" | "Casa" | "Sala comercial" | "Loja" | "Galpão" | "Terreno";
+/** Tipos de imóvel (lista e rótulos em src/lib/imovel.ts). */
+export type CategoriaImovel =
+  | "Apartamento"
+  | "Casa"
+  | "Casa de condomínio"
+  | "Chácara"
+  | "Cobertura"
+  | "Flat"
+  | "Kitnet"
+  | "Terreno"
+  | "Sobrado"
+  | "Edifício residencial"
+  | "Fazenda/Sítio"
+  | "Consultório"
+  | "Galpão"
+  | "Imóvel comercial"
+  | "Terreno comercial"
+  | "Loja"
+  | "Sala comercial"
+  | "Prédio inteiro";
 
 export type Endereco = {
   /** Tipo e nome do logradouro (ex.: Av. Senador Lemos) */
@@ -408,6 +427,8 @@ export type Anuncio = {
   condominio?: number;
   iptu?: number;
   caracteristicas: string[];
+  /** Imóvel novo (lançamento): fase da obra. Vazio = imóvel usado/pronto comum. */
+  lancamento?: "na_planta" | "em_construcao" | "pronto";
   publicado: boolean;
   publicadoEm?: string;
   /** Endereço da página pública: frankkia.com/imovel/<slug> */

@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { buscarTodos } from "@/portal/api";
 import { ImoveisComFiltro } from "@/portal/Filtros";
-import { CidadesComImoveis, PortalShell } from "@/portal/ui";
+import { BannerBusca, CidadesComImoveis, PortalShell } from "@/portal/ui";
 
 const TITULO = "Imóveis à venda e para alugar · Frankkia";
 const DESCRICAO =
@@ -25,8 +25,10 @@ function Pagina() {
   const anuncios = Route.useLoaderData() ?? [];
   return (
     <PortalShell rotulo="Imóveis">
-      {/* Título da página fica só para o Google (o visitante vai direto à busca) */}
-      <h1 className="sr-only">Imóveis à venda e para alugar</h1>
+      <BannerBusca
+        titulo="Imóveis à venda e para alugar"
+        texto={`${anuncios.length} ${anuncios.length === 1 ? "imóvel anunciado" : "imóveis anunciados"} por imobiliárias e corretores com CRECI.`}
+      />
       {anuncios.length ? (
         <>
           <ImoveisComFiltro anuncios={anuncios} busca />

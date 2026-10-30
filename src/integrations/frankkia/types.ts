@@ -128,6 +128,7 @@ export type Database = {
           descricao: string
           imobiliaria_id: string
           iptu: number | null
+          lancamento: string | null
           portais: boolean
           portais_destaque: string
           publicado: boolean
@@ -147,6 +148,7 @@ export type Database = {
           descricao?: string
           imobiliaria_id: string
           iptu?: number | null
+          lancamento?: string | null
           portais?: boolean
           portais_destaque?: string
           publicado?: boolean
@@ -166,6 +168,7 @@ export type Database = {
           descricao?: string
           imobiliaria_id?: string
           iptu?: number | null
+          lancamento?: string | null
           portais?: boolean
           portais_destaque?: string
           publicado?: boolean

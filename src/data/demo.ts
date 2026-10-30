@@ -3,6 +3,7 @@
  * No login real, `sync.ts` preenche estas mesmas listas com os dados do banco.
  * Os dados são gerados de forma determinística, então são sempre os mesmos a cada visita.
  */
+import { TIPOS_COM_UNIDADE, TIPOS_IMOVEL } from "@/lib/imovel";
 import type {
   Anuncio,
   ArquivoMarca,
@@ -67,9 +68,9 @@ export const ETAPAS: { id: EtapaLead; label: string }[] = [
   { id: "perdido", label: "Perdido" },
 ];
 
-export const CATEGORIAS: CategoriaImovel[] = ["Apartamento", "Casa", "Sala comercial", "Loja", "Galpão", "Terreno"];
+export const CATEGORIAS = TIPOS_IMOVEL.map((t) => t.valor) as CategoriaImovel[];
 /** Categorias que normalmente têm nome (edifício/condomínio) e unidade. */
-export const CATEGORIAS_COM_UNIDADE: CategoriaImovel[] = ["Apartamento", "Sala comercial"];
+export const CATEGORIAS_COM_UNIDADE = TIPOS_COM_UNIDADE as CategoriaImovel[];
 
 export const UFS = ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"];
 
@@ -199,7 +200,7 @@ const M2_BAIRRO: Record<string, number> = {
   Jardins: 16000, "Itaim Bibi": 15000, Moema: 14000, Pinheiros: 13500, "Vila Madalena": 13000,
   Brooklin: 12500, "Vila Mariana": 12000, Perdizes: 11500, Tatuapé: 9500, Santana: 9000,
 };
-const CATEGORIA_CFG: Record<CategoriaImovel, { mult: number; area: [number, number]; peso: number; locacao: number; aluguel: number }> = {
+const CATEGORIA_CFG: Partial<Record<CategoriaImovel, { mult: number; area: [number, number]; peso: number; locacao: number; aluguel: number }>> = {
   Apartamento: { mult: 1, area: [35, 220], peso: 0.55, locacao: 0.35, aluguel: 0.0045 },
   Casa: { mult: 0.85, area: [120, 420], peso: 0.22, locacao: 0.3, aluguel: 0.004 },
   "Sala comercial": { mult: 0.9, area: [30, 180], peso: 0.08, locacao: 0.6, aluguel: 0.0055 },
@@ -227,8 +228,8 @@ export const imoveis: Imovel[] = [
 function categoriaAleatoria(): CategoriaImovel {
   const r = rand();
   let acc = 0;
-  for (const c of CATEGORIAS) {
-    acc += CATEGORIA_CFG[c].peso;
+  for (const c of Object.keys(CATEGORIA_CFG) as CategoriaImovel[]) {
+    acc += CATEGORIA_CFG[c]!.peso;
     if (r <= acc) return c;
   }
   return "Apartamento";
@@ -335,7 +336,7 @@ corretores.forEach((c, ci) => {
   for (let i = 0; i < total; i++) {
     const dias = between(0, 250);
     const categoria = categoriaAleatoria();
-    const cfg = CATEGORIA_CFG[categoria];
+    const cfg = CATEGORIA_CFG[categoria] ?? CATEGORIA_CFG.Apartamento!;
     const imovel = pick(imoveis.filter((x) => x.categoria === categoria));
     const area = int(cfg.area[0], cfg.area[1]);
     const valorVenda = round(area * M2_BAIRRO[imovel.endereco.bairro] * cfg.mult * between(0.88, 1.12), 5_000);
@@ -631,11 +632,7 @@ export const chamados: Chamado[] = [
 
 // ---------- Portal (anúncios) ----------
 
-/** Características que o corretor marca no anúncio. */
-export const CARACTERISTICAS = [
-  "Piscina", "Churrasqueira", "Academia", "Salão de festas", "Playground", "Portaria 24h", "Elevador", "Varanda / sacada",
-  "Varanda gourmet", "Mobiliado", "Ar-condicionado", "Armários planejados", "Aceita pets", "Quintal", "Jardim", "Área de serviço",
-  "Lareira", "Vista para o mar", "Próximo ao metrô", "Aceita financiamento", "Aceita permuta",
-];
+/** Características que o corretor marca no anúncio (em grupos, em src/lib/imovel.ts). */
+export { CARACTERISTICAS } from "@/lib/imovel";
 
 export const anuncios: Anuncio[] = [];

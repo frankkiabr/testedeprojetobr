@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Camera, CheckCircle2, Globe, ImagePlus, Info, Loader2, Star, Trash2 } from "lucide-react";
-import { anuncios, CARACTERISTICAS, imobiliaria } from "@/data/demo";
+import { anuncios, imobiliaria } from "@/data/demo";
+import { GRUPOS_CARACTERISTICAS, LANCAMENTOS, type Lancamento } from "@/lib/imovel";
 import { PLANOS } from "@/data/platform";
 import { anuncioDe, useStore } from "@/data/store";
 import type { Captacao } from "@/data/types";
@@ -30,6 +31,7 @@ export function AnuncioEditor({ captacao, onPublicado }: { captacao: Captacao; o
     condominio: moeda(a.condominio),
     iptu: moeda(a.iptu),
     caracteristicas: [...a.caracteristicas],
+    lancamento: (a.lancamento ?? "") as Lancamento | "",
   });
   const [f, setF] = useState(inicial);
   const [enviando, setEnviando] = useState(false);
@@ -60,6 +62,7 @@ export function AnuncioEditor({ captacao, onPublicado }: { captacao: Captacao; o
       condominio: dinheiro(f.condominio),
       iptu: dinheiro(f.iptu),
       caracteristicas: f.caracteristicas,
+      lancamento: f.lancamento || undefined,
     });
 
   const enviarFotos = async (lista: FileList | null) => {
@@ -189,22 +192,43 @@ export function AnuncioEditor({ captacao, onPublicado }: { captacao: Captacao; o
 
       {/* Características */}
       <div>
-        <p className="mb-2 text-sm font-semibold">Características</p>
+        <p className="mb-2 text-sm font-semibold">Imóvel novo (lançamento)?</p>
         <div className="flex flex-wrap gap-2">
-          {CARACTERISTICAS.map((c) => {
-            const on = f.caracteristicas.includes(c);
+          {[{ valor: "" as const, rotulo: "Não" }, ...LANCAMENTOS].map((l) => {
+            const on = f.lancamento === l.valor;
             return (
               <button
-                key={c}
-                onClick={() => setF({ ...f, caracteristicas: on ? f.caracteristicas.filter((x) => x !== c) : [...f.caracteristicas, c] })}
+                key={l.valor}
+                onClick={() => setF({ ...f, lancamento: l.valor })}
                 className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${on ? "border-accent bg-accent text-white" : "border-line-strong text-muted hover:border-ink/30"}`}
               >
-                {c}
+                {l.rotulo}
               </button>
             );
           })}
         </div>
+        <p className="mt-1.5 text-xs text-subtle">No portal, imóveis novos aparecem na aba "Imóvel novo" da busca.</p>
       </div>
+
+      {GRUPOS_CARACTERISTICAS.map((g) => (
+        <div key={g.titulo}>
+          <p className="mb-2 text-sm font-semibold">{g.titulo}</p>
+          <div className="flex flex-wrap gap-2">
+            {g.itens.map((c) => {
+              const on = f.caracteristicas.includes(c);
+              return (
+                <button
+                  key={c}
+                  onClick={() => setF({ ...f, caracteristicas: on ? f.caracteristicas.filter((x) => x !== c) : [...f.caracteristicas, c] })}
+                  className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${on ? "border-accent bg-accent text-white" : "border-line-strong text-muted hover:border-ink/30"}`}
+                >
+                  {c}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ))}
 
       <p className="flex items-start gap-2 rounded-2xl bg-canvas p-4 text-xs text-muted">
         <Info className="mt-0.5 size-4 shrink-0 text-accent" />

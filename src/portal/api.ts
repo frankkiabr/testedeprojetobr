@@ -29,6 +29,13 @@ export type CartaoAnuncio = {
   vagas: number | null;
   capa: string | null;
   publicado_em?: string;
+  condominio?: number | null;
+  caracteristicas?: string[];
+  /** Imóvel novo: fase da obra (na_planta, em_construcao, pronto). */
+  lancamento?: string | null;
+  /** Quantidade de fotos e tamanho da descrição (para "mais relevantes"). */
+  fotos?: number;
+  descricao_tamanho?: number;
   /** Imobiliária (ou o corretor, no Solo) que anuncia. */
   anunciante?: string;
   /** Corretor responsável (foto, nome e CRECI no cartão). */
@@ -84,6 +91,8 @@ export type AnuncioPublico = {
 export type CorretorPublico = CorretorResumo & {
   telefone: string | null;
   redes: Redes | null;
+  /** Desde quando está na Frankkia. */
+  desde?: string;
   imobiliaria: ImobResumo;
   anuncios: CartaoAnuncio[];
 };
@@ -91,6 +100,7 @@ export type ImobiliariaPublica = ImobResumo & {
   cidade: string | null;
   creci_j: string | null;
   telefone: string | null;
+  desde?: string;
   anuncios: CartaoAnuncio[];
   corretores: CorretorResumo[];
 };

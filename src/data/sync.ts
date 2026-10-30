@@ -611,6 +611,7 @@ export async function carregarReal(conta: ContaDados) {
         condominio: a.condominio === null ? undefined : Number(a.condominio),
         iptu: a.iptu === null ? undefined : Number(a.iptu),
         caracteristicas: a.caracteristicas,
+        lancamento: u(a.lancamento as Anuncio["lancamento"] | null),
         publicado: a.publicado,
         portais: a.portais,
         portaisDestaque: a.portais_destaque as "STANDARD" | "PREMIUM" | "SUPER_PREMIUM",

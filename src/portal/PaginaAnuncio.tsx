@@ -1,3 +1,4 @@
+import { rotuloTipo } from "@/lib/imovel";
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, Bath, BedDouble, Car, Check, ExternalLink, MapPin, Ruler } from "lucide-react";
@@ -21,7 +22,7 @@ import {
   telefoneBonito,
 } from "./ui";
 
-const rotuloUnidade = (categoria: string) => (categoria === "Sala comercial" ? "Sala" : "Apto");
+const rotuloUnidade = (categoria: string) => (categoria === "Sala comercial" || categoria === "Consultório" ? "Sala" : "Apto");
 
 export function enderecoAnuncio(a: AnuncioPublico) {
   const unidade = a.unidade ? ` · ${rotuloUnidade(a.categoria)} ${a.unidade}` : "";
@@ -59,7 +60,7 @@ export default function PaginaAnuncio({ a, url }: { a: AnuncioPublico; url: stri
                 {a.finalidade === "venda" ? "Venda" : "Aluguel"}
               </span>
               <span className="rounded-full bg-canvas px-2.5 py-1 font-medium text-muted">
-                {a.categoria}
+                {rotuloTipo(a.categoria)}
               </span>
               <span className="flex items-center gap-1.5 font-medium text-muted">
                 Cód.{" "}
@@ -112,14 +113,14 @@ export default function PaginaAnuncio({ a, url }: { a: AnuncioPublico; url: stri
 
           <Surge>
             <h2 className="font-display text-lg font-semibold">Localização</h2>
-            {a.lat != null && a.lng != null ? (
-              <iframe
-                title="Mapa do imóvel"
-                loading="lazy"
-                className="mt-3 h-72 w-full rounded-3xl border border-line"
-                src={`https://www.openstreetmap.org/export/embed.html?bbox=${a.lng - 0.006},${a.lat - 0.004},${a.lng + 0.006},${a.lat + 0.004}&layer=mapnik&marker=${a.lat},${a.lng}`}
-              />
-            ) : null}
+            {/* Google Maps: pelo ponto marcado no cadastro ou, sem ele, pelo endereço */}
+            <iframe
+              title="Mapa do imóvel"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              className="mt-3 h-72 w-full rounded-3xl border border-line"
+              src={`https://maps.google.com/maps?q=${encodeURIComponent(a.lat != null && a.lng != null ? `${a.lat},${a.lng}` : [`${a.logradouro}, ${a.numero}`, a.bairro, `${a.cidade} - ${a.uf}`, a.cep].filter(Boolean).join(", "))}&z=16&hl=pt-BR&output=embed`}
+            />
             <a
               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(enderecoAnuncio(a))}`}
               target="_blank"

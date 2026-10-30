@@ -25,7 +25,17 @@ const ICONES: Record<string, typeof Building2> = {
 };
 
 /** Tipo escolhido no estudo a partir da categoria da captação. */
-const tipoDaCategoria = (c: string) => (c === "Loja" ? "Sala comercial" : c === "Galpão" ? "Outros" : c);
+const PARA_ESTUDO: Record<string, string> = {
+  Loja: "Sala comercial",
+  Consultório: "Sala comercial",
+  "Imóvel comercial": "Sala comercial",
+  Flat: "Apartamento",
+  Kitnet: "Apartamento",
+  "Casa de condomínio": "Casa",
+  Sobrado: "Casa",
+  "Terreno comercial": "Terreno",
+};
+const tipoDaCategoria = (c: string) => PARA_ESTUDO[c] ?? (ICONES[c] ? c : "Outros");
 
 /**
  * NOVO ESTUDO (/app/mercado/estudos/novo): os passos do BrokerApp (tipo, localização, proprietário, título, revisar),

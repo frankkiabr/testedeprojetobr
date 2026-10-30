@@ -3,7 +3,6 @@ import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Briefcase, Building2, Home, Info, MapPin, Plus, Store, TreePine, Trash2, Warehouse } from "lucide-react";
 import {
-  CATEGORIAS,
   CATEGORIAS_COM_UNIDADE,
   CHECKLIST_MARKETING,
   HONORARIOS_PADRAO,
@@ -14,6 +13,7 @@ import {
   UFS,
 } from "@/data/demo";
 import { ehSolo } from "@/data/platform";
+import { TIPOS_IMOVEL, unidadeEhSala } from "@/lib/imovel";
 import { Mapa } from "@/components/Mapa";
 import { buscarCep, localizar, type Ponto } from "@/lib/mapa";
 import { lerCaptacaoDoEstudo, limparCaptacaoDoEstudo } from "../estudos/apresentacao";
@@ -46,21 +46,35 @@ import { Avatar, Segmented } from "../../kit";
 
 const CATEGORIA_STYLE: Record<CategoriaImovel, { hue: number; icon: typeof Home }> = {
   Apartamento: { hue: 226, icon: Building2 },
+  Cobertura: { hue: 226, icon: Building2 },
+  Flat: { hue: 226, icon: Building2 },
+  Kitnet: { hue: 226, icon: Building2 },
+  "Edifício residencial": { hue: 226, icon: Building2 },
   Casa: { hue: 158, icon: Home },
+  "Casa de condomínio": { hue: 158, icon: Home },
+  Sobrado: { hue: 158, icon: Home },
   "Sala comercial": { hue: 268, icon: Briefcase },
+  Consultório: { hue: 268, icon: Briefcase },
+  "Imóvel comercial": { hue: 268, icon: Briefcase },
+  "Prédio inteiro": { hue: 268, icon: Building2 },
   Loja: { hue: 32, icon: Store },
   Galpão: { hue: 200, icon: Warehouse },
   Terreno: { hue: 95, icon: TreePine },
+  "Terreno comercial": { hue: 95, icon: TreePine },
+  Chácara: { hue: 95, icon: TreePine },
+  "Fazenda/Sítio": { hue: 95, icon: TreePine },
 };
+/** Opções do tipo de imóvel (com o rótulo dos portais; o terreno comercial fica identificado). */
+const OPCOES_TIPO = TIPOS_IMOVEL.map((t) => ({ value: t.valor, label: t.valor === "Terreno comercial" ? "Lote/Terreno comercial" : t.rotulo }));
 
 export const CategoriaIcon = ({ categoria, className = "size-4" }: { categoria: CategoriaImovel; className?: string }) => {
-  const Icon = CATEGORIA_STYLE[categoria].icon;
+  const Icon = (CATEGORIA_STYLE[categoria] ?? CATEGORIA_STYLE.Apartamento).icon;
   return <Icon className={className} />;
 };
 
 /** Capa do imóvel: a foto de capa do anúncio, quando houver; senão, a ilustração da categoria. */
 export function ImovelCover({ categoria, className = "", foto }: { categoria: CategoriaImovel; className?: string; foto?: string }) {
-  const { hue, icon: Icon } = CATEGORIA_STYLE[categoria];
+  const { hue, icon: Icon } = CATEGORIA_STYLE[categoria] ?? CATEGORIA_STYLE.Apartamento;
   if (foto)
     return (
       <div className={`relative overflow-hidden bg-canvas ${className}`}>
@@ -402,7 +416,7 @@ export function ImovelFormModal({
     >
       <div className="grid gap-4 sm:grid-cols-6">
         <Field label="Categoria" className="sm:col-span-6">
-          <SelectField value={f.categoria} onChange={(v) => setF({ ...f, categoria: v as CategoriaImovel })} options={CATEGORIAS.map((c) => ({ value: c, label: c }))} />
+          <SelectField value={f.categoria} onChange={(v) => setF({ ...f, categoria: v as CategoriaImovel })} options={OPCOES_TIPO} />
         </Field>
         <Field
           label={comNome ? "Nome do edifício ou condomínio" : "Nome (opcional)"}
@@ -635,7 +649,7 @@ export function CaptacaoFormModal({ open, onClose }: { open: boolean; onClose: (
           </div>
         )}
         <Field label="Categoria" className="sm:col-span-6">
-          <SelectField value={f.categoria} onChange={(v) => setF({ ...f, categoria: v as CategoriaImovel })} options={CATEGORIAS.map((c) => ({ value: c, label: c }))} />
+          <SelectField value={f.categoria} onChange={(v) => setF({ ...f, categoria: v as CategoriaImovel })} options={OPCOES_TIPO} />
         </Field>
 
         {/* Endereço */}
@@ -684,9 +698,9 @@ export function CaptacaoFormModal({ open, onClose }: { open: boolean; onClose: (
         )}
         {comUnidade && (
           <Field
-            label={f.categoria === "Sala comercial" ? "Número da sala" : "Número do apartamento"}
+            label={unidadeEhSala(f.categoria) ? "Número da sala" : "Número do apartamento"}
             className="sm:col-span-6"
-            hint={f.categoria === "Sala comercial" ? "Ex.: 1204 (aparece como Sala 1204)" : "Ex.: 302 (aparece como Apto 302). Para cobertura ou studio, escreva: Cobertura 1801"}
+            hint={unidadeEhSala(f.categoria) ? "Ex.: 1204 (aparece como Sala 1204)" : "Ex.: 302 (aparece como Apto 302). Para cobertura ou studio, escreva: Cobertura 1801"}
           >
             <input className={inputCls} value={f.unidade} onChange={(e) => setF({ ...f, unidade: e.target.value })} />
           </Field>

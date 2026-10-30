@@ -96,8 +96,8 @@ export function rotuloUnidade(categoria: string, unidade?: string) {
   const u = unidade?.trim();
   if (!u) return undefined;
   if (/^[a-zà-ú]/i.test(u)) return u;
-  if (categoria === "Apartamento") return `Apto ${u}`;
-  if (categoria === "Sala comercial") return `Sala ${u}`;
+  if (categoria === "Sala comercial" || categoria === "Consultório") return `Sala ${u}`;
+  if (["Apartamento", "Cobertura", "Flat", "Kitnet"].includes(categoria)) return `Apto ${u}`;
   return `Unidade ${u}`;
 }
 

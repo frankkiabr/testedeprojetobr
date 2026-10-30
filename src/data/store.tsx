@@ -453,6 +453,7 @@ function createActions(bump: () => void, toast: (text: string) => void) {
               condominio: a.condominio ?? null,
               iptu: a.iptu ?? null,
               caracteristicas: a.caracteristicas,
+              lancamento: a.lancamento ?? null,
               atualizado_em: new Date().toISOString(),
             })
             .eq("captacao_id", captacaoId),

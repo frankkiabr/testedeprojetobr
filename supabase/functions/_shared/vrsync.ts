@@ -44,6 +44,18 @@ export const TIPOS: Record<string, { tipo: string; uso: "Residential" | "Commerc
   Loja: { tipo: "Commercial / Business", uso: "Commercial" },
   Galpão: { tipo: "Commercial / Industrial", uso: "Commercial", lote: true },
   Terreno: { tipo: "Residential / Land Lot", uso: "Residential", lote: true },
+  "Casa de condomínio": { tipo: "Residential / Condo", uso: "Residential", quartos: true, banheiros: true },
+  Chácara: { tipo: "Residential / Farm Ranch", uso: "Residential", lote: true },
+  Cobertura: { tipo: "Residential / Penthouse", uso: "Residential", quartos: true, banheiros: true },
+  Flat: { tipo: "Residential / Flat", uso: "Residential", quartos: true, banheiros: true },
+  Kitnet: { tipo: "Residential / Kitnet", uso: "Residential", banheiros: true },
+  Sobrado: { tipo: "Residential / Sobrado", uso: "Residential", quartos: true, banheiros: true },
+  "Edifício residencial": { tipo: "Residential / Building", uso: "Residential" },
+  "Fazenda/Sítio": { tipo: "Residential / Agricultural", uso: "Residential", lote: true },
+  Consultório: { tipo: "Commercial / Consultorio", uso: "Commercial", banheiros: true },
+  "Imóvel comercial": { tipo: "Commercial / Building", uso: "Commercial" },
+  "Terreno comercial": { tipo: "Commercial / Land Lot", uso: "Commercial", lote: true },
+  "Prédio inteiro": { tipo: "Commercial / Edificio Comercial", uso: "Commercial" },
 };
 
 /** Características da Frankkia → valores aceitos pelos portais (as que não têm equivalente ficam só na descrição). */
