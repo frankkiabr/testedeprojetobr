@@ -8,6 +8,7 @@ import { Logo, Scaled } from "@/components/ui";
 import { Dashboard, DASHBOARD_SIZE } from "@/components/mockups/Dashboard";
 import { inicioDe, useSession } from "@/app/session";
 import { mensagemErro, setLembrar, supabase } from "@/integrations/frankkia/client";
+import { BotaoGoogle } from "@/app/Google";
 
 const field =
   "h-12 w-full rounded-2xl border border-line-strong bg-bg px-4 text-[0.9375rem] outline-hidden transition-colors placeholder:text-subtle focus:border-accent focus:ring-4 focus:ring-accent/10";
@@ -75,8 +76,11 @@ export default function Login() {
           <h1 className="type-title mt-3">Entrar na Frankkia</h1>
           <p className="mt-3 text-muted">Acesse o universo da sua imobiliária.</p>
 
+          <div className="mt-8">
+            <BotaoGoogle caminho={destino ?? "/login"} antes={() => setLembrar(lembrar)} />
+          </div>
           <form
-            className="mt-8 space-y-3"
+            className="space-y-3"
             onSubmit={(e) => {
               e.preventDefault();
               entrar();

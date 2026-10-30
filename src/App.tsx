@@ -28,6 +28,7 @@ import Sobre from "@/pages/Sobre";
 import ParaPublico from "@/pages/ParaPublico";
 import { CalculadoraComissao, SimuladorFinanciamento } from "@/pages/Ferramentas";
 import ExclusaoDados from "@/pages/ExclusaoDados";
+import Confirmar from "@/pages/Confirmar";
 import Captura from "@/pages/Captura";
 import Cadastro from "@/pages/Cadastro";
 import GoogleRetorno from "@/pages/GoogleRetorno";
@@ -60,6 +61,8 @@ export default function App() {
               <Route path="/" element={<Landing />} />
               <Route path="/login" element={<Login />} />
               <Route path="/redefinir-senha" element={<RedefinirSenha />} />
+              {/* Links dos e-mails de login (confirmar conta, nova senha, troca de e-mail) */}
+              <Route path="/confirmar" element={<Confirmar />} />
               <Route path="/apresentacao" element={<Apresentacao />} />
               <Route path="/demo/:token" element={<Demo />} />
               <Route path="/termos" element={<Termos />} />

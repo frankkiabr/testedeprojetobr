@@ -15,6 +15,7 @@ import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 import { Field, inputCls, normalizePhone, SelectField } from "@/app/forms";
 import { useSession } from "@/app/session";
 import { mensagemErro, supabase } from "@/integrations/frankkia/client";
+import { BotaoGoogle } from "@/app/Google";
 
 const ORDEM: PlanoNome[] = ["Solo", "Equipe 5", "Equipe 10", "Equipe 30", "Equipe 60"];
 
@@ -23,11 +24,12 @@ const ORDEM: PlanoNome[] = ["Solo", "Equipe 5", "Equipe 10", "Equipe 30", "Equip
  * A pessoa cria a conta sozinha e entra em teste grátis (dias definidos pela Frankkia em config_cadastro).
  * Os dados ficam guardados na conta: com confirmação de e-mail, a conta de teste é criada no primeiro login
  * (criarContaPendente em src/app/session.tsx, função criar_conta_teste no banco).
+ * Pelo Google: a pessoa volta aqui já com a sessão e só completa plano, WhatsApp e CRECI (sem e-mail, senha nem confirmação).
  */
 export default function Cadastro() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
-  const { modo, conta } = useSession();
+  const { modo, conta, recarregar } = useSession();
   const inicial = ORDEM.find((p) => p === params.get("plano")) ?? "Equipe 10";
 
   const [f, setF] = useState({
@@ -51,6 +53,12 @@ export default function Cadastro() {
     document.title = `Teste grátis · ${site.name}`;
   }, []);
 
+  // Entrou pelo Google e ainda não tem conta: completa só o que falta
+  const completar = modo === "real" && !!conta?.semCadastro;
+  useEffect(() => {
+    if (completar && conta?.nome) setF((x) => (x.nome ? x : { ...x, nome: conta.nome }));
+  }, [completar, conta?.nome]);
+
   const solo = f.plano === "Solo";
   const creciOk = !solo || f.creci.trim().length >= 3;
   const ok =
@@ -58,13 +66,11 @@ export default function Cadastro() {
     (solo || f.imobiliaria.trim().length >= 2) &&
     normalizePhone(f.telefone).length >= 12 &&
     creciOk &&
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim()) &&
-    f.senha.length >= 8 &&
-    f.senha === f.confirma &&
+    (completar || (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim()) && f.senha.length >= 8 && f.senha === f.confirma)) &&
     f.aceite;
 
   // Já entrou com uma conta: o cadastro é para quem ainda não tem
-  const logado = modo === "real" && !!conta;
+  const logado = modo === "real" && !!conta && !conta.semCadastro;
 
   const criar = async () => {
     setErro(null);
@@ -79,6 +85,24 @@ export default function Cadastro() {
         creci: f.creci.trim(),
         creci_uf: f.creci.trim() ? f.creciUF : "",
       };
+      if (completar) {
+        // Já entrou pelo Google (e-mail confirmado): cria a conta de teste agora
+        const { error } = await supabase.rpc("criar_conta_teste", {
+          p_plano: cadastro.plano,
+          p_imobiliaria: cadastro.imobiliaria,
+          p_cidade: cadastro.cidade,
+          p_nome: cadastro.nome,
+          p_telefone: cadastro.telefone,
+          p_creci: cadastro.creci,
+          p_creci_uf: cadastro.creci_uf,
+        } as never);
+        if (error) throw error;
+        // A foto do Google vira a foto do perfil
+        if (conta?.fotoGoogle) await supabase.from("perfis").update({ foto_url: conta.fotoGoogle }).eq("id", conta.usuarioId).is("foto_url", null);
+        await recarregar();
+        navigate("/app/visao-geral", { replace: true });
+        return;
+      }
       const { data, error } = await supabase.auth.signUp({
         email: f.email.trim().toLowerCase(),
         password: f.senha,
@@ -127,8 +151,8 @@ export default function Cadastro() {
               </span>
               <h1 className="type-title mt-6">Confirme seu e-mail</h1>
               <p className="mt-3 text-muted">
-                Enviamos um link para <span className="font-semibold text-ink">{f.email.trim().toLowerCase()}</span>. Clique nele e entre com sua
-                senha: o seu teste grátis começa nesse momento.
+                Enviamos um link para <span className="font-semibold text-ink">{f.email.trim().toLowerCase()}</span>. Clique nele para entrar:
+                o seu teste grátis começa nesse momento.
               </p>
               <Link to="/login" className="mt-8 inline-flex h-12 items-center gap-2 rounded-full bg-ink px-6 font-semibold text-bg transition hover:bg-ink/85">
                 Ir para o login <ArrowRight className="size-4" />
@@ -147,10 +171,25 @@ export default function Cadastro() {
           ) : (
             <>
               <p className="type-eyebrow text-accent">Teste grátis</p>
-              <h1 className="type-title mt-3">Crie sua conta na Frankkia</h1>
-              <p className="mt-3 text-muted">Comece agora, sem cartão. No fim do teste você escolhe se quer continuar.</p>
+              <h1 className="type-title mt-3">{completar ? "Falta pouco" : "Crie sua conta na Frankkia"}</h1>
+              <p className="mt-3 text-muted">
+                {completar ? (
+                  <>
+                    Você entrou com o Google como <span className="font-semibold text-ink">{conta?.email}</span>. Complete os dados abaixo para começar o
+                    teste grátis.
+                  </>
+                ) : (
+                  "Comece agora, sem cartão. No fim do teste você escolhe se quer continuar."
+                )}
+              </p>
 
-              <div className="mt-8 space-y-5">
+              {!completar && (
+                <div className="mt-8">
+                  <BotaoGoogle caminho={`/cadastro?plano=${encodeURIComponent(f.plano)}`} texto="Começar com o Google" />
+                </div>
+              )}
+
+              <div className={`space-y-5 ${completar ? "mt-8" : ""}`}>
                 {/* Plano */}
                 <div>
                   <p className="mb-2 text-sm font-medium">Plano</p>
@@ -219,6 +258,7 @@ export default function Cadastro() {
                   </div>
                 </div>
 
+                {!completar && (<>
                 <Field label="E-mail" hint="É com ele que você vai entrar.">
                   <input type="email" className={inputCls} value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} autoComplete="email" />
                 </Field>
@@ -230,6 +270,7 @@ export default function Cadastro() {
                     <input type="password" className={inputCls} value={f.confirma} onChange={(e) => setF({ ...f, confirma: e.target.value })} autoComplete="new-password" />
                   </Field>
                 </div>
+                </>)}
 
                 <label className="flex cursor-pointer items-start gap-2.5 text-sm text-muted">
                   <input type="checkbox" className="mt-0.5 size-4 shrink-0 accent-accent" checked={f.aceite} onChange={(e) => setF({ ...f, aceite: e.target.checked })} />

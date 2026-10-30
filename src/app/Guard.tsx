@@ -111,6 +111,8 @@ export function Guard({ area, children }: { area: "app" | "admin"; children: Rea
   if (area === "admin") return role === "frankkia" ? <>{children}</> : <Navigate to={inicioDe(role)} replace />;
 
   if (role === "frankkia") return <Navigate to="/admin" replace />;
+  // Entrou pelo Google sem ter conta: completa o cadastro do teste grátis
+  if (modo === "real" && conta?.semCadastro) return <Navigate to="/cadastro" replace />;
   if (modo === "real" && !conta?.papel) return <SemAcesso />;
   if (modo === "real" && testeEncerrado(conta?.imobiliaria)) return <TesteEncerrado />;
   if (modo === "real" && assinaturaEncerrada(conta?.imobiliaria)) return <TesteEncerrado assinatura />;

@@ -47,6 +47,10 @@ export type Conta = {
   frankkia: boolean;
   papel: "admin" | "corretor" | null;
   imobiliaria: ImobiliariaConta | null;
+  /** Entrou (ex.: pelo Google), mas ainda não faz parte de nenhuma conta: falta completar o cadastro do teste grátis. */
+  semCadastro: boolean;
+  /** Foto da conta Google, quando entrou por ela (vira a foto do perfil no cadastro). */
+  fotoGoogle?: string;
 };
 
 type Ctx = {
@@ -189,16 +193,21 @@ async function carregarConta(u: User): Promise<Conta> {
       .limit(1),
     supabase.from("frankkia_admins").select("usuario_id").eq("usuario_id", u.id).maybeSingle(),
   ]);
+  // Algum vínculo, mesmo desativado? Sem nenhum, a pessoa ainda não tem conta (vai completar o cadastro)
+  const vinculos = membros.data?.length ? 1 : ((await supabase.from("membros").select("usuario_id", { count: "exact", head: true }).eq("usuario_id", u.id)).count ?? 0);
   const email = perfil.data?.email || u.email || "";
   const nome = perfil.data?.nome || (u.user_metadata?.nome as string) || "";
   const m = membros.data?.[0];
   const i = m?.imobiliarias as { id: string; nome: string; plano: string; limite_corretores: number; status: string; teste_ate: string | null } | null | undefined;
   // Situação da assinatura na Stripe: só o administrador vê (para os avisos e o botão de cancelar)
   const a = i && m?.papel === "admin" ? (await supabase.rpc("minha_assinatura", { p_imob: i.id })).data?.[0] : undefined;
+  const meta = u.user_metadata ?? {};
   return {
     usuarioId: u.id,
     email,
-    nome,
+    nome: nome || (meta.full_name as string) || (meta.name as string) || "",
+    semCadastro: !fk.data && vinculos === 0 && !meta.convite_token,
+    fotoGoogle: (meta.avatar_url as string) || (meta.picture as string) || undefined,
     iniciais: perfil.data?.iniciais || iniciaisDe(nome, email),
     frankkia: !!fk.data,
     papel: (m?.papel as "admin" | "corretor" | undefined) ?? null,

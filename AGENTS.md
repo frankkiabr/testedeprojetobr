@@ -118,6 +118,11 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
   (`supabase/functions/_shared/vrsync.ts`, regras e mapeamentos; o app usa o mesmo arquivo para mostrar o que falta). Cada anúncio
   liga `anuncios.portais` e o destaque; só entram captações ativas com 5+ fotos JPG (`anuncio_fotos.url_jpg`, gerada no envio da foto),
   título 10–100, descrição 50–3.000, CEP. Não testado com conta real do Canal Pro.
+- Login com o Google (Supabase Auth, provedor Google; botão `BotaoGoogle` em `src/app/Google.tsx`) no login, no cadastro e no
+  convite. Quem entra pelo Google sem conta (`conta.semCadastro`) vai para `/cadastro` e completa plano, WhatsApp e CRECI
+  (`criar_conta_teste`); a foto do Google vira a do perfil. Mesmo e-mail = mesma conta (o Supabase liga as identidades).
+- E-mails do login (`supabase/templates/`, colados à mão no Supabase) apontam para `frankkia.com/confirmar?token_hash=...&type=...`
+  (`src/pages/Confirmar.tsx`, `verifyOtp`), nunca para o endereço do Supabase.
 - Visão geral: "Primeiros passos" (`src/app/PrimeirosPassos.tsx`) e sino de avisos (`src/app/Notificacoes.tsx`), calculados dos dados.
 - Página de captura dos anúncios: `/conheca-a-frankkia` (`src/pages/Captura.tsx`), tudo leva ao WhatsApp de `contato` em
   `src/content.ts` (`?utm_source=instagram|youtube` entra na mensagem). Página `/sobre` (`src/pages/Sobre.tsx`, dados em `criador`;

@@ -9,6 +9,7 @@ import { Logo } from "@/components/ui";
 import { DateInput, Field, inputCls, normalizePhone, SelectField, Toaster } from "@/app/forms";
 import { inicioDe, useSession } from "@/app/session";
 import { mensagemErro, supabase } from "@/integrations/frankkia/client";
+import { BotaoGoogle } from "@/app/Google";
 
 type ConviteInfo = { email: string; imobiliaria: string; papel: "admin" | "corretor"; demo: boolean; solo?: boolean };
 
@@ -51,6 +52,11 @@ export default function Convite() {
   const logadoNoConvite = !!info && !info.demo && modo === "real" && conta?.email.toLowerCase() === info.email.toLowerCase();
   const logadoOutraConta = !!info && !info.demo && modo === "real" && !logadoNoConvite;
   const pedeSenha = !logadoNoConvite;
+
+  // Entrou pelo Google com o e-mail do convite: já vem com o nome da conta Google
+  useEffect(() => {
+    if (logadoNoConvite && conta?.nome) setF((x) => (x.nome ? x : { ...x, nome: conta.nome }));
+  }, [logadoNoConvite, conta?.nome]);
 
   // Solo: o dono da conta é o próprio corretor, então o CRECI é obrigatório (sem a opção de estagiário)
   const creciObrigatorio = !!info?.solo || (info?.papel === "corretor" && !f.estagiario);
@@ -174,8 +180,8 @@ export default function Convite() {
               </span>
               <h1 className="type-title mt-6">Confirme seu e-mail</h1>
               <p className="mt-3 text-muted">
-                Enviamos um link para <span className="font-semibold text-ink">{info?.email}</span>. Clique nele e depois entre com sua senha: seu acesso
-                à {nomeImob} é liberado automaticamente.
+                Enviamos um link para <span className="font-semibold text-ink">{info?.email}</span>. Clique nele para entrar:
+                seu acesso à {nomeImob} é liberado automaticamente.
               </p>
             </motion.div>
           ) : !info ? (
@@ -210,6 +216,14 @@ export default function Convite() {
               </p>
 
               <div className="mt-8 space-y-6 rounded-3xl border border-line bg-bg p-6 sm:p-8">
+                {pedeSenha && !info.demo && (
+                  <div className="-mb-2">
+                    <BotaoGoogle caminho={`/convite/${id}`} email={info.email} />
+                    <p className="-mt-3 mb-4 text-center text-xs text-muted">
+                      Use a conta Google de <span className="font-semibold">{info.email}</span>. Assim você não precisa criar senha.
+                    </p>
+                  </div>
+                )}
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field label="Nome completo" className="sm:col-span-2">
                     <input autoFocus className={inputCls} value={f.nome} onChange={(e) => setF({ ...f, nome: e.target.value })} />
