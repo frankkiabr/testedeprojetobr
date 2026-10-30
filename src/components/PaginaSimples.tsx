@@ -10,10 +10,11 @@ import { Trilha } from "./Trilha";
  * `livre`: o conteúdo ocupa a largura toda e cuida das próprias margens (páginas com banner, como as por público).
  */
 /** Menu de baixo das páginas institucionais e das ferramentas. */
-export function RodapeLinks({ largura = "max-w-4xl" }: { largura?: string }) {
+export function RodapeLinks(_: { largura?: string }) {
+  // Largura própria (maior que a do texto das páginas), para os links caberem numa linha só no computador
   return (
     <footer className="border-t border-line">
-      <div className={`mx-auto flex ${largura} flex-wrap gap-x-5 gap-y-2 px-5 py-6 text-sm text-muted sm:px-8`}>
+      <div className="mx-auto flex max-w-6xl flex-wrap justify-center gap-x-6 gap-y-2 px-5 py-6 text-sm text-muted sm:px-8">
         <Link to="/para-imobiliarias" className="hover:text-ink">Para imobiliárias</Link>
         <Link to="/para-corretores" className="hover:text-ink">Para corretores</Link>
         <Link to="/simulador-de-financiamento" className="hover:text-ink">Simulador de financiamento</Link>
