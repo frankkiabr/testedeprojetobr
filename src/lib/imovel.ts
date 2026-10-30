@@ -5,29 +5,32 @@
  */
 export type GrupoImovel = "Residencial" | "Comercial";
 
-export const TIPOS_IMOVEL: { valor: string; rotulo: string; grupo: GrupoImovel }[] = [
-  { valor: "Apartamento", rotulo: "Apartamento", grupo: "Residencial" },
-  { valor: "Casa", rotulo: "Casa", grupo: "Residencial" },
-  { valor: "Casa de condomínio", rotulo: "Casa de Condomínio", grupo: "Residencial" },
-  { valor: "Chácara", rotulo: "Chácara", grupo: "Residencial" },
-  { valor: "Cobertura", rotulo: "Cobertura", grupo: "Residencial" },
-  { valor: "Flat", rotulo: "Flat", grupo: "Residencial" },
-  { valor: "Kitnet", rotulo: "Kitnet/Conjugado", grupo: "Residencial" },
-  { valor: "Terreno", rotulo: "Lote/Terreno", grupo: "Residencial" },
-  { valor: "Sobrado", rotulo: "Sobrado", grupo: "Residencial" },
-  { valor: "Edifício residencial", rotulo: "Edifício Residencial", grupo: "Residencial" },
-  { valor: "Fazenda/Sítio", rotulo: "Fazenda/Sítios/Chácaras", grupo: "Residencial" },
-  { valor: "Consultório", rotulo: "Consultório", grupo: "Comercial" },
-  { valor: "Galpão", rotulo: "Galpão/Depósito/Armazém", grupo: "Comercial" },
-  { valor: "Imóvel comercial", rotulo: "Imóvel Comercial", grupo: "Comercial" },
-  { valor: "Terreno comercial", rotulo: "Lote/Terreno", grupo: "Comercial" },
-  { valor: "Loja", rotulo: "Ponto Comercial/Loja/Box", grupo: "Comercial" },
-  { valor: "Sala comercial", rotulo: "Sala/Conjunto", grupo: "Comercial" },
-  { valor: "Prédio inteiro", rotulo: "Prédio/Edifício Inteiro", grupo: "Comercial" },
+export const TIPOS_IMOVEL: { valor: string; rotulo: string; plural: string; grupo: GrupoImovel }[] = [
+  { valor: "Apartamento", rotulo: "Apartamento", plural: "Apartamentos", grupo: "Residencial" },
+  { valor: "Casa", rotulo: "Casa", plural: "Casas", grupo: "Residencial" },
+  { valor: "Casa de condomínio", rotulo: "Casa de Condomínio", plural: "Casas de Condomínio", grupo: "Residencial" },
+  { valor: "Chácara", rotulo: "Chácara", plural: "Chácaras", grupo: "Residencial" },
+  { valor: "Cobertura", rotulo: "Cobertura", plural: "Coberturas", grupo: "Residencial" },
+  { valor: "Flat", rotulo: "Flat", plural: "Flats", grupo: "Residencial" },
+  { valor: "Kitnet", rotulo: "Kitnet/Conjugado", plural: "Kitnets/Conjugados", grupo: "Residencial" },
+  { valor: "Terreno", rotulo: "Lote/Terreno", plural: "Lotes/Terrenos", grupo: "Residencial" },
+  { valor: "Sobrado", rotulo: "Sobrado", plural: "Sobrados", grupo: "Residencial" },
+  { valor: "Edifício residencial", rotulo: "Edifício Residencial", plural: "Edifícios Residenciais", grupo: "Residencial" },
+  { valor: "Fazenda/Sítio", rotulo: "Fazenda/Sítios/Chácaras", plural: "Fazendas/Sítios/Chácaras", grupo: "Residencial" },
+  { valor: "Consultório", rotulo: "Consultório", plural: "Consultórios", grupo: "Comercial" },
+  { valor: "Galpão", rotulo: "Galpão/Depósito/Armazém", plural: "Galpões/Depósitos/Armazéns", grupo: "Comercial" },
+  { valor: "Imóvel comercial", rotulo: "Imóvel Comercial", plural: "Imóveis Comerciais", grupo: "Comercial" },
+  { valor: "Terreno comercial", rotulo: "Lote/Terreno", plural: "Lotes/Terrenos comerciais", grupo: "Comercial" },
+  { valor: "Loja", rotulo: "Ponto Comercial/Loja/Box", plural: "Pontos Comerciais/Lojas/Boxes", grupo: "Comercial" },
+  { valor: "Sala comercial", rotulo: "Sala/Conjunto", plural: "Salas/Conjuntos", grupo: "Comercial" },
+  { valor: "Prédio inteiro", rotulo: "Prédio/Edifício Inteiro", plural: "Prédios/Edifícios Inteiros", grupo: "Comercial" },
 ];
 
 /** Rótulo do tipo para o cliente (ex.: "Kitnet" → "Kitnet/Conjugado"). */
 export const rotuloTipo = (valor: string) => TIPOS_IMOVEL.find((t) => t.valor === valor)?.rotulo ?? valor;
+
+/** Plural do tipo (ex.: "Apartamentos"), para "Apartamentos à venda em Belém". */
+export const pluralTipo = (valor: string) => TIPOS_IMOVEL.find((t) => t.valor === valor)?.plural ?? valor;
 
 /** Tipos com número de unidade (apartamento, sala...). */
 export const TIPOS_COM_UNIDADE = ["Apartamento", "Cobertura", "Flat", "Kitnet", "Sala comercial", "Consultório"];
@@ -55,6 +58,10 @@ export const GRUPOS_CARACTERISTICAS: { titulo: string; itens: string[] }[] = [
   { titulo: "Negociação e região", itens: ["Aceita financiamento", "Aceita permuta", "Próximo ao metrô"] },
 ];
 export const CARACTERISTICAS = GRUPOS_CARACTERISTICAS.flatMap((g) => g.itens);
+
+/** No anúncio, as características ficam em duas abas: do imóvel e do condomínio (lazer, áreas comuns e segurança). */
+const DO_CONDOMINIO = new Set(GRUPOS_CARACTERISTICAS.filter((g) => ["Lazer e esporte", "Condomínio", "Segurança"].includes(g.titulo)).flatMap((g) => g.itens));
+export const ehDoCondominio = (c: string) => DO_CONDOMINIO.has(c);
 
 /** "Imóvel novo" (lançamento): fase da obra. */
 export type Lancamento = "na_planta" | "em_construcao" | "pronto";

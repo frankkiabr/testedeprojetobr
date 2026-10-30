@@ -3,12 +3,27 @@ import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { site } from "@/content";
 import { Logo } from "./ui";
+import { Trilha } from "./Trilha";
 
 /**
  * Moldura das páginas públicas avulsas (para imobiliárias, para corretores, simulador, calculadora, exclusão de dados).
  * `livre`: o conteúdo ocupa a largura toda e cuida das próprias margens (páginas com banner, como as por público).
  */
-export function PaginaSimples({ titulo, largura = "max-w-4xl", livre, children }: { titulo: string; largura?: string; livre?: boolean; children: ReactNode }) {
+export function PaginaSimples({
+  titulo,
+  rotulo = titulo,
+  largura = "max-w-4xl",
+  livre,
+  children,
+}: {
+  titulo: string;
+  /** Nome curto da página na trilha (Início › rótulo). */
+  rotulo?: string;
+  largura?: string;
+  livre?: boolean;
+  children: ReactNode;
+}) {
+  const trilha = <Trilha itens={[{ rotulo: "Início", to: "/" }, { rotulo }]} />;
   useEffect(() => {
     document.title = `${titulo} · ${site.name}`;
     window.scrollTo(0, 0);
@@ -25,7 +40,17 @@ export function PaginaSimples({ titulo, largura = "max-w-4xl", livre, children }
           </Link>
         </div>
       </header>
-      {livre ? <main className="overflow-x-clip pb-24">{children}</main> : <main className={`mx-auto ${largura} px-5 pb-24 pt-12 sm:px-8 sm:pt-16`}>{children}</main>}
+      {livre ? (
+        <main className="overflow-x-clip pb-24">
+          <div className={`mx-auto ${largura} px-5 pt-6 sm:px-8`}>{trilha}</div>
+          {children}
+        </main>
+      ) : (
+        <main className={`mx-auto ${largura} px-5 pb-24 pt-6 sm:px-8`}>
+          {trilha}
+          <div className="pt-8 sm:pt-10">{children}</div>
+        </main>
+      )}
       <footer className="border-t border-line">
         <div className={`mx-auto flex ${largura} flex-wrap gap-x-5 gap-y-2 px-5 py-6 text-sm text-muted sm:px-8`}>
           <Link to="/para-imobiliarias" className="hover:text-ink">Para imobiliárias</Link>

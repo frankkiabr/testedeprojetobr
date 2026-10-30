@@ -1,3 +1,4 @@
+import { Trilha } from "@/components/Trilha";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -54,7 +55,8 @@ export default function Sobre() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl px-5 pb-24 pt-12 sm:px-8 sm:pt-16">
+      <main className="mx-auto max-w-4xl px-5 pb-24 pt-6 sm:px-8">
+        <Trilha itens={[{ rotulo: "Início", to: "/" }, { rotulo: "Sobre" }]} className="mb-8 sm:mb-10" />
         {/* O que é */}
         <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: EASE_OUT_EXPO }}>
           <p className="type-eyebrow text-accent">Sobre a Frankkia</p>

@@ -1,3 +1,4 @@
+import { Trilha } from "@/components/Trilha";
 import { useEffect, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -35,8 +36,9 @@ function PaginaLegal({ titulo, intro, secoes, outra }: { titulo: string; intro: 
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: EASE_OUT_EXPO }}
-        className="mx-auto max-w-3xl px-5 pb-24 pt-12 sm:px-8"
+        className="mx-auto max-w-3xl px-5 pb-24 pt-6 sm:px-8"
       >
+        <Trilha itens={[{ rotulo: "Início", to: "/" }, { rotulo: titulo }]} className="mb-8" />
         <p className="type-eyebrow text-accent">Documento legal</p>
         <h1 className="type-title mt-3">{titulo}</h1>
         <p className="mt-3 text-sm text-muted">Última atualização: {ATUALIZACAO}</p>

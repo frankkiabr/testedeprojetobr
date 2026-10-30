@@ -84,6 +84,11 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
   `imoveis.categoria` e `TIPOS`/`FEATURES` em `_shared/vrsync.ts` (e publique de novo a função `feed-portais`).
 - Filtros do portal (`src/portal/Filtros.tsx`, estilo VivaReal): cidade/bairro com sugestão, Comprar/Alugar/Imóvel novo, Tipo de
   imóvel, janela "Filtros" com "Buscar N imóveis" ao vivo e "Ordenar por" (relevantes, recentes, preço, área). Dados de `portal_cartoes`.
+- Trilha de navegação (breadcrumb) com BreadcrumbList para o Google: `Trilha` em `src/portal/ui.tsx` (portal) e
+  `src/components/Trilha.tsx` (site; `PaginaSimples` já põe "Início › página"). No anúncio: Início › Imóveis › Venda › UF ›
+  "Apartamentos à venda em Belém" › bairro, com links que abrem a busca já filtrada (`?negocio=&tipo=&bairro=&uf=`).
+- Anúncio: cartão do corretor com total de imóveis e "Anunciando desde <data>"; características em abas Imóvel/Condomínio
+  (`ehDoCondominio`). Corretor/imobiliária: topo azul-escuro com foto grande, cartões (imóveis, desde) e ilustração.
 - Busca do portal: `/imoveis` e por cidade `/imoveis/<cidade-uf>` (ex.: `/imoveis/belem-pa`, rota `src/routes/imoveis_.$cidade.tsx`),
   dados de `portal_busca`. Home: seção "Seus imóveis na vitrine" (`src/components/Vitrine.tsx`); "Quem já usa" só com 3+ clientes.
 - Termos de Uso e Política de Privacidade: `/termos` e `/privacidade` (`src/pages/Legal.tsx`), com links no rodapé, no

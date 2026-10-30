@@ -14,7 +14,7 @@ import { GRUPOS_CARACTERISTICAS, LANCAMENTOS, TIPOS_IMOVEL, type GrupoImovel } f
 
 type Negocio = "comprar" | "alugar" | "novo";
 type Ordem = "relevantes" | "recentes" | "menor" | "maior" | "area";
-type Local = { tipo: "cidade" | "bairro"; cidade: string; uf: string; bairro?: string };
+type Local = { tipo: "estado" | "cidade" | "bairro"; cidade: string; uf: string; bairro?: string };
 type Filtro = {
   local: Local | null;
   negocio: Negocio;
@@ -76,14 +76,14 @@ const simples = (s: string) =>
     .replace(/[̀-ͯ]/g, "")
     .toLowerCase();
 const alterna = (l: string[], v: string) => (l.includes(v) ? l.filter((x) => x !== v) : [...l, v]);
-const textoLocal = (l: Local) => (l.tipo === "bairro" ? `${l.bairro}, ${l.cidade} - ${l.uf}` : `${l.cidade} - ${l.uf}`);
+const textoLocal = (l: Local) => (l.tipo === "bairro" ? `${l.bairro}, ${l.cidade} - ${l.uf}` : l.tipo === "estado" ? l.uf : `${l.cidade} - ${l.uf}`);
 
 /** O imóvel passa pelo filtro? */
 function passa(a: CartaoAnuncio, f: Filtro) {
   if (f.negocio === "alugar" ? a.finalidade !== "locacao" : a.finalidade !== "venda") return false;
   if (f.negocio === "novo" && !a.lancamento) return false;
   if (f.local) {
-    if (a.cidade !== f.local.cidade || a.uf !== f.local.uf) return false;
+    if (a.uf !== f.local.uf || (f.local.tipo !== "estado" && a.cidade !== f.local.cidade)) return false;
     if (f.local.tipo === "bairro" && a.bairro !== f.local.bairro) return false;
   }
   if (f.tipos.length && !f.tipos.includes(a.categoria)) return false;
@@ -401,6 +401,27 @@ export function ImoveisComFiltro({
   const [rascunho, setRascunho] = useState<Filtro>(f);
   const [ordemRascunho, setOrdemRascunho] = useState<Ordem>(ordem);
   const [todosTipos, setTodosTipos] = useState(false);
+
+  // Filtros vindos do endereço (ex.: links da trilha: ?negocio=comprar&tipo=Apartamento&bairro=Umarizal&uf=PA)
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    const negocio = q.get("negocio") as Negocio | null;
+    const tipo = q.get("tipo");
+    const bairro = q.get("bairro");
+    const uf = q.get("uf");
+    if (!negocio && !tipo && !bairro && !uf) return;
+    setF((x) => ({
+      ...x,
+      negocio: negocio && NEGOCIOS.some((n) => n.valor === negocio) ? negocio : x.negocio,
+      tipos: tipo ? [tipo] : x.tipos,
+      local:
+        bairro && localInicial
+          ? { ...localInicial, tipo: "bairro", bairro }
+          : uf && !localInicial
+            ? { tipo: "estado", cidade: "", uf: uf.toUpperCase() }
+            : x.local,
+    }));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const lista = useMemo(() => ordenar(anuncios.filter((a) => passa(a, f)), ordem), [anuncios, f, ordem]);
   const previa = useMemo(() => anuncios.filter((a) => passa(a, rascunho)).length, [anuncios, rascunho]);

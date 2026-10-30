@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { buscarTodos } from "@/portal/api";
 import { ImoveisComFiltro } from "@/portal/Filtros";
-import { BannerBusca, CidadesComImoveis, NaoEncontrado, PortalShell, slugCidade } from "@/portal/ui";
+import { BannerBusca, CidadesComImoveis, NaoEncontrado, PortalShell, slugCidade, Trilha } from "@/portal/ui";
 
 /**
  * Imóveis de uma cidade (ex.: /imoveis/belem-pa). Mesma busca de /imoveis, já filtrada pela cidade.
@@ -43,6 +43,7 @@ function Pagina() {
     );
   return (
     <PortalShell rotulo="Imóveis">
+      <Trilha itens={[{ rotulo: "Início", href: "/" }, { rotulo: "Imóveis", href: "/imoveis" }, { rotulo: d.uf, href: `/imoveis?uf=${d.uf}` }, { rotulo: `${d.cidade} - ${d.uf}` }]} />
       <BannerBusca
         titulo={`Imóveis em ${d.cidade} - ${d.uf}`}
         texto={`${d.total} ${d.total === 1 ? "imóvel anunciado" : "imóveis anunciados"} por imobiliárias e corretores com CRECI.`}

@@ -37,7 +37,7 @@ function Chamada({ titulo, texto }: { titulo: string; texto: string }) {
 /** SIMULADOR DE FINANCIAMENTO público (/simulador-de-financiamento). */
 export function SimuladorFinanciamento() {
   return (
-    <PaginaSimples titulo="Simulador de financiamento imobiliário">
+    <PaginaSimples titulo="Simulador de financiamento imobiliário" rotulo="Simulador de financiamento">
       <motion.section {...entrar}>
         <p className="type-eyebrow text-accent">Grátis e sem cadastro</p>
         <h1 className="type-title mt-3">Simulador de financiamento imobiliário</h1>
@@ -86,7 +86,7 @@ export function CalculadoraComissao() {
   const r = useMemo(() => comissao({ valor: lerMoeda(valor), pct: lerPct(pct), minhaParte: parte, repassePct: lerPct(repasse) }), [valor, pct, parte, repasse]);
 
   return (
-    <PaginaSimples titulo="Calculadora de comissão de corretor">
+    <PaginaSimples titulo="Calculadora de comissão de corretor" rotulo="Calculadora de comissão">
       <motion.section {...entrar}>
         <p className="type-eyebrow text-accent">Grátis e sem cadastro</p>
         <h1 className="type-title mt-3">Calculadora de comissão de corretor</h1>

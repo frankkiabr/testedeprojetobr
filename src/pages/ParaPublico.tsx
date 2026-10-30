@@ -61,7 +61,7 @@ export default function ParaPublico({ publico }: { publico: "imobiliarias" | "co
   const palavras = p.title.split(" ");
 
   return (
-    <PaginaSimples titulo={p.titulo} largura="max-w-5xl" livre>
+    <PaginaSimples titulo={p.titulo} rotulo={solo ? "Para corretores" : "Para imobiliárias"} largura="max-w-5xl" livre>
       {/* Banner: título palavra por palavra, chamada e o painel demonstrativo */}
       <section className="pt-16 sm:pt-24">
         <div className="mx-auto w-full max-w-[60rem] px-5 text-center sm:px-8">

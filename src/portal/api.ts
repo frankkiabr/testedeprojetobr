@@ -64,6 +64,7 @@ export type AnuncioPublico = {
   condominio: number | null;
   iptu: number | null;
   caracteristicas: string[];
+  lancamento?: string | null;
   publicado_em: string;
   atualizado_em: string;
   codigo: string;
@@ -82,8 +83,8 @@ export type AnuncioPublico = {
   lat: number | null;
   lng: number | null;
   fotos: { url: string; largura: number | null; altura: number | null }[];
-  corretor: CorretorResumo & { telefone: string | null };
-  imobiliaria: ImobResumo & { cidade: string | null; telefone: string | null; creci_j: string | null };
+  corretor: CorretorResumo & { telefone: string | null; desde?: string; imoveis?: number };
+  imobiliaria: ImobResumo & { cidade: string | null; telefone: string | null; creci_j: string | null; desde?: string; imoveis?: number };
   /** Outros imóveis da mesma imobiliária (preenchido pela página). */
   relacionados?: CartaoAnuncio[];
 };

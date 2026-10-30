@@ -51,7 +51,7 @@ export default function ExclusaoDados() {
   };
 
   return (
-    <PaginaSimples titulo="Exclusão e pedidos sobre dados pessoais" largura="max-w-3xl">
+    <PaginaSimples titulo="Exclusão e pedidos sobre dados pessoais" rotulo="Exclusão de dados" largura="max-w-3xl">
       <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: EASE_OUT_EXPO }}>
         <p className="type-eyebrow text-accent">LGPD</p>
         <h1 className="type-title mt-3">Seus dados, do seu jeito.</h1>

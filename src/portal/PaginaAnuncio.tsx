@@ -1,7 +1,7 @@
-import { rotuloTipo } from "@/lib/imovel";
+import { ehDoCondominio, LANCAMENTOS, pluralTipo, rotuloTipo } from "@/lib/imovel";
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, Bath, BedDouble, Car, Check, ExternalLink, MapPin, Ruler } from "lucide-react";
+import { ArrowRight, BadgeCheck, Bath, BedDouble, CalendarCheck, Car, Check, ChevronDown, ExternalLink, House, MapPin, Ruler } from "lucide-react";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 import { Simulador } from "@/components/Simulador";
 import { enviarContato, type AnuncioPublico } from "./api";
@@ -12,7 +12,9 @@ import {
   area,
   brl,
   creciTexto,
-  SeloCreci,
+  dataPorExtenso,
+  slugCidade,
+  Trilha,
   FotoPessoa,
   GradeImoveis,
   linkWhats,
@@ -27,6 +29,101 @@ const rotuloUnidade = (categoria: string) => (categoria === "Sala comercial" || 
 export function enderecoAnuncio(a: AnuncioPublico) {
   const unidade = a.unidade ? ` · ${rotuloUnidade(a.categoria)} ${a.unidade}` : "";
   return `${a.logradouro}, ${a.numero}${unidade} - ${a.bairro}, ${a.cidade} - ${a.uf}`;
+}
+
+function trilhaDoAnuncio(a: AnuncioPublico) {
+  const venda = a.finalidade === "venda";
+  const negocio = `negocio=${venda ? "comprar" : "alugar"}`;
+  const cidade = `/imoveis/${slugCidade(a.cidade, a.uf)}`;
+  const tipo = `${negocio}&tipo=${encodeURIComponent(a.categoria)}`;
+  return [
+    { rotulo: "Início", href: "/" },
+    { rotulo: "Imóveis", href: "/imoveis" },
+    { rotulo: venda ? "Venda" : "Aluguel", href: `/imoveis?${negocio}` },
+    { rotulo: a.uf, href: `/imoveis?${negocio}&uf=${a.uf}` },
+    { rotulo: `${pluralTipo(a.categoria)} ${venda ? "à venda" : "para alugar"} em ${a.cidade}`, href: `${cidade}?${tipo}` },
+    { rotulo: a.bairro, href: `${cidade}?${tipo}&bairro=${encodeURIComponent(a.bairro)}` },
+  ];
+}
+
+/** Características em duas abas, como nos portais: do imóvel e do condomínio. */
+function Caracteristicas({ a }: { a: AnuncioPublico }) {
+  const doImovel = [
+    area(a.area),
+    a.quartos != null && `${a.quartos} ${a.quartos === 1 ? "quarto" : "quartos"}`,
+    a.suites ? `${a.suites} ${a.suites === 1 ? "suíte" : "suítes"}` : "",
+    a.banheiros != null && `${a.banheiros} ${a.banheiros === 1 ? "banheiro" : "banheiros"}`,
+    a.vagas != null && `${a.vagas} ${a.vagas === 1 ? "vaga" : "vagas"}`,
+    a.lancamento && `Imóvel novo · ${LANCAMENTOS.find((l) => l.valor === a.lancamento)?.rotulo ?? ""}`,
+    ...a.caracteristicas.filter((c) => !ehDoCondominio(c)),
+  ].filter(Boolean) as string[];
+  const doCondominio = [
+    a.condominio ? `Condomínio ${brl(a.condominio)}/mês` : "",
+    ...a.caracteristicas.filter(ehDoCondominio),
+  ].filter(Boolean);
+  const abas = [
+    { id: "imovel", rotulo: "Imóvel", itens: doImovel },
+    { id: "condominio", rotulo: "Condomínio", itens: doCondominio },
+  ].filter((x) => x.itens.length);
+  const [aba, setAba] = useState(abas[0]?.id ?? "imovel");
+  const [tudo, setTudo] = useState(false);
+  const atual = abas.find((x) => x.id === aba) ?? abas[0];
+  if (!atual) return null;
+  const LIMITE = 8;
+  const itens = tudo ? atual.itens : atual.itens.slice(0, LIMITE);
+  return (
+    <Surge className="rounded-3xl border border-line p-5 sm:p-6">
+      <h2 className="font-display text-lg font-semibold">Características</h2>
+      <div className="mt-3 flex border-b border-line">
+        {abas.map((x) => (
+          <button
+            key={x.id}
+            type="button"
+            onClick={() => {
+              setAba(x.id);
+              setTudo(false);
+            }}
+            className={`flex-1 border-b-2 pb-3 text-sm font-semibold transition ${atual.id === x.id ? "border-accent text-accent" : "border-transparent text-ink hover:text-accent"}`}
+          >
+            {x.rotulo}
+          </button>
+        ))}
+      </div>
+      <ul className="mt-4 grid gap-x-6 gap-y-3 sm:grid-cols-2">
+        {itens.map((c) => (
+          <li key={c} className="flex items-center gap-2 text-sm">
+            <Check className="size-4 shrink-0 text-verified" />
+            {c}
+          </li>
+        ))}
+      </ul>
+      {atual.itens.length > LIMITE && (
+        <button type="button" onClick={() => setTudo((x) => !x)} className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold">
+          {tudo ? "Mostrar menos" : `Mostrar mais (${atual.itens.length - LIMITE})`}
+          <ChevronDown className={`size-4 transition ${tudo ? "rotate-180" : ""}`} />
+        </button>
+      )}
+    </Surge>
+  );
+}
+
+/** Selo do anunciante: quantos imóveis anuncia e desde quando está na Frankkia. */
+function Fichas({ imoveis, desde }: { imoveis?: number; desde?: string }) {
+  if (imoveis == null && !desde) return null;
+  return (
+    <div className="mt-2 flex flex-wrap gap-1.5">
+      {imoveis != null && (
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-canvas px-2.5 py-1 text-xs font-semibold">
+          <House className="size-3.5 text-accent" /> {imoveis} {imoveis === 1 ? "imóvel" : "imóveis"}
+        </span>
+      )}
+      {desde && (
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-canvas px-2.5 py-1 text-xs font-semibold">
+          <CalendarCheck className="size-3.5 text-accent" /> Anunciando desde {dataPorExtenso(desde)}
+        </span>
+      )}
+    </div>
+  );
 }
 
 export default function PaginaAnuncio({ a, url }: { a: AnuncioPublico; url: string }) {
@@ -48,6 +145,7 @@ export default function PaginaAnuncio({ a, url }: { a: AnuncioPublico; url: stri
 
   return (
     <PortalShell imob={a.imobiliaria} corretor={a.corretor}>
+      <Trilha itens={trilhaDoAnuncio(a)} />
       <Surge y={16}>
         <Galeria fotos={a.fotos.map((f) => f.url)} titulo={a.titulo} />
       </Surge>
@@ -97,19 +195,7 @@ export default function PaginaAnuncio({ a, url }: { a: AnuncioPublico; url: stri
             </Surge>
           )}
 
-          {a.caracteristicas.length > 0 && (
-            <Surge>
-              <h2 className="font-display text-lg font-semibold">Características</h2>
-              <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-                {a.caracteristicas.map((c) => (
-                  <li key={c} className="flex items-center gap-2 text-sm">
-                    <Check className="size-4 text-verified" />
-                    {c}
-                  </li>
-                ))}
-              </ul>
-            </Surge>
-          )}
+          <Caracteristicas a={a} />
 
           <Surge>
             <h2 className="font-display text-lg font-semibold">Localização</h2>
@@ -184,14 +270,19 @@ Pode me ajudar com o financiamento?`)}
               params={{ slug: a.corretor.slug ?? "" }}
               preload="intent"
               disabled={!a.corretor.slug}
-              className="flex items-center gap-3"
+              className="group block rounded-2xl border border-line p-3.5 transition hover:border-line-strong"
             >
-              <FotoPessoa p={a.corretor} className="size-12" />
-              <div className="min-w-0">
-                <p className="truncate font-semibold">{a.corretor.nome}</p>
-                <p className="text-xs text-muted">{creciTexto(a.corretor)}</p>
-                <div className="mt-1"><SeloCreci c={a.corretor} /></div>
+              <div className="flex items-center gap-3">
+                <FotoPessoa p={a.corretor} className="size-14" />
+                <div className="min-w-0">
+                  <p className="flex items-center gap-1.5 font-semibold">
+                    <span className="truncate underline-offset-4 group-hover:underline">{a.corretor.nome}</span>
+                    {a.corretor.creci_verificado && <BadgeCheck className="size-4 shrink-0 text-accent" aria-label="CRECI verificado"><title>CRECI verificado pela Frankkia</title></BadgeCheck>}
+                  </p>
+                  <p className="text-xs text-muted">{creciTexto(a.corretor)}</p>
+                </div>
               </div>
+              <Fichas imoveis={a.corretor.imoveis} desde={a.corretor.desde} />
             </Link>
 
             {/* Corretor de imobiliária: mostra a imobiliária e leva aos outros imóveis dela */}
@@ -218,8 +309,10 @@ Pode me ajudar com o financiamento?`)}
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold">{a.imobiliaria.nome}</p>
                   <p className="text-xs text-muted">
-                    {a.imobiliaria.creci_j ? `CRECI-J ${a.imobiliaria.creci_j} · ` : ""}Ver todos os imóveis
+                    {a.imobiliaria.creci_j ? `CRECI-J ${a.imobiliaria.creci_j} · ` : ""}
+                    {a.imobiliaria.imoveis != null ? `Ver os ${a.imobiliaria.imoveis} imóveis` : "Ver todos os imóveis"}
                   </p>
+                  {a.imobiliaria.desde && <p className="text-xs text-muted">Na Frankkia desde {dataPorExtenso(a.imobiliaria.desde)}</p>}
                 </div>
                 <ArrowRight className="size-4 shrink-0 text-subtle transition group-hover:translate-x-0.5 group-hover:text-ink" />
               </Link>

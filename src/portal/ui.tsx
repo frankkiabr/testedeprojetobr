@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Bath, BadgeCheck, BedDouble, Car, MapPin, Menu, Ruler, X } from "lucide-react";
+import { Bath, BadgeCheck, BedDouble, Car, ChevronRight, MapPin, Menu, Ruler, X } from "lucide-react";
 import { Logo, LogoMark } from "@/components/ui";
 import { EntradaPagina, Surge } from "./anim";
 import type { CartaoAnuncio, CorretorResumo, Finalidade, ImobResumo } from "./api";
@@ -79,6 +79,46 @@ export const linkWhats = (tel: string, texto: string) =>
 
 export const creciTexto = (c: { creci: string | null; creci_uf: string | null }) =>
   c.creci ? `CRECI ${c.creci}${c.creci_uf ? `-${c.creci_uf}` : ""}` : "";
+
+/** "30 de outubro de 2026" (sempre no horário de Brasília, para o servidor e o navegador escreverem igual). */
+export const dataPorExtenso = (iso: string) =>
+  new Date(iso).toLocaleDateString("pt-BR", { day: "numeric", month: "long", year: "numeric", timeZone: "America/Sao_Paulo" });
+
+export type ItemTrilha = { rotulo: string; href?: string };
+
+/**
+ * Trilha de navegação (breadcrumb): Início › Imóveis › Belém - PA › ...
+ * Também vai em formato que o Google entende (BreadcrumbList), para aparecer no resultado da busca.
+ */
+export function Trilha({ itens, className = "" }: { itens: ItemTrilha[]; className?: string }) {
+  const site = "https://frankkia.com";
+  const ld = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: itens.map((t, k) => ({ "@type": "ListItem", position: k + 1, name: t.rotulo, ...(t.href ? { item: site + t.href } : {}) })),
+  };
+  return (
+    <nav aria-label="Você está em" className={`mb-5 ${className}`}>
+      <ol className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm">
+        {itens.map((t, k) => (
+          <li key={k} className="flex min-w-0 items-center gap-1.5">
+            {k > 0 && <ChevronRight className="size-3.5 shrink-0 text-subtle" />}
+            {t.href && k < itens.length - 1 ? (
+              <a href={t.href} className="truncate font-medium text-ink underline-offset-4 hover:text-accent hover:underline">
+                {t.rotulo}
+              </a>
+            ) : (
+              <span aria-current={k === itens.length - 1 ? "page" : undefined} className="truncate text-muted">
+                {t.rotulo}
+              </span>
+            )}
+          </li>
+        ))}
+      </ol>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
+    </nav>
+  );
+}
 
 /** Selo "CRECI verificado": a Frankkia conferiu o número no site do CRECI do estado. */
 export function SeloCreci({ c }: { c: { creci_verificado?: boolean } }) {
