@@ -287,19 +287,6 @@ export function AppLayout() {
           </div>
         )}
 
-        {modo === "real" && conta?.creciIrregular !== undefined && (
-          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 bg-amber-500 px-4 py-2.5 text-center text-sm font-medium text-white">
-            <AlertTriangle className="size-4 shrink-0" />
-            Não conseguimos confirmar seu CRECI no conselho{conta.creciIrregular ? ` (${conta.creciIrregular})` : ""}. Seus anúncios ficam fora do portal até corrigir.
-            <Link
-              to="/app/configuracoes?aba=perfil"
-              className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-amber-700 transition hover:bg-white/90"
-            >
-              Corrigir CRECI
-            </Link>
-          </div>
-        )}
-
         {suspensa && (
           <div className="flex items-center justify-center gap-2 bg-rose-600 px-4 py-2.5 text-center text-sm font-medium text-white">
             <AlertTriangle className="size-4 shrink-0" />

@@ -488,8 +488,16 @@ function Perfil() {
 
         <div className="mt-6 rounded-2xl bg-canvas p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="flex items-center gap-2 text-sm font-semibold">
+            <p className="flex flex-wrap items-center gap-2 text-sm font-semibold">
               <BadgeCheck className="size-4 text-accent" /> Registro no CRECI
+              {modo === "real" && conta?.creciVerificado && (
+                <span
+                  title={conta.creciConferidoEm ? `Conferido no site do conselho em ${new Date(conta.creciConferidoEm).toLocaleDateString("pt-BR")}` : undefined}
+                  className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700"
+                >
+                  <BadgeCheck className="size-3.5" /> Verificado pela Frankkia
+                </span>
+              )}
             </p>
             {user.papel === "corretor" && !solo && (
               <label className="flex cursor-pointer items-center gap-2 text-sm">

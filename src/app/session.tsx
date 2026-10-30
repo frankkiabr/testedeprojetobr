@@ -51,8 +51,12 @@ export type Conta = {
   semCadastro: boolean;
   /** Foto da conta Google, quando entrou por ela (vira a foto do perfil no cadastro). */
   fotoGoogle?: string;
-  /** A Frankkia não confirmou o CRECI no conselho: anúncios fora do portal até corrigir (texto = motivo, pode ser vazio). */
+  /** A Frankkia não confirmou o CRECI no conselho (texto = motivo, pode ser vazio). Só gera um aviso no sino; nada é bloqueado. */
   creciIrregular?: string;
+  /** A Frankkia conferiu o CRECI no site do conselho (selo em Configurações → Perfil e no portal). */
+  creciVerificado?: boolean;
+  /** Quando a Frankkia conferiu o CRECI. */
+  creciConferidoEm?: string;
 };
 
 type Ctx = {
@@ -185,7 +189,7 @@ async function carregarConta(u: User): Promise<Conta> {
   await aceitarConvitePendente(u);
   await criarContaPendente(u);
   const [perfil, membros, fk] = await Promise.all([
-    supabase.from("perfis").select("nome, iniciais, email, creci_status, creci_obs").eq("id", u.id).maybeSingle(),
+    supabase.from("perfis").select("nome, iniciais, email, creci_status, creci_obs, creci_conferido_em").eq("id", u.id).maybeSingle(),
     supabase
       .from("membros")
       .select("papel, imobiliarias(id, nome, plano, limite_corretores, status, teste_ate)")
@@ -211,6 +215,8 @@ async function carregarConta(u: User): Promise<Conta> {
     semCadastro: !fk.data && vinculos === 0 && !meta.convite_token,
     fotoGoogle: (meta.avatar_url as string) || (meta.picture as string) || undefined,
     creciIrregular: perfil.data?.creci_status === "irregular" ? (perfil.data.creci_obs ?? "") : undefined,
+    creciVerificado: perfil.data?.creci_status === "verificado",
+    creciConferidoEm: perfil.data?.creci_conferido_em ?? undefined,
     iniciais: perfil.data?.iniciais || iniciaisDe(nome, email),
     frankkia: !!fk.data,
     papel: (m?.papel as "admin" | "corretor" | undefined) ?? null,

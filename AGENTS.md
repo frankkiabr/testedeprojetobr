@@ -96,7 +96,8 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
 - CRECI: obrigatório para corretor de equipe (ou estagiário) e sempre para o dono da conta Solo (`checar_creci`, `aceitar_convite`).
 - CRECI verificado: não há API oficial; a Frankkia confere no site do CRECI do estado em Painel → CRECI (`src/app/admin/Creci.tsx`,
   `painel_creci`, `conferir_creci`; colunas `perfis.creci_status` pendente/verificado/irregular). Verificado = selo no portal (`SeloCreci`).
-  Irregular = anúncios saem do portal e dos portais (gatilho `bloquear_anuncio_creci_irregular`) e aviso no app. Trocar o CRECI volta a pendente.
+  Verificado também mostra "Verificado pela Frankkia" em Configurações → Perfil. Irregular NÃO bloqueia nada: só um aviso no sino
+  (`Notificacoes.tsx`). Trocar o CRECI volta a pendente.
 - Plano anual: 12 meses pelo preço de 10 (-17%, `src/lib/planos.ts`); `pedidos_upgrade.ciclo` (mensal/anual) e `tipo`
   (upgrade/reducao). O preço vem sempre da tabela `planos` (gatilho `preco_do_pedido`; a função `criar-checkout` cobra por ano no anual).
 - Plano menor: `solicitar_reducao` (só se ativos + convites cabem no plano novo) → a Frankkia aplica em Upgrades (`aplicar_reducao`).

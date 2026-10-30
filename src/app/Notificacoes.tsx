@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   AlarmClock,
+  ShieldAlert,
   Repeat,
   Bell,
   CalendarClock,
@@ -68,6 +69,18 @@ function useAvisos(): Aviso[] {
   const solo = ehSolo(imobiliaria.plano);
   const meu = (corretorId: string) => admin || corretorId === user.id;
   const out: Aviso[] = [];
+
+  // CRECI que a Frankkia não conseguiu confirmar no conselho: só avisa (não bloqueia nada)
+  if (conta?.creciIrregular !== undefined)
+    out.push({
+      id: `creci-${conta.creciConferidoEm ?? "irregular"}`,
+      icone: ShieldAlert,
+      titulo: "A Frankkia não confirmou o seu CRECI",
+      texto: conta.creciIrregular ? `${conta.creciIrregular}. Confira o número em Configurações → Perfil.` : "Confira o número e o estado em Configurações → Perfil.",
+      quando: conta.creciConferidoEm ?? new Date().toISOString(),
+      to: "/app/configuracoes?aba=perfil",
+      destaque: true,
+    });
 
   // Só avisa do lead que chegou por outra pessoa: pelo portal ou cadastrado por outro usuário (nunca o que eu mesmo cadastrei)
   const deOutro = (l: (typeof leads)[number]) => l.origem === "Portal" || (!!l.criadoPor && l.criadoPor !== user.id);

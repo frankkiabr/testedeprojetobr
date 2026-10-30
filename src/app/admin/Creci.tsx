@@ -40,7 +40,7 @@ const data = (s: string | null) => (s ? new Date(s).toLocaleDateString("pt-BR") 
 
 /**
  * CRECI a conferir: a Frankkia consulta o número no site do conselho do estado e marca.
- * Verificado = selo "CRECI verificado" no portal. Irregular = anúncios saem do portal e o corretor vê um aviso
+ * Verificado = selo "CRECI verificado" no portal. Irregular = o corretor recebe um aviso no sino (nada é bloqueado)
  * para corrigir. Se o corretor trocar o CRECI, volta para "A conferir".
  */
 export default function Creci() {
@@ -89,7 +89,7 @@ export default function Creci() {
     setSalvando("");
     if (error) return toast(mensagemErro(error));
     setMotivo(null);
-    toast(status === "verificado" ? "CRECI verificado. O selo já aparece no portal." : status === "irregular" ? "Marcado como irregular. Os anúncios saíram do portal." : "Voltou para a fila.");
+    toast(status === "verificado" ? "CRECI verificado. O selo já aparece no portal." : status === "irregular" ? "Marcado como irregular. O corretor recebe um aviso no sino." : "Voltou para a fila.");
     carregar();
   };
 
@@ -106,7 +106,7 @@ export default function Creci() {
       <motion.div {...stagger(0)}>
         <PageHeader
           title="CRECI"
-          subtitle="Confira cada CRECI no site do conselho do estado. Verificado ganha o selo no portal; irregular tira os anúncios do portal até o corretor corrigir."
+          subtitle="Confira cada CRECI no site do conselho do estado. Verificado ganha o selo no portal e no perfil; irregular só manda um aviso ao corretor (nada é bloqueado)."
         />
       </motion.div>
 
@@ -197,7 +197,7 @@ export default function Creci() {
                   {motivo?.id === l.usuarioId && (
                     <div className="mt-3 rounded-2xl border border-rose-200 bg-rose-50/60 p-4">
                       <p className="text-sm font-semibold">Por que está irregular?</p>
-                      <p className="text-xs text-muted">O corretor vê este motivo no aviso. Os anúncios dele saem do portal na hora.</p>
+                      <p className="text-xs text-muted">O corretor vê este motivo no aviso do sino. Os anúncios continuam no ar.</p>
                       <input
                         autoFocus
                         className={`${inputCls} mt-2`}
