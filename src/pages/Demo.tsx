@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { Clock } from "lucide-react";
 import { Logo } from "@/components/ui";
+import { contato } from "@/content";
+import { linkWhatsApp } from "@/lib/whatsapp";
 import { useSession } from "@/app/session";
 import { supabase } from "@/integrations/frankkia/client";
 
@@ -43,12 +45,14 @@ export default function Demo() {
             </span>
             <h1 className="type-title mt-6 !text-[1.75rem]">Link de demonstração expirado</h1>
             <p className="mt-3 text-muted">Este link não é mais válido. Fale com a equipe Frankkia para receber um novo acesso.</p>
-            <Link
-              to="/apresentacao"
+            <a
+              href={linkWhatsApp(`Olá, ${contato.primeiroNome}! Meu link de demonstração da Frankkia expirou. Pode me enviar um novo?`)}
+              target="_blank"
+              rel="noopener noreferrer"
               className="mt-8 inline-flex h-12 items-center rounded-full bg-ink px-6 font-semibold text-bg transition hover:bg-ink/85"
             >
               Falar com a Frankkia
-            </Link>
+            </a>
           </>
         ) : (
           <p className="mt-8 text-muted">Abrindo a demonstração...</p>

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, Navigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, CalendarCheck, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { site } from "@/content";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { Logo, Scaled } from "@/components/ui";
@@ -127,19 +127,6 @@ export default function Login() {
             </button>
           </form>
 
-          <Link
-            to="/apresentacao"
-            className="group/cta mt-8 flex items-center gap-4 rounded-2xl border border-dashed border-line-strong bg-canvas/60 p-4 transition-colors hover:border-accent/50 hover:bg-accent-soft/40"
-          >
-            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-accent-soft text-accent">
-              <CalendarCheck className="size-5" />
-            </span>
-            <span className="flex-1 text-sm">
-              <span className="block font-semibold text-ink">Quer conhecer a Frankkia?</span>
-              <span className="text-muted">Agende uma apresentação sem compromisso com a nossa equipe.</span>
-            </span>
-            <ArrowRight className="size-4 shrink-0 text-accent transition-transform group-hover/cta:translate-x-0.5" />
-          </Link>
         </motion.div>
 
         <p className="text-center text-xs text-subtle">

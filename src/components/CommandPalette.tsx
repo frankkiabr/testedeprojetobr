@@ -2,14 +2,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { CornerDownLeft, Hash, Mail, Search, Sparkles, Tag } from "lucide-react";
 import { features, nav, pricing, site } from "@/content";
-import { useNavigate } from "react-router-dom";
 import { EASE_OUT_EXPO, scrollToId } from "@/lib/scroll";
 
 type Item = { label: string; hint: string; run: () => void; icon: typeof Hash };
 
 /** Busca rápida com Ctrl/Cmd + K. */
 export function CommandPalette({ open, setOpen }: { open: boolean; setOpen: (v: boolean) => void }) {
-  const navigate = useNavigate();
   const [q, setQ] = useState("");
   const [sel, setSel] = useState(0);
   const input = useRef<HTMLInputElement>(null);
@@ -38,7 +36,6 @@ export function CommandPalette({ open, setOpen }: { open: boolean; setOpen: (v: 
     const all: Item[] = [
       { label: "Início", hint: "Seção", icon: Hash, run: () => scrollToId("top") },
       ...nav.map((n) => ({ label: n.label, hint: "Seção", icon: Hash, run: () => scrollToId(n.id) })),
-      { label: "Solicitar demonstração", hint: "Página", icon: Hash, run: () => navigate("/apresentacao") },
       ...features.items.map((f) => ({ label: f.title, hint: "Função", icon: Sparkles, run: () => scrollToId("funcoes") })),
       ...pricing.plans.map((p) => ({ label: p.name, hint: `R$ ${p.price}/mês`, icon: Tag, run: () => scrollToId("planos") })),
       { label: "Enviar e-mail", hint: site.email, icon: Mail, run: () => (window.location.href = `mailto:${site.email}`) },

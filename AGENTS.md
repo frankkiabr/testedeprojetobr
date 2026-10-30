@@ -152,7 +152,9 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
   (também cancela a assinatura na Stripe). E-mails automáticos: fila `avisos_email` + função `enviar-avisos`.
 - Páginas públicas: o servidor entrega o texto principal e os links (`src/components/ConteudoServidor.tsx`) e cada uma tem
   título/descrição em `src/routes/<pagina>.tsx` (component null; quem desenha é o `<App />`).
-- Interessados: `/apresentacao` e o formulário do site gravam em `interessados` (visitante só envia; só a Frankkia lê).
+- Interessados: hoje só o pedido LGPD (`/exclusao-de-dados`) grava em `interessados` (visitante só envia; só a Frankkia lê).
+  A página `/apresentacao` saiu (teste grátis ou WhatsApp do Luiz); o endereço antigo leva a `/#planos`. Não recoloque o
+  cartão "Quer conhecer a Frankkia?" no login.
 - Demonstração: NÃO é pública. Só abre por `/demo/<código>` liberado pela Frankkia (`acessos_demo`, com validade;
   `validar_demo`). Não recoloque botões de demonstração na tela de login.
 - Tokens de serviços externos guardados no banco (ex.: `google_conexoes.refresh_token`) vão criptografados com AES-256-GCM

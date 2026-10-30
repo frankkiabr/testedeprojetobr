@@ -21,7 +21,6 @@ import AgendaPage from "@/app/pages/AgendaPage";
 import AgendaAdmin from "@/app/admin/AgendaAdmin";
 import Convite from "@/pages/Convite";
 import RedefinirSenha from "@/pages/RedefinirSenha";
-import Apresentacao from "@/pages/Apresentacao";
 import Demo from "@/pages/Demo";
 import { Privacidade, Termos } from "@/pages/Legal";
 import Sobre from "@/pages/Sobre";
@@ -64,7 +63,8 @@ export default function App() {
               <Route path="/redefinir-senha" element={<RedefinirSenha />} />
               {/* Links dos e-mails de login (confirmar conta, nova senha, troca de e-mail) */}
               <Route path="/confirmar" element={<Confirmar />} />
-              <Route path="/apresentacao" element={<Apresentacao />} />
+              {/* A apresentação agendada saiu: teste grátis ou WhatsApp. Links antigos levam aos planos. */}
+              <Route path="/apresentacao" element={<Navigate to="/#planos" replace />} />
               <Route path="/demo/:token" element={<Demo />} />
               <Route path="/termos" element={<Termos />} />
               <Route path="/privacidade" element={<Privacidade />} />

@@ -38,11 +38,6 @@ function Preco({ preco, ciclo, escuro = false }: { preco: string; ciclo: Ciclo; 
 
 export function Pricing() {
   const navigate = useNavigate();
-  // Já chega na página de captura com o tamanho de equipe do plano escolhido
-  const irPara = (equipe: string) => (e: React.MouseEvent) => {
-    e.preventDefault();
-    navigate(`/apresentacao?equipe=${encodeURIComponent(equipe)}`);
-  };
   const irCadastro = (plano: string) => (e: React.MouseEvent) => {
     e.preventDefault();
     navigate(`/cadastro?plano=${encodeURIComponent(plano)}`);
@@ -129,13 +124,24 @@ export function Pricing() {
                         {pricing.ctaTeste}
                       </Button>
                     )}
-                    <a
-                      href={conversa(p.name) ? `/cadastro?plano=${encodeURIComponent(p.name)}` : `/apresentacao?equipe=${encodeURIComponent(p.equipe)}`}
-                      onClick={conversa(p.name) ? irCadastro(p.name) : irPara(p.equipe)}
-                      className={`mt-3 block text-center text-xs underline-offset-4 hover:underline ${dark ? "text-bg/60" : "text-muted"}`}
-                    >
-                      {conversa(p.name) ? "ou comece um teste grátis" : "ou solicite uma demonstração"}
-                    </a>
+                    {conversa(p.name) ? (
+                      <a
+                        href={`/cadastro?plano=${encodeURIComponent(p.name)}`}
+                        onClick={irCadastro(p.name)}
+                        className={`mt-3 block text-center text-xs underline-offset-4 hover:underline ${dark ? "text-bg/60" : "text-muted"}`}
+                      >
+                        ou comece um teste grátis
+                      </a>
+                    ) : (
+                      <a
+                        href={linkWhatsApp(`Olá, ${contato.primeiroNome}! Quero conhecer o plano ${p.name} da Frankkia.`)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`mt-3 block text-center text-xs underline-offset-4 hover:underline ${dark ? "text-bg/60" : "text-muted"}`}
+                      >
+                        ou fale com o {contato.primeiroNome} no WhatsApp
+                      </a>
+                    )}
                   </div>
                 </div>
               </motion.li>
@@ -177,11 +183,12 @@ export function Pricing() {
               {pricing.ctaTeste}
             </Button>
             <a
-              href={`/apresentacao?equipe=${encodeURIComponent(solo.equipe)}`}
-              onClick={irPara(solo.equipe)}
+              href={linkWhatsApp(`Olá, ${contato.primeiroNome}! Quero conhecer o plano Solo da Frankkia.`)}
+              target="_blank"
+              rel="noopener noreferrer"
               className="mt-3 block text-center text-xs text-muted underline-offset-4 hover:underline"
             >
-              ou solicite uma demonstração
+              ou fale com o {contato.primeiroNome} no WhatsApp
             </a>
           </div>
         </motion.div>
