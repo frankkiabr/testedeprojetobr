@@ -16,9 +16,10 @@ import {
 } from "@/data/platform";
 import { useStore } from "@/data/store";
 import type { Cliente, PlanoNome } from "@/data/types";
-import { brl, int, pct, relTime } from "@/lib/format";
+import { brl, greeting, int, pct, relTime } from "@/lib/format";
+import { useSession } from "../session";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
-import { AnimatedNumber, Badge, Card, CardHeader, Delta, PageHeader, stagger } from "../kit";
+import { AnimatedNumber, Avatar, Badge, Card, CardHeader, Delta, PageHeader, stagger } from "../kit";
 import { LineArea } from "../charts";
 import { UsoSupabase } from "./UsoSupabase";
 
@@ -105,11 +106,16 @@ export default function AdminOverview() {
   const chamadosAbertos = todosChamados().filter((c) => c.status !== "resolvido");
   const errosNovos = errosSistema.filter((e) => e.status !== "corrigido");
   const upgradesPagos = pedidosUpgrade.filter((p) => p.pagamento === "confirmado" && !p.liberado);
+  const { user } = useSession();
 
   return (
     <div className="space-y-6">
       <motion.div {...stagger(0)}>
-        <PageHeader title="Visão geral da plataforma" subtitle="Como a Frankkia está indo em todas as imobiliárias." />
+        <PageHeader
+          title={`${greeting()}, ${user.nome.split(" ")[0]}`}
+          subtitle="Como a Frankkia está indo em todas as imobiliárias."
+          foto={<Avatar user={user} className="size-12 translate-y-0.5 bg-ink text-base text-bg sm:size-14 sm:translate-y-1 sm:text-lg" />}
+        />
       </motion.div>
 
       {upgradesPagos.length > 0 && (

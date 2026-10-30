@@ -86,6 +86,7 @@ export default function Overview() {
       <motion.div {...stagger(0)}>
         <PageHeader
           title={`${greeting()}, ${firstName}`}
+          foto={<Avatar user={user} className="size-12 translate-y-0.5 text-base sm:size-14 sm:translate-y-1 sm:text-lg" />}
           subtitle={
             isAdmin && !solo ? `Aqui está o que está acontecendo na ${imobiliaria.nome} hoje.` : "Aqui está o que precisa da sua atenção hoje."
           }

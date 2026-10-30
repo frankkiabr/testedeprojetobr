@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { Link, NavLink, useLocation, useNavigate, useOutlet } from "react-router-dom";
 import {
   AlertTriangle,
@@ -27,7 +27,7 @@ import type { Role } from "@/data/types";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { Logo } from "@/components/ui";
 import { useSession } from "./session";
-import { Avatar, ProgressBar } from "./kit";
+import { ProgressBar } from "./kit";
 import { Toaster } from "./forms";
 import { UpgradeModal, UpgradeNudge } from "./upgrade";
 import { Notificacoes } from "./Notificacoes";
@@ -77,7 +77,8 @@ function NavItem({ to, label, icon: Icon, onClick }: { to: string; label: string
 }
 
 function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
-  const { role } = useSession();
+  const { role, sair } = useSession();
+  const navigate = useNavigate();
   useStore();
   const used = vagasUsadas();
   const solo = ehSolo(imobiliaria.plano);
@@ -119,6 +120,15 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           {BOTTOM.map((m) => (
             <NavItem key={m.to} {...m} onClick={onNavigate} />
           ))}
+          <button
+            onClick={async () => {
+              await sair();
+              navigate("/login");
+            }}
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-muted transition-colors hover:bg-canvas hover:text-ink"
+          >
+            <LogOut className="size-[18px]" /> Sair
+          </button>
         </nav>
       </div>
     </div>
@@ -160,62 +170,6 @@ export function RoleSwitcher() {
           </button>
         ))}
       </div>
-    </div>
-  );
-}
-
-function UserMenu() {
-  const { user, role, sair } = useSession();
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const close = (e: MouseEvent) => {
-      if (!ref.current?.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener("mousedown", close);
-    return () => document.removeEventListener("mousedown", close);
-  }, []);
-
-  return (
-    <div ref={ref} className="relative">
-      <button onClick={() => setOpen(!open)} aria-label="Menu do usuário" className="rounded-full ring-offset-2 transition hover:ring-2 hover:ring-accent/30">
-        <Avatar user={user} className="size-10 text-[0.8125rem]" />
-      </button>
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, y: 8, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8, scale: 0.97 }}
-            transition={{ duration: 0.2 }}
-            className="absolute right-0 top-12 z-50 w-64 overflow-hidden rounded-2xl border border-line bg-bg shadow-float"
-          >
-            <div className="border-b border-line p-4">
-              <p className="font-semibold">{user.nome}</p>
-              <p className="truncate text-xs text-muted">{user.email}</p>
-              <p className="mt-2 text-xs font-semibold text-accent">{role === "admin" ? "Administrador" : "Corretor"}</p>
-            </div>
-            <div className="p-2">
-              <button
-                onClick={() => navigate("/app/configuracoes")}
-                className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm hover:bg-canvas"
-              >
-                <Settings2 className="size-4 text-muted" /> Configurações
-              </button>
-              <button
-                onClick={async () => {
-                  await sair();
-                  navigate("/login");
-                }}
-                className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm hover:bg-canvas">
-                <LogOut className="size-4 text-muted" /> Sair
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
@@ -299,7 +253,6 @@ export function AppLayout() {
             </div>
             <span className="hidden text-sm text-muted xl:block">{nomeImob}</span>
             <Notificacoes />
-            <UserMenu />
           </div>
         </header>
 

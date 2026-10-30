@@ -306,7 +306,7 @@ export function Notificacoes() {
       <button
         onClick={abrir}
         aria-label={novos ? `Notificações (${novos} novas)` : "Notificações"}
-        className="relative grid size-10 place-items-center rounded-full text-muted hover:bg-canvas hover:text-ink"
+        className="relative grid size-10 place-items-center rounded-full bg-accent-soft text-accent-deep transition hover:bg-accent/15"
       >
         <Bell className="size-[18px]" />
         {novos > 0 && (

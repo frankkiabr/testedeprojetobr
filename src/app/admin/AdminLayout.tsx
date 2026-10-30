@@ -8,7 +8,6 @@ import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { Logo } from "@/components/ui";
 import { useSession } from "../session";
 import { RoleSwitcher } from "../AppLayout";
-import { Avatar } from "../kit";
 import { Toaster } from "../forms";
 
 function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
@@ -72,6 +71,7 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         <Link to="/" className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-bg/60 hover:bg-white/5 hover:text-bg">
           <ExternalLink className="size-[18px]" /> Ver o site
         </Link>
+        <FotoDoPainel />
         <button
           onClick={async () => {
             await sair();
@@ -86,7 +86,7 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
-/** Foto da conta Frankkia no topo do painel: clique para trocar ou remover. */
+/** Foto da conta Frankkia (aparece na saudação da visão geral): trocar ou remover pelo menu lateral. */
 function FotoDoPainel() {
   const { user } = useSession();
   const { setFotoPerfil, toast } = useStore();
@@ -104,16 +104,12 @@ function FotoDoPainel() {
     <div className="relative">
       <button
         onClick={() => setAberto(!aberto)}
-        title="Foto de perfil"
-        className="group relative rounded-full ring-offset-2 transition hover:ring-2 hover:ring-accent/40"
+        className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-bg/60 hover:bg-white/5 hover:text-bg"
       >
-        <Avatar user={user} className={`size-10 bg-ink text-[0.8125rem] text-bg ${enviando ? "opacity-50" : ""}`} />
-        <span className="absolute -bottom-0.5 -right-0.5 grid size-4 place-items-center rounded-full border-2 border-bg bg-ink text-bg">
-          <Camera className="size-2" />
-        </span>
+        <Camera className="size-[18px]" /> {enviando ? "Enviando foto..." : "Foto de perfil"}
       </button>
       {aberto && (
-        <div className="absolute right-0 top-12 z-50 w-48 overflow-hidden rounded-2xl border border-line bg-bg p-1.5 shadow-float">
+        <div className="absolute bottom-full left-0 z-50 mb-1 w-48 overflow-hidden rounded-2xl border border-line bg-bg p-1.5 text-ink shadow-float">
           <button onClick={() => entrada.current?.click()} className="w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-canvas">
             {user.fotoUrl ? "Trocar foto" : "Adicionar foto"}
           </button>
@@ -187,7 +183,6 @@ export function AdminLayout() {
               <RoleSwitcher />
             </div>
             <span className="hidden text-sm text-muted xl:block">{user.email}</span>
-            <FotoDoPainel />
           </div>
         </header>
         {modo === "demo" && (
