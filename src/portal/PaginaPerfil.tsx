@@ -9,7 +9,7 @@ import { REDES } from "@/lib/redes";
 import { creciTexto, dataPorExtenso, FotoPessoa, linkWhats, numeroWhats, PortalShell, SeloCreci, Trilha } from "./ui";
 
 const imoveis = (n: number) => `${n} ${n === 1 ? "imóvel" : "imóveis"}`;
-const COMPARTILHAR_ESCURO = "!border-ink !bg-ink !text-bg hover:!bg-ink/85";
+const COMPARTILHAR_ESCURO = "!border-accent-soft !bg-accent-soft !text-accent-deep hover:!border-accent/30";
 
 function BotaoWhats({ tel, texto }: { tel: string | null; texto: string }) {
   const n = numeroWhats(tel);
@@ -137,7 +137,7 @@ export function PaginaCorretor({ c }: { c: CorretorPublico }) {
             rel="noreferrer"
             aria-label={nome}
             title={nome}
-            className="grid size-10 place-items-center rounded-full bg-ink text-bg transition hover:-translate-y-0.5 hover:bg-ink/85"
+            className="grid size-10 place-items-center rounded-full bg-accent-soft text-accent-deep transition hover:-translate-y-0.5 hover:bg-accent hover:text-white"
           >
             <Icone className="size-4" />
           </a>
