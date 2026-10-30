@@ -118,8 +118,12 @@ function Fichas({ imoveis, desde }: { imoveis?: number; desde?: string }) {
         </span>
       )}
       {desde && (
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-canvas px-2.5 py-1 text-xs font-semibold">
-          <CalendarCheck className="size-3.5 text-accent" /> Anunciando desde {dataPorExtenso(desde)}
+        <span
+          title={`Anunciando na Frankkia desde ${dataPorExtenso(desde)}`}
+          className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-canvas px-2.5 py-1 text-xs font-semibold"
+        >
+          <CalendarCheck className="size-3.5 text-accent" /> Desde{" "}
+          {new Date(desde).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })}
         </span>
       )}
     </div>
