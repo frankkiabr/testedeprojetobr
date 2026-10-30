@@ -82,8 +82,9 @@ const verImoveis = (
 );
 
 /**
- * Topo das páginas do corretor e da imobiliária: azul-escuro, nome em destaque, a foto (ou logo) grande à esquerda,
- * dois cartões (imóveis anunciados e desde quando está na Frankkia) e uma ilustração à direita.
+ * Topo das páginas do corretor e da imobiliária, em dois blocos azul-escuros lado a lado:
+ * à esquerda o nome, a foto (ou logo) e dois cartões (imóveis anunciados e desde quando está na Frankkia);
+ * à direita a ilustração com os botões de WhatsApp e compartilhar (e as redes sociais) embaixo.
  */
 function Topo({ titulo, linha, selo, foto, total, desde, extra, acoes }: {
   titulo: string;
@@ -96,27 +97,31 @@ function Topo({ titulo, linha, selo, foto, total, desde, extra, acoes }: {
   acoes: ReactNode;
 }) {
   return (
-    <Surge y={16} className="overflow-hidden rounded-3xl bg-ink p-5 text-bg sm:p-6">
-      <h1 className="font-display text-2xl font-bold tracking-tight sm:text-4xl">{titulo}</h1>
-      <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-bg/70">
-        {linha}
-        {selo}
-      </div>
-      <div className="mt-4 grid grid-cols-[6.5rem_minmax(0,1fr)] gap-3 sm:grid-cols-[9rem_16rem] lg:grid-cols-[9rem_16rem_minmax(0,1fr)]">
-        <div className="h-full min-h-[6.5rem] overflow-hidden rounded-2xl bg-white/10 sm:aspect-[4/5] sm:h-auto">{foto}</div>
-        <div className="flex flex-col gap-3">
-          <Info icone={<House className="size-4 text-accent" />} rotulo="Imóveis anunciados" valor={imoveis(total)} acao={verImoveis} />
-          {desde && <Info icone={<CalendarCheck className="size-4 text-accent" />} rotulo="Na Frankkia desde" valor={dataPorExtenso(desde)} />}
+    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_26rem]">
+      <Surge y={16} className="overflow-hidden rounded-3xl bg-ink p-5 text-bg sm:p-8">
+        <h1 className="font-display text-2xl font-bold tracking-tight sm:text-4xl">{titulo}</h1>
+        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-bg/70">
+          {linha}
+          {selo}
         </div>
-        <div className="hidden h-44 items-end justify-end lg:flex">
+        <div className="mt-5 grid grid-cols-[6.5rem_minmax(0,1fr)] gap-3 sm:grid-cols-[11rem_minmax(0,1fr)] sm:gap-4">
+          <div className="h-full min-h-[6.5rem] overflow-hidden rounded-2xl bg-white/10 sm:aspect-[4/5] sm:h-auto">{foto}</div>
+          <div className="flex flex-col gap-3 sm:gap-4">
+            <Info icone={<House className="size-4 text-accent" />} rotulo="Imóveis anunciados" valor={imoveis(total)} acao={verImoveis} />
+            {desde && <Info icone={<CalendarCheck className="size-4 text-accent" />} rotulo="Na Frankkia desde" valor={dataPorExtenso(desde)} />}
+          </div>
+        </div>
+      </Surge>
+      <Surge y={16} delay={0.08} className="flex flex-col justify-between gap-5 overflow-hidden rounded-3xl bg-ink p-5 text-bg sm:p-8">
+        <div className="mx-auto hidden h-48 w-full max-w-xs lg:block">
           <Ilustracao />
         </div>
-      </div>
-      <div className="mt-4 flex flex-wrap items-center gap-2">
-        {acoes}
-        {extra}
-      </div>
-    </Surge>
+        <div className="space-y-3">
+          <div className="flex flex-wrap justify-center gap-2 [&>*]:flex-1 sm:[&>*]:flex-none">{acoes}</div>
+          {(Array.isArray(extra) ? extra.length > 0 : !!extra) && <div className="flex flex-wrap justify-center gap-2">{extra}</div>}
+        </div>
+      </Surge>
+    </div>
   );
 }
 
@@ -164,7 +169,7 @@ export function PaginaCorretor({ c }: { c: CorretorPublico }) {
             rel="noreferrer"
             aria-label={nome}
             title={nome}
-            className="grid size-11 place-items-center rounded-full border border-white/15 bg-white/10 text-bg transition hover:-translate-y-0.5 hover:bg-white/20"
+            className="grid size-9 place-items-center rounded-full border border-white/15 bg-white/10 text-bg transition hover:-translate-y-0.5 hover:bg-white/20"
           >
             <Icone className="size-4" />
           </a>
