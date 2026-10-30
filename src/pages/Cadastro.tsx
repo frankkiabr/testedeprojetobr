@@ -18,7 +18,7 @@ import { mensagemErro, supabase } from "@/integrations/frankkia/client";
 import { BotaoGoogle } from "@/app/Google";
 
 /**
- * Planos com teste grátis pelo site. Equipe 30 e 60 começam por uma conversa com o Luiz (o banco também recusa).
+ * Planos com teste grátis pelo site. Equipe 30 e 60 começam por uma conversa com a Frankkia (o banco também recusa).
  * Quem vem da página do corretor autônomo (?plano=Solo) vê só o Solo; quem vem de um plano de equipe vê só os de equipe.
  */
 const EQUIPES: PlanoNome[] = ["Equipe 5", "Equipe 10"];
@@ -230,7 +230,7 @@ export default function Cadastro() {
                         rel="noopener noreferrer"
                         className="font-semibold text-ink underline-offset-4 hover:underline"
                       >
-                        Fale com o {contato.primeiroNome} no WhatsApp
+                        Fale com a Frankkia no WhatsApp
                       </a>
                     </p>
                   )}
@@ -337,7 +337,7 @@ export default function Cadastro() {
         <p className="text-center text-xs text-subtle">
           Prefere conversar antes?{" "}
           <a href={whatsapp} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-medium text-ink hover:text-accent">
-            <WhatsAppIcon className="size-3.5" /> Falar com o {contato.primeiroNome}
+            <WhatsAppIcon className="size-3.5" /> Falar com a Frankkia
           </a>
           {" · "}
           Já tem conta?{" "}

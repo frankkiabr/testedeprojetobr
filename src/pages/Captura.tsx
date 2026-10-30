@@ -346,7 +346,7 @@ export default function Captura() {
             <UsersRound className="size-8 text-bg/60" />
             <h2 className="type-title mt-5">{captura.final.title}</h2>
             <p className="mt-3 text-bg/70 sm:text-lg">
-              {captura.final.text} {contato.responsavel} responde pelo WhatsApp {contato.whatsappExibir}.
+              {captura.final.text} Respondemos pelo WhatsApp {contato.whatsappExibir}.
             </p>
             <BotaoWhatsApp href={whatsapp} claro className="mt-9 w-full sm:w-auto">
               {captura.cta}

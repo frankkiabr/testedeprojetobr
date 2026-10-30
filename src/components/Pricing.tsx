@@ -125,7 +125,7 @@ export function Pricing() {
                       </Button>
                     )}
                     {conversa(p.name) ? (
-                      <p className={`mt-3 text-center text-xs ${dark ? "text-bg/60" : "text-muted"}`}>O teste deste plano é combinado com o {contato.primeiroNome}</p>
+                      <p className={`mt-3 text-center text-xs ${dark ? "text-bg/60" : "text-muted"}`}>O teste deste plano é combinado com a Frankkia</p>
                     ) : (
                       <a
                         href={linkWhatsApp(`Olá, ${contato.primeiroNome}! Quero conhecer o plano ${p.name} da Frankkia.`)}
@@ -133,7 +133,7 @@ export function Pricing() {
                         rel="noopener noreferrer"
                         className={`mt-3 block text-center text-xs underline-offset-4 hover:underline ${dark ? "text-bg/60" : "text-muted"}`}
                       >
-                        ou fale com o {contato.primeiroNome} no WhatsApp
+                        ou fale com a Frankkia no WhatsApp
                       </a>
                     )}
                   </div>
@@ -182,7 +182,7 @@ export function Pricing() {
               rel="noopener noreferrer"
               className="mt-3 block text-center text-xs text-muted underline-offset-4 hover:underline"
             >
-              ou fale com o {contato.primeiroNome} no WhatsApp
+              ou fale com a Frankkia no WhatsApp
             </a>
           </div>
         </motion.div>

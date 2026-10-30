@@ -200,7 +200,7 @@ export default function ParaPublico({ publico }: { publico: "imobiliarias" | "co
                     >
                       <WhatsAppIcon className="size-4" /> {pricing.ctaConversa}
                     </a>
-                    <p className={`mt-3 text-center text-xs ${pl.highlight ? "text-bg/60" : "text-muted"}`}>O teste deste plano é combinado com o {contato.primeiroNome}</p>
+                    <p className={`mt-3 text-center text-xs ${pl.highlight ? "text-bg/60" : "text-muted"}`}>O teste deste plano é combinado com a Frankkia</p>
                   </>
                 ) : (
                   <>
@@ -236,7 +236,7 @@ export default function ParaPublico({ publico }: { publico: "imobiliarias" | "co
         <motion.section {...aparecer()} className="flex flex-col items-start justify-between gap-6 rounded-[2rem] bg-ink p-8 text-bg sm:flex-row sm:items-center sm:p-10">
           <div>
             <p className="font-display text-2xl font-semibold tracking-tight">Quer ver por dentro?</p>
-            <p className="mt-1.5 text-bg/70">Crie a conta e teste por 7 dias, ou fale com {contato.responsavel} pelo WhatsApp.</p>
+            <p className="mt-1.5 text-bg/70">Crie a conta e teste por 7 dias, ou fale com a Frankkia pelo WhatsApp.</p>
           </div>
           <div className="flex shrink-0 flex-wrap gap-2">
             <a href={zap} target="_blank" rel="noopener noreferrer" className="inline-flex h-12 items-center gap-2 rounded-full border border-white/20 px-5 font-semibold transition hover:bg-white/10">

@@ -122,7 +122,7 @@ export default function Sobre() {
           <div>
             <p className="font-display text-2xl font-semibold tracking-tight">Quer conhecer a Frankkia?</p>
             <p className="mt-1.5 text-bg/70">
-              Fale com {contato.responsavel} pelo WhatsApp {contato.whatsappExibir}.
+              Fale com a Frankkia pelo WhatsApp {contato.whatsappExibir}.
             </p>
           </div>
           <a

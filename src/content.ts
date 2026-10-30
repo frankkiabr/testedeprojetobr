@@ -127,7 +127,7 @@ export const pricing = {
   note: "Leads, captações, vendas, agenda, estudos de mercado e Marketing sem limite em todos os planos (Academy nos planos de equipe). O limite de anúncios vale só para imóveis publicados no portal de imóveis da Frankkia. Planos e condições sujeitos à disponibilidade comercial.",
   cta: "Solicitar demonstração",
   ctaTeste: "Começar teste grátis",
-  ctaConversa: "Falar com o Luiz",
+  ctaConversa: "Falar com a Frankkia",
   /** Planos grandes começam por uma conversa; os menores (Solo, Equipe 5 e 10), pelo teste grátis imediato de 7 dias. */
   conversa: ["Equipe 30", "Equipe 60"] as string[],
   plans: [
@@ -279,7 +279,7 @@ export const captura = {
   },
   final: {
     title: "Vamos organizar a sua imobiliária?",
-    text: "Fale direto com quem criou a Frankkia.",
+    text: "Fale direto com a Frankkia.",
   },
 };
 
