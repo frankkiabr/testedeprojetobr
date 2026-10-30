@@ -219,6 +219,7 @@ const paraCompromisso = (r: Row<"compromissos">): Compromisso => ({
   localLat: u(r.local_lat),
   localLng: u(r.local_lng),
   observacoes: u(r.observacoes),
+  etiqueta: u(r.etiqueta),
 });
 
 const paraChamado = (c: Row<"chamados">): Chamado => ({
@@ -471,6 +472,7 @@ export async function carregarReal(conta: ContaDados) {
         data: t.data,
         cliente: u(d?.cliente ?? null),
         participantes: ps,
+        criadoEm: t.criado_em,
       };
     })
     // O corretor vê nas listas só os negócios de que participou (o mercado usa outra fonte, abaixo)
@@ -518,12 +520,12 @@ export async function carregarReal(conta: ContaDados) {
   );
   trocarLista(
     D.parceiros,
-    (parceiros?.data ?? []).map((p): Parceiro => ({ id: p.id, nome: p.nome, creci: u(p.creci), empresa: u(p.empresa), telefone: u(p.telefone), fotoUrl: u(p.foto_url) })),
+    (parceiros?.data ?? []).map((p): Parceiro => ({ id: p.id, nome: p.nome, creci: u(p.creci), empresa: u(p.empresa), telefone: u(p.telefone), fotoUrl: u(p.foto_url), criadoEm: p.criado_em })),
   );
   trocarLista(D.leads, leads.map(paraLead));
   trocarLista(
     D.proprietarios,
-    proprietarios.map((p): Proprietario => ({ id: p.id, corretorId: p.corretor_id, nome: p.nome, whatsapp: p.whatsapp })),
+    proprietarios.map((p): Proprietario => ({ id: p.id, corretorId: p.corretor_id, nome: p.nome, whatsapp: p.whatsapp, criadoEm: p.criado_em })),
   );
   trocarLista(D.imoveis, imoveis.map(paraImovel));
   trocarLista(D.captacoes, captacoes.map(paraCaptacao));
@@ -779,6 +781,7 @@ export const compromissoParaBanco = (c: Compromisso) => ({
   local_lat: c.localLat ?? null,
   local_lng: c.localLng ?? null,
   observacoes: c.observacoes ?? null,
+  etiqueta: c.tipo === "outro" ? (c.etiqueta?.trim() || null) : null,
 });
 
 export { supabase };

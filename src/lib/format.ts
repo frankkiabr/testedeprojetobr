@@ -31,6 +31,12 @@ export function relTime(iso: string) {
   return m === 1 ? "há 1 mês" : `há ${m} meses`;
 }
 
+/** Data e hora do registro: "30/10/2026 às 14:32". */
+export const dataHora = (iso: string) => {
+  const d = new Date(iso);
+  return `${d.toLocaleDateString("pt-BR")} às ${d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`;
+};
+
 export const dateTime = (iso: string) =>
   new Date(iso).toLocaleString("pt-BR", { weekday: "short", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
 

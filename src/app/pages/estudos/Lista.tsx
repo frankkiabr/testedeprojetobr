@@ -1,3 +1,4 @@
+import { dataHora } from "@/lib/format";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Calculator, ChevronRight, Loader2, Plus } from "lucide-react";
@@ -94,7 +95,7 @@ export function ListaEstudos() {
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-semibold">{a.titulo}</p>
                       <p className="truncate text-sm text-muted">
-                        {[tipo, a.bairro, `${a.areaM2} m²`, isAdmin && userById(a.corretorId)?.nome].filter(Boolean).join(" · ")}
+                        {[tipo, a.bairro, `${a.areaM2} m²`, isAdmin && userById(a.corretorId)?.nome, `criado em ${dataHora(a.criadoEm)}`].filter(Boolean).join(" · ")}
                       </p>
                     </div>
                     <div className="hidden text-right sm:block">

@@ -334,7 +334,7 @@ function createActions(bump: () => void, toast: (text: string) => void) {
     },
 
     addProprietario(input: Omit<Proprietario, "id">) {
-      const p: Proprietario = { ...input, id: uid("p") };
+      const p: Proprietario = { ...input, id: uid("p"), criadoEm: new Date().toISOString() };
       proprietarios.unshift(p);
       gravar(() =>
         supabase.from("proprietarios").insert({ id: p.id, imobiliaria_id: ctxDados.imobId, corretor_id: p.corretorId, nome: p.nome, whatsapp: p.whatsapp }),
@@ -590,7 +590,7 @@ function createActions(bump: () => void, toast: (text: string) => void) {
 
     /** Só o administrador registra vendas e locações (no banco, tudo numa operação só). */
     addTransacao(input: Omit<Transacao, "id">, fechamentoId?: string) {
-      const t: Transacao = { ...input, id: uid("tr") };
+      const t: Transacao = { ...input, id: uid("tr"), criadoEm: new Date().toISOString() };
       transacoes.unshift(t);
       transacoes.sort((a, b) => b.data.localeCompare(a.data));
       const c = captacoes.find((x) => x.id === input.captacaoId);
@@ -691,7 +691,7 @@ function createActions(bump: () => void, toast: (text: string) => void) {
     },
 
     addParceiro(input: Omit<Parceiro, "id">) {
-      const p: Parceiro = { ...input, id: uid("pa") };
+      const p: Parceiro = { ...input, id: uid("pa"), criadoEm: new Date().toISOString() };
       parceiros.push(p);
       gravar(() =>
         supabase.from("parceiros").insert({

@@ -5,7 +5,7 @@ import { parceiros, transacoes } from "@/data/demo";
 import { parteDe } from "@/data/queries";
 import { useStore } from "@/data/store";
 import type { Parceiro } from "@/data/types";
-import { brl } from "@/lib/format";
+import { brl, dataHora } from "@/lib/format";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { Avatar, Card } from "../../kit";
 import { btn, EmptyState, formatPhone, waLink } from "../../forms";
@@ -79,6 +79,7 @@ export default function Parceiros() {
                   <th className="px-3 py-3 font-semibold">Contato</th>
                   <th className="px-3 py-3 font-semibold">Parcerias</th>
                   <th className="px-3 py-3 text-right font-semibold">Total pago</th>
+                  <th className="px-3 py-3 text-right font-semibold">Cadastro</th>
                   <th className="w-12 px-3 py-3" />
                 </tr>
               </thead>
@@ -115,6 +116,7 @@ export default function Parceiros() {
                       </td>
                       <td className="px-3 py-3 text-muted">{deles.length}</td>
                       <td className="px-3 py-3 text-right font-semibold tabular-nums">{brl(pago)}</td>
+                      <td className="whitespace-nowrap px-3 py-3 text-right text-xs text-muted">{p.criadoEm ? dataHora(p.criadoEm) : "—"}</td>
                       <td className="px-3 py-3 text-right">
                         <BotaoExcluir icone tipo="parceiro" id={p.id} nome={p.nome} />
                       </td>

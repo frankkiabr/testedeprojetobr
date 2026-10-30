@@ -1,3 +1,4 @@
+import { dataHora } from "@/lib/format";
 import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -27,7 +28,7 @@ function ProprietarioDrawer({ id, onClose }: { id: string | null; onClose: () =>
       open={!!p}
       onClose={onClose}
       title={p?.nome}
-      subtitle={p && formatPhone(p.whatsapp)}
+      subtitle={p && `${formatPhone(p.whatsapp)}${p.criadoEm ? ` · cadastrado em ${dataHora(p.criadoEm)}` : ""}`}
       footer={p && isAdmin && <BotaoExcluir tipo="proprietario" id={p.id} nome={p.nome} onExcluido={onClose} />}
     >
       {p && (

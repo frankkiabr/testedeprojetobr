@@ -13,6 +13,8 @@ export const TIPOS: Record<TipoCompromisso, { label: string; card: string; dot: 
   outro: { label: "Outro", card: "bg-canvas-deep border-subtle text-ink", dot: "bg-subtle" },
 };
 export const ORDEM_TIPOS: TipoCompromisso[] = ["visita", "captacao", "reuniao", "ligacao", "outro"];
+/** Nome do tipo na tela: o "Outro" mostra a etiqueta digitada (ex.: "Cartório"), quando houver. */
+export const rotuloDoTipo = (c: Pick<Compromisso, "tipo" | "etiqueta">) => (c.tipo === "outro" && c.etiqueta ? c.etiqueta : TIPOS[c.tipo].label);
 
 export const inicioDoDia = (d: Date) => {
   const x = new Date(d);

@@ -19,7 +19,7 @@ import {
 } from "@/data/queries";
 import { useStore } from "@/data/store";
 import type { FechamentoInformado, Finalidade } from "@/data/types";
-import { brl, brlCompact, relTime } from "@/lib/format";
+import { brl, brlCompact, dataHora, relTime } from "@/lib/format";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { useScope } from "../../session";
 import { AnimatedNumber, Avatar, Badge, Card, CardHeader, Select } from "../../kit";
@@ -211,7 +211,10 @@ export default function Transacoes() {
                       onClick={() => c && setAberta(c.id)}
                       className="cursor-pointer border-b border-line last:border-0 hover:bg-canvas/70"
                     >
-                      <td className="whitespace-nowrap px-5 py-3 text-muted">{new Date(t.data).toLocaleDateString("pt-BR")}</td>
+                      <td className="whitespace-nowrap px-5 py-3 text-muted">
+                        {new Date(t.data).toLocaleDateString("pt-BR")}
+                        {t.criadoEm && <span className="block text-[11px] text-subtle">registrada em {dataHora(t.criadoEm)}</span>}
+                      </td>
                       <td className="px-3 py-3">
                         <span className="flex items-center gap-2">
                           <span className={`grid size-7 shrink-0 place-items-center rounded-lg ${t.tipo === "venda" ? "bg-accent-soft text-accent" : "bg-violet-100 text-violet-700"}`}>

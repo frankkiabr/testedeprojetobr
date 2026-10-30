@@ -32,7 +32,7 @@ import {
 import { transacoes } from "@/data/demo";
 import { useStore } from "@/data/store";
 import type { Captacao } from "@/data/types";
-import { brl, relTime } from "@/lib/format";
+import { brl, dataHora } from "@/lib/format";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { useScope } from "../../session";
 import { Avatar, Card, ProgressBar, Segmented, Select } from "../../kit";
@@ -273,7 +273,7 @@ export function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: ()
         open={!!c}
         onClose={onClose}
         title={c && captacaoTitulo(c)}
-        subtitle={c && `${c.codigo ? `Cód. ${c.codigo} · ` : ""}${c.finalidade === "venda" ? "Venda" : "Locação"} · captada ${relTime(c.captadoEm)}`}
+        subtitle={c && `${c.codigo ? `Cód. ${c.codigo} · ` : ""}${c.finalidade === "venda" ? "Venda" : "Locação"} · cadastrada em ${dataHora(c.captadoEm)}`}
         footer={
           c &&
           isAdmin &&

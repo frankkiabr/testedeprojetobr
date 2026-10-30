@@ -61,6 +61,8 @@ export type Parceiro = {
   empresa?: string;
   telefone?: string;
   fotoUrl?: string;
+  /** Quando foi cadastrado (data e hora). */
+  criadoEm?: string;
 };
 
 /** Convite enviado por e-mail que ainda não foi aceito (ocupa uma vaga do plano). */
@@ -92,6 +94,8 @@ export type Compromisso = {
   localLat?: number;
   localLng?: number;
   observacoes?: string;
+  /** Nome livre do tipo "Outro" (ex.: "Cartório", "Vistoria"). */
+  etiqueta?: string;
 };
 
 /** Conexão (simulada nesta fase) com o Google Agenda de cada usuário. */
@@ -262,6 +266,8 @@ export type Proprietario = {
   corretorId: string;
   nome: string;
   whatsapp: string; // só números, com DDI + DDD (ex.: 5511999998888)
+  /** Quando foi cadastrado (data e hora). */
+  criadoEm?: string;
 };
 
 /** Apartamento = edifício residencial (a unidade — apto, cobertura, studio — fica na captação). */
@@ -361,6 +367,8 @@ export type Transacao = {
   /** Comprador ou locatário */
   cliente?: string;
   participantes: Participante[];
+  /** Quando foi registrada no sistema (a data do negócio é `data`). */
+  criadoEm?: string;
 };
 
 /** Fechamento informado pelo corretor, aguardando o administrador registrar. */

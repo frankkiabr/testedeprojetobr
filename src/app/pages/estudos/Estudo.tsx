@@ -1,3 +1,4 @@
+import { dataHora } from "@/lib/format";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -214,7 +215,7 @@ export default function Estudo() {
             <ul className="divide-y divide-line px-6 pb-3">
               <li className="flex items-center justify-between py-3 text-sm">
                 <span className="font-medium">Estudo criado em</span>
-                <span className="text-muted">{new Date(a.criadoEm).toLocaleDateString("pt-BR")}</span>
+                <span className="text-muted">{dataHora(a.criadoEm)}</span>
               </li>
               {(
                 [

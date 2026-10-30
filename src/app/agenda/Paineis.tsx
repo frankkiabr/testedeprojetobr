@@ -14,7 +14,7 @@ import { BotaoSalvar, btn, DateInput, Drawer, Field, inputCls, Modal, SelectFiel
 import { Avatar } from "../kit";
 import { useSession } from "../session";
 import { googleAgenda, mensagemErro } from "@/integrations/frankkia/client";
-import { dataLonga, deInputs, hhmm, linkGoogleAgenda, ORDEM_TIPOS, paraInputData, paraInputHora, TIPOS } from "./utils";
+import { dataLonga, deInputs, hhmm, linkGoogleAgenda, ORDEM_TIPOS, paraInputData, paraInputHora, TIPOS, rotuloDoTipo } from "./utils";
 
 // ---------- Formulário ----------
 
@@ -46,7 +46,7 @@ export function CompromissoForm({
       return d;
     })();
     const fim = new Date(ini.getTime() + 60 * 60_000);
-    return { titulo: "", tipo: "visita" as TipoCompromisso, data: paraInputData(ini), inicio: paraInputHora(ini), fim: paraInputHora(fim), donoId: donoPadrao, leadId: "", captacaoId: "", local: "", localLat: undefined as number | undefined, localLng: undefined as number | undefined, observacoes: "" };
+    return { titulo: "", tipo: "visita" as TipoCompromisso, data: paraInputData(ini), inicio: paraInputHora(ini), fim: paraInputHora(fim), donoId: donoPadrao, leadId: "", captacaoId: "", local: "", localLat: undefined as number | undefined, localLng: undefined as number | undefined, observacoes: "", etiqueta: "" };
   };
   const [f, setF] = useState(vazio);
 
@@ -68,6 +68,7 @@ export function CompromissoForm({
         localLat: editar.localLat,
         localLng: editar.localLng,
         observacoes: editar.observacoes ?? "",
+        etiqueta: editar.etiqueta ?? "",
       });
     } else setF(vazio());
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -112,6 +113,7 @@ export function CompromissoForm({
       localLat: f.local.trim() ? f.localLat : undefined,
       localLng: f.local.trim() ? f.localLng : undefined,
       observacoes: f.observacoes.trim() || undefined,
+      etiqueta: f.tipo === "outro" ? f.etiqueta.trim() || undefined : undefined,
     };
     if (editar) updateCompromisso(editar.id, dados);
     else addCompromisso(dados);
@@ -144,10 +146,15 @@ export function CompromissoForm({
               className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition ${f.tipo === t ? "border-ink bg-ink text-bg" : "border-line-strong hover:border-ink/40"}`}
             >
               <span className={`size-2 rounded-full ${TIPOS[t].dot}`} />
-              {TIPOS[t].label}
+              {t === "outro" ? "Outro (digitar)" : TIPOS[t].label}
             </button>
           ))}
         </div>
+        {f.tipo === "outro" && (
+          <Field label="Nome da etiqueta" className="sm:col-span-6" hint="Escreva o tipo do compromisso. Ex.: Cartório, Vistoria, Assinatura de contrato.">
+            <input className={inputCls} maxLength={30} value={f.etiqueta} onChange={(e) => setF({ ...f, etiqueta: e.target.value })} placeholder="Ex.: Cartório" />
+          </Field>
+        )}
         <Field label="Título" className="sm:col-span-6">
           <input autoFocus className={inputCls} value={f.titulo} onChange={(e) => setF({ ...f, titulo: e.target.value })} placeholder="Ex.: Visita com Juliana" />
         </Field>
@@ -246,7 +253,7 @@ export function CompromissoDetalhes({ c, onClose, onEditar }: { c: Compromisso |
         c && (
           <span className="flex items-center gap-2">
             <span className={`size-2 rounded-full ${TIPOS[c.tipo].dot}`} />
-            {TIPOS[c.tipo].label}
+            {rotuloDoTipo(c)}
           </span>
         )
       }

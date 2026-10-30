@@ -780,6 +780,7 @@ export type Database = {
           captacao_id: string | null
           criado_em: string
           dono_id: string
+          etiqueta: string | null
           fim: string
           google_atualizado: string | null
           google_evento_id: string | null
@@ -798,6 +799,7 @@ export type Database = {
           captacao_id?: string | null
           criado_em?: string
           dono_id: string
+          etiqueta?: string | null
           fim: string
           google_atualizado?: string | null
           google_evento_id?: string | null
@@ -816,6 +818,7 @@ export type Database = {
           captacao_id?: string | null
           criado_em?: string
           dono_id?: string
+          etiqueta?: string | null
           fim?: string
           google_atualizado?: string | null
           google_evento_id?: string | null

@@ -6,7 +6,7 @@ import { CHECKLIST_LEAD, ETAPAS } from "@/data/demo";
 import { atendido, atrasado, corretoresAtivos, DIAS_ATRASO, diasSemContato, emAberto, leadById, leadsOf, pessoa, prazoRodizio, userById } from "@/data/queries";
 import { useStore } from "@/data/store";
 import type { EtapaLead, Lead } from "@/data/types";
-import { dateTime, relTime } from "@/lib/format";
+import { dateTime, relTime, dataHora } from "@/lib/format";
 import { useScope } from "../../session";
 import { Avatar, Badge, Card, ProgressBar, Segmented, Select } from "../../kit";
 import { BotaoSalvar, btn, CheckItem, DateInput, Drawer, EmptyState, Field, formatPhone, inputCls, SearchInput, TimeInput, toLocalInput, waLink } from "../../forms";
@@ -178,7 +178,9 @@ function ListView({ leads, showCorretor, onOpen }: { leads: Lead[]; showCorretor
                   <td className="px-3 py-3 text-xs">
                     <SemContato lead={l} longo />
                   </td>
-                  <td className="px-5 py-3 text-right text-muted">{relTime(l.criadoEm)}</td>
+                  <td className="whitespace-nowrap px-5 py-3 text-right text-muted" title={relTime(l.criadoEm)}>
+                    {dataHora(l.criadoEm)}
+                  </td>
                 </tr>
               );
             })}
@@ -287,8 +289,8 @@ function LeadDrawer({ id, onClose }: { id: string | null; onClose: () => void })
               <dd className="mt-0.5 font-semibold">{lead.origem}</dd>
             </div>
             <div className="rounded-2xl bg-canvas p-3.5">
-              <dt className="text-xs text-muted">Cadastrado</dt>
-              <dd className="mt-0.5 font-semibold">{relTime(lead.criadoEm)}</dd>
+              <dt className="text-xs text-muted">Cadastrado em</dt>
+              <dd className="mt-0.5 font-semibold">{dataHora(lead.criadoEm)}</dd>
             </div>
             <div className={`col-span-2 flex flex-wrap items-center justify-between gap-3 rounded-2xl p-3.5 ${atrasado(lead) ? "bg-rose-50" : "bg-canvas"}`}>
               <div>
