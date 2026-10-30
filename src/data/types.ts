@@ -316,6 +316,23 @@ export type Imovel = {
   cep?: string;
   lat?: number;
   lng?: number;
+} & FichaPredio;
+
+/** Ficha do edifício/condomínio (aba "Edifícios e Condomínios"): preenche o "Novo imóvel" e o anúncio. */
+export type FichaPredio = {
+  construtora?: string;
+  anoConstrucao?: number;
+  andares?: number;
+  unidadesAndar?: number;
+  elevadores?: number;
+  /** Valor médio do condomínio (R$/mês). */
+  condominioMedio?: number;
+  /** Lazer, áreas comuns e segurança do prédio (mesmos nomes das características do anúncio). */
+  caracteristicas?: string[];
+  administradora?: string;
+  administradoraTel?: string;
+  obsPredio?: string;
+  predioAtualizadoEm?: string;
 };
 
 export type Finalidade = "venda" | "locacao";

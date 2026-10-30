@@ -117,6 +117,11 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
 - Janelas (`Modal`, `Drawer centro` em `src/app/forms.tsx`): abrem no meio da tela (itens de Negócios no tamanho do "Editar" do estudo,
   `largo="extra"`), por cima de tudo (portal no `body`) e NÃO fecham ao clicar fora nem com Esc; fecham pelo X, Cancelar ou ao salvar.
   Botões de salvar usam `BotaoSalvar` com `depois={onClose}` (mostra "Salvo" e fecha).
+- Edifícios e Condomínios (Negócios → aba `edificios`, `src/app/pages/negocios/Edificios.tsx`): é o mesmo `imoveis` (lugar físico) com a
+  ficha do prédio (construtora, ano, andares, unidades, elevadores, condomínio médio, lazer/segurança, administradora). Qualquer
+  membro completa a ficha por `salvar_predio`. No "Novo imóvel", escolher o prédio (ou `?predio=<id>`) preenche endereço/CEP/mapa e,
+  ao salvar, o condomínio e as características do prédio vão para o anúncio. A ficha cruza captações, vendas e estudos do endereço.
+- Datas: cadastros mostram data e hora (`dataHora` em `src/lib/format.ts`). Agenda: tipo "Outro" com etiqueta livre (`compromissos.etiqueta`).
 - Excluir em Negócios: `BotaoExcluir` (`negocios/shared.tsx`) + `excluir()` do store (confere o que depende antes; venda/locação
   pela função `excluir_transacao`, que devolve o imóvel a "ativa"). Lead: o corretor dono ou o administrador; o resto só o administrador.
 - Campos de R$: `mascaraMoeda` (ao digitar) e `moeda` (valor inicial) de `src/lib/moeda.ts` (reexportados em `src/app/forms.tsx`) → "1.000.000,00". Botão com

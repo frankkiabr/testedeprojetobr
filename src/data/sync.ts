@@ -188,6 +188,17 @@ const paraImovel = (r: Row<"imoveis">): Imovel => ({
   cep: u(r.cep),
   lat: u(r.lat),
   lng: u(r.lng),
+  construtora: u(r.construtora),
+  anoConstrucao: u(r.ano_construcao),
+  andares: u(r.andares),
+  unidadesAndar: u(r.unidades_andar),
+  elevadores: u(r.elevadores),
+  condominioMedio: r.condominio_medio === null ? undefined : Number(r.condominio_medio),
+  caracteristicas: r.caracteristicas ?? [],
+  administradora: u(r.administradora),
+  administradoraTel: u(r.administradora_tel),
+  obsPredio: u(r.obs_predio),
+  predioAtualizadoEm: u(r.predio_atualizado_em),
 });
 
 const paraCaptacao = (r: Row<"captacoes">): Captacao => ({

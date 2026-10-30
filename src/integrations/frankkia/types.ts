@@ -1266,12 +1266,20 @@ export type Database = {
       }
       imoveis: {
         Row: {
+          administradora: string | null
+          administradora_tel: string | null
+          andares: number | null
+          ano_construcao: number | null
           bairro: string
+          caracteristicas: string[]
           categoria: string
           cep: string | null
           cidade: string
+          condominio_medio: number | null
+          construtora: string | null
           criado_em: string
           criado_por: string | null
+          elevadores: number | null
           id: string
           imobiliaria_id: string
           lat: number | null
@@ -1279,15 +1287,26 @@ export type Database = {
           logradouro: string
           nome: string | null
           numero: string
+          obs_predio: string | null
+          predio_atualizado_em: string | null
           uf: string
+          unidades_andar: number | null
         }
         Insert: {
+          administradora?: string | null
+          administradora_tel?: string | null
+          andares?: number | null
+          ano_construcao?: number | null
           bairro: string
+          caracteristicas?: string[]
           categoria: string
           cep?: string | null
           cidade: string
+          condominio_medio?: number | null
+          construtora?: string | null
           criado_em?: string
           criado_por?: string | null
+          elevadores?: number | null
           id?: string
           imobiliaria_id: string
           lat?: number | null
@@ -1295,15 +1314,26 @@ export type Database = {
           logradouro: string
           nome?: string | null
           numero: string
+          obs_predio?: string | null
+          predio_atualizado_em?: string | null
           uf: string
+          unidades_andar?: number | null
         }
         Update: {
+          administradora?: string | null
+          administradora_tel?: string | null
+          andares?: number | null
+          ano_construcao?: number | null
           bairro?: string
+          caracteristicas?: string[]
           categoria?: string
           cep?: string | null
           cidade?: string
+          condominio_medio?: number | null
+          construtora?: string | null
           criado_em?: string
           criado_por?: string | null
+          elevadores?: number | null
           id?: string
           imobiliaria_id?: string
           lat?: number | null
@@ -1311,7 +1341,10 @@ export type Database = {
           logradouro?: string
           nome?: string | null
           numero?: string
+          obs_predio?: string | null
+          predio_atualizado_em?: string | null
           uf?: string
+          unidades_andar?: number | null
         }
         Relationships: [
           {
@@ -2356,6 +2389,22 @@ export type Database = {
         Returns: string
       }
       rodizio_repassar: { Args: never; Returns: number }
+      salvar_predio: {
+        Args: {
+          p_administradora: string
+          p_administradora_tel: string
+          p_andares: number
+          p_ano: number
+          p_caracteristicas: string[]
+          p_condominio: number
+          p_construtora: string
+          p_elevadores: number
+          p_imovel: string
+          p_obs: string
+          p_unidades: number
+        }
+        Returns: undefined
+      }
       slugificar: { Args: { p: string }; Returns: string }
       solicitar_reducao: { Args: { p_plano: string }; Returns: string }
       tem_assinatura: { Args: { p_imob: string }; Returns: boolean }

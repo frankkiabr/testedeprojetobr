@@ -34,6 +34,8 @@ import {
   proprietariosOf,
   userById,
   participanteAvatar,
+  ehPredio,
+  nomePredio,
 } from "@/data/queries";
 import { useStore } from "@/data/store";
 import type { Captacao, CategoriaImovel, EtapaLead, FechamentoInformado, Finalidade, Participante, Imovel } from "@/data/types";
@@ -484,7 +486,7 @@ export function ImovelFormModal({
 // ---------- Nova captação ----------
 
 /** Mesmo endereço = mesmo imóvel (ex.: outro apartamento do mesmo prédio). */
-const chaveEndereco = (e: { logradouro: string; numero: string; cidade: string }) =>
+export const chaveEndereco = (e: { logradouro: string; numero: string; cidade: string }) =>
   [e.logradouro, e.numero, e.cidade].map((x) => x.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "")).join("|");
 
 /**
@@ -492,6 +494,18 @@ const chaveEndereco = (e: { logradouro: string; numero: string; cidade: string }
  * O endereço é preenchido aqui mesmo (CEP e mapa); o "imóvel" (lugar físico) é criado por trás,
  * ou reaproveitado quando o endereço já existe (outra unidade do mesmo prédio). O estudo de mercado continua igual.
  */
+/** Campos do "Novo imóvel" vindos de um prédio já cadastrado. */
+const camposDoPredio = (p: Imovel) => ({
+  categoria: p.categoria,
+  nome: p.nome ?? "",
+  cep: p.cep ?? "",
+  logradouro: p.endereco.logradouro,
+  numero: p.endereco.numero,
+  bairro: p.endereco.bairro,
+  cidade: p.endereco.cidade,
+  uf: p.endereco.uf,
+});
+
 export function CaptacaoFormModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { addCaptacao, addProprietario, addImovel, salvarAnuncio, setLocalImovel } = useStore();
   const { isAdmin, corretorId, setCorretorId } = useTargetCorretor(open);
@@ -532,8 +546,10 @@ export function CaptacaoFormModal({ open, onClose }: { open: boolean; onClose: (
         setF({ ...empty(), ...(campos as Partial<ReturnType<typeof empty>>) });
         setPonto(lat !== undefined && lng !== undefined ? { lat, lng } : null);
       } else {
-        setF(empty());
-        setPonto(null);
+        // Vindo da ficha de um prédio ("Novo imóvel neste prédio"): já abre com o endereço dele
+        const predio = imoveis.find((i) => i.id === new URLSearchParams(window.location.search).get("predio"));
+        setF(predio ? { ...empty(), ...camposDoPredio(predio) } : empty());
+        setPonto(predio?.lat !== undefined && predio.lng !== undefined ? { lat: predio.lat, lng: predio.lng } : null);
       }
       setAvisoMapa("");
     } else limparCaptacaoDoEstudo();
@@ -541,6 +557,7 @@ export function CaptacaoFormModal({ open, onClose }: { open: boolean; onClose: (
   }, [open]);
 
   const props = useMemo(() => (corretorId ? proprietariosOf({ corretorId }) : []), [corretorId, open]); // eslint-disable-line react-hooks/exhaustive-deps
+  const predios = useMemo(() => imoveis.filter(ehPredio).sort((a, b) => nomePredio(a).localeCompare(nomePredio(b), "pt-BR")), [open]); // eslint-disable-line react-hooks/exhaustive-deps
   const comUnidade = CATEGORIAS_COM_UNIDADE.includes(f.categoria);
   const valor = num(f.valor);
   const area = num(f.area);
@@ -596,7 +613,11 @@ export function CaptacaoFormModal({ open, onClose }: { open: boolean; onClose: (
     // 3) captação + cômodos (ficam no anúncio, prontos para quando for publicar)
     const c = addCaptacao({ corretorId, proprietarioId, imovelId: imovelId!, unidade: f.unidade.trim() || undefined, finalidade: f.finalidade, valor, areaM2: area });
     const comodos = { quartos: inteiro(f.quartos), suites: inteiro(f.suites), banheiros: inteiro(f.banheiros), vagas: inteiro(f.vagas) };
-    if (Object.values(comodos).some((x) => x !== undefined)) salvarAnuncio(c.id, comodos, "");
+    // Ficha do prédio: o condomínio e o lazer/segurança já vão para o anúncio
+    const doPredio = existente
+      ? { ...(existente.condominioMedio ? { condominio: existente.condominioMedio } : {}), ...(existente.caracteristicas?.length ? { caracteristicas: [...existente.caracteristicas] } : {}) }
+      : {};
+    if (Object.values(comodos).some((x) => x !== undefined) || Object.keys(doPredio).length) salvarAnuncio(c.id, { ...comodos, ...doPredio }, "");
   };
 
   const campoNum = (k: "quartos" | "suites" | "banheiros" | "vagas", label: string) => (
@@ -651,6 +672,22 @@ export function CaptacaoFormModal({ open, onClose }: { open: boolean; onClose: (
         <Field label="Categoria" className="sm:col-span-6">
           <SelectField value={f.categoria} onChange={(v) => setF({ ...f, categoria: v as CategoriaImovel })} options={OPCOES_TIPO} />
         </Field>
+        {predios.length > 0 && (
+          <Field label="Edifício ou condomínio já cadastrado (opcional)" className="sm:col-span-6" hint="Preenche o endereço, o CEP e o mapa com os dados do prédio.">
+            <SelectField
+              value={existente && ehPredio(existente) ? existente.id : ""}
+              onChange={(id) => {
+                const p = imoveis.find((i) => i.id === id);
+                if (!p) return;
+                setF((x) => ({ ...x, ...camposDoPredio(p) }));
+                setPonto(p.lat !== undefined && p.lng !== undefined ? { lat: p.lat, lng: p.lng } : null);
+                setAvisoMapa("");
+              }}
+              placeholder="Escolha um prédio..."
+              options={predios.map((p) => ({ value: p.id, label: `${nomePredio(p)} · ${p.endereco.bairro}` }))}
+            />
+          </Field>
+        )}
 
         {/* Endereço */}
         <p className="-mb-1 text-sm font-semibold sm:col-span-6">Endereço</p>
@@ -688,6 +725,7 @@ export function CaptacaoFormModal({ open, onClose }: { open: boolean; onClose: (
           <p className="flex items-start gap-1.5 rounded-xl bg-accent-soft/60 px-3 py-2.5 text-xs text-accent-deep sm:col-span-6">
             <Info className="mt-0.5 size-3.5 shrink-0" />
             Este endereço já está cadastrado{existente.nome ? ` (${existente.nome})` : ""}. O imóvel será ligado a ele, como outra unidade do mesmo prédio.
+            {(existente.condominioMedio || (existente.caracteristicas?.length ?? 0) > 0) && " O condomínio e o lazer do prédio já entram no anúncio."}
           </p>
         ) : (
           CATEGORIAS_COM_UNIDADE.includes(f.categoria) && (

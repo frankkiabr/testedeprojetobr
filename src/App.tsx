@@ -14,6 +14,7 @@ import Captacoes from "@/app/pages/negocios/Captacoes";
 import Proprietarios from "@/app/pages/negocios/Proprietarios";
 import Transacoes from "@/app/pages/negocios/Transacoes";
 import Parceiros from "@/app/pages/negocios/Parceiros";
+import Edificios from "@/app/pages/negocios/Edificios";
 import Mercado from "@/app/pages/Mercado";
 import NovoEstudo from "@/app/pages/estudos/NovoEstudo";
 import Estudo from "@/app/pages/estudos/Estudo";
@@ -105,6 +106,7 @@ export default function App() {
                   <Route path="imoveis" element={<Navigate to="/app/negocios/captacoes" replace />} />
                   <Route path="proprietarios" element={<Proprietarios />} />
                   <Route path="transacoes" element={<Transacoes />} />
+                  <Route path="edificios" element={<Edificios />} />
                   <Route
                     path="parceiros"
                     element={

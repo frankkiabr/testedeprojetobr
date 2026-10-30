@@ -111,6 +111,12 @@ export const captacaoBairro = (c: Captacao) => imovelById(c.imovelId)?.endereco.
 export const captacaoCategoria = (c: Captacao) => imovelById(c.imovelId)?.categoria ?? "Apartamento";
 
 /** Foto de capa do anúncio da captação (ou do imóvel, pela primeira captação com foto). */
+/** Tipos que são prédio ou condomínio (várias unidades no mesmo endereço). */
+const TIPOS_PREDIO = ["Apartamento", "Cobertura", "Flat", "Kitnet", "Edifício residencial", "Casa de condomínio", "Sala comercial", "Consultório", "Prédio inteiro"];
+/** Aba "Edifícios e Condomínios": tem nome de edifício/condomínio ou é de um tipo com várias unidades. */
+export const ehPredio = (im: Imovel) => !!im.nome?.trim() || TIPOS_PREDIO.includes(im.categoria);
+export const nomePredio = (im: Imovel) => im.nome?.trim() || `${im.endereco.logradouro}, ${im.endereco.numero}`;
+
 export const fotoCapa = (captacaoId: string) => anuncios.find((a) => a.captacaoId === captacaoId)?.fotos[0]?.url;
 export const fotoDoImovel = (imovelId: string) =>
   captacoes.filter((c) => c.imovelId === imovelId).map((c) => fotoCapa(c.id)).find(Boolean);

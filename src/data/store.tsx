@@ -57,6 +57,7 @@ import type {
   Transacao,
   Trilha,
   Usuario,
+  FichaPredio,
 } from "./types";
 
 type Toast = { id: number; text: string };
@@ -1171,6 +1172,29 @@ function createActions(bump: () => void, toast: (text: string) => void) {
     // ---------- Mapa ----------
 
     /** Edita o endereço e o edifício (vale para todas as captações deste endereço). */
+    /** Ficha do edifício/condomínio (qualquer pessoa da imobiliária pode completar). */
+    salvarPredio(id: string, ficha: FichaPredio) {
+      const im = imoveis.find((x) => x.id === id);
+      if (!im) return;
+      Object.assign(im, ficha, { predioAtualizadoEm: new Date().toISOString() });
+      gravar(() =>
+        supabase.rpc("salvar_predio", {
+          p_imovel: id,
+          p_construtora: ficha.construtora ?? "",
+          p_ano: ficha.anoConstrucao ?? null,
+          p_andares: ficha.andares ?? null,
+          p_unidades: ficha.unidadesAndar ?? null,
+          p_elevadores: ficha.elevadores ?? null,
+          p_condominio: ficha.condominioMedio ?? null,
+          p_caracteristicas: ficha.caracteristicas ?? [],
+          p_administradora: ficha.administradora ?? "",
+          p_administradora_tel: ficha.administradoraTel ?? "",
+          p_obs: ficha.obsPredio ?? "",
+        } as never),
+      );
+      bump();
+    },
+
     updateImovel(id: string, patch: Pick<Imovel, "categoria" | "nome" | "endereco" | "cep" | "lat" | "lng">) {
       const im = imoveis.find((x) => x.id === id);
       if (!im) return;

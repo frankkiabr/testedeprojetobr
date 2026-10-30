@@ -1,8 +1,10 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { motion } from "framer-motion";
-import { BadgeDollarSign, ClipboardList, Handshake, UserRound, Users } from "lucide-react";
+import { BadgeDollarSign, Building2, ClipboardList, Handshake, UserRound, Users } from "lucide-react";
+import { imoveis } from "@/data/demo";
+
 import { parceiros } from "@/data/demo";
-import { captacoesOf, fechamentosPendentes, leadsOf, proprietariosOf, transacoesOf } from "@/data/queries";
+import { captacoesOf, ehPredio, fechamentosPendentes, leadsOf, proprietariosOf, transacoesOf } from "@/data/queries";
 import { useStore } from "@/data/store";
 import { useScope } from "../../session";
 import { PageHeader, stagger } from "../../kit";
@@ -17,6 +19,7 @@ export default function NegociosLayout() {
     { to: "captacoes", label: "Captações", icon: ClipboardList, count: captacoesOf(scope).filter((c) => c.status === "ativa").length },
     { to: "proprietarios", label: "Proprietários", icon: UserRound, count: proprietariosOf(scope).length },
     { to: "transacoes", label: "Vendas e Locações", icon: BadgeDollarSign, count: transacoesOf(scope).length, alert: pendentes },
+    { to: "edificios", label: "Edifícios e Condomínios", icon: Building2, count: imoveis.filter(ehPredio).length },
     ...(isAdmin ? [{ to: "parceiros", label: "Parceiros", icon: Handshake, count: parceiros.length }] : []),
   ];
 
@@ -28,7 +31,7 @@ export default function NegociosLayout() {
           subtitle={isAdmin && !solo ? "Leads, captações, imóveis, proprietários, vendas e locações de toda a equipe." : "Seus leads, captações, proprietários, vendas e locações."}
         />
       </motion.div>
-      <motion.nav {...stagger(1)} className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+      <motion.nav {...stagger(1)} className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
         <div className="inline-flex gap-1 rounded-2xl border border-line bg-bg p-1.5">
           {tabs.map(({ to, label, icon: Icon, count, ...rest }) => (
             <NavLink

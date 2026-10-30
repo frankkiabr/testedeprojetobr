@@ -597,7 +597,15 @@ export default function Captacoes() {
       )}
 
       <CaptacaoDrawer id={params.get("captacao")} onClose={() => setParam("captacao", null)} />
-      <CaptacaoFormModal open={params.get("novo") === "1"} onClose={() => setParam("novo", null)} />
+      <CaptacaoFormModal
+        open={params.get("novo") === "1"}
+        onClose={() => {
+          const p = new URLSearchParams(params);
+          p.delete("novo");
+          p.delete("predio");
+          setParams(p, { replace: true });
+        }}
+      />
     </div>
   );
 }
