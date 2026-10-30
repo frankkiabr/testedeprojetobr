@@ -8,6 +8,7 @@ import {
   Briefcase,
   CalendarDays,
   CreditCard,
+  ExternalLink,
   HelpCircle,
   LayoutGrid,
   LineChart,
@@ -177,6 +178,30 @@ export function RoleSwitcher() {
   );
 }
 
+/**
+ * Atalho para a página pública: o dono de imobiliária vai para a da imobiliária; o corretor (de equipe ou Solo), para a dele.
+ * A página nasce quando o primeiro imóvel é publicado no portal; antes disso o botão explica.
+ */
+function MinhaPagina() {
+  const { role, modo, conta } = useSession();
+  const { toast } = useStore();
+  if (modo !== "real" || !conta) return null;
+  const daImobiliaria = role === "admin" && !ehSolo(conta.imobiliaria?.plano ?? "");
+  const slug = daImobiliaria ? conta.imobiliaria?.slug : conta.slug;
+  const href = slug ? `/${daImobiliaria ? "imobiliaria" : "corretor"}/${slug}` : "";
+  const rotulo = daImobiliaria ? "Página da imobiliária" : "Minha página";
+  const cls = "inline-flex h-10 items-center gap-2 rounded-full border border-line px-3 text-sm font-semibold text-muted transition hover:border-line-strong hover:text-ink sm:px-4";
+  return href ? (
+    <a href={href} target="_blank" rel="noreferrer" title={`Abrir ${rotulo.toLowerCase()} no portal`} className={cls}>
+      <ExternalLink className="size-4" /> <span className="hidden sm:inline">{rotulo}</span>
+    </a>
+  ) : (
+    <button onClick={() => toast("Sua página no portal aparece quando você publicar o primeiro imóvel (aba Anúncio da captação).")} className={cls}>
+      <ExternalLink className="size-4" /> <span className="hidden sm:inline">{rotulo}</span>
+    </button>
+  );
+}
+
 export function AppLayout() {
   const { role, modo, conta } = useSession();
   useStore();
@@ -256,6 +281,7 @@ export function AppLayout() {
             <div className="hidden md:block">
               <RoleSwitcher />
             </div>
+            <MinhaPagina />
             <Notificacoes />
           </div>
         </header>

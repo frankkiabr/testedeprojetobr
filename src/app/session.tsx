@@ -31,6 +31,8 @@ export type ImobiliariaConta = {
   status: string;
   testeAte: string | null;
   assinatura: AssinaturaConta | null;
+  /** Endereço da página pública da imobiliária (frankkia.com/imobiliaria/<slug>), criado ao publicar o 1º imóvel. */
+  slug?: string;
 };
 
 /** Assinatura encerrada (cancelada ou sem pagamento): o administrador pode contratar de novo. */
@@ -57,6 +59,8 @@ export type Conta = {
   creciVerificado?: boolean;
   /** Quando a Frankkia conferiu o CRECI. */
   creciConferidoEm?: string;
+  /** Endereço da página pública do corretor (frankkia.com/corretor/<slug>), criado ao publicar o 1º imóvel. */
+  slug?: string;
 };
 
 type Ctx = {
@@ -189,10 +193,10 @@ async function carregarConta(u: User): Promise<Conta> {
   await aceitarConvitePendente(u);
   await criarContaPendente(u);
   const [perfil, membros, fk] = await Promise.all([
-    supabase.from("perfis").select("nome, iniciais, email, creci_status, creci_obs, creci_conferido_em").eq("id", u.id).maybeSingle(),
+    supabase.from("perfis").select("nome, iniciais, email, creci_status, creci_obs, creci_conferido_em, slug").eq("id", u.id).maybeSingle(),
     supabase
       .from("membros")
-      .select("papel, imobiliarias(id, nome, plano, limite_corretores, status, teste_ate)")
+      .select("papel, imobiliarias(id, nome, plano, limite_corretores, status, teste_ate, slug)")
       .eq("usuario_id", u.id)
       .eq("ativo", true)
       .order("criado_em")
@@ -204,7 +208,7 @@ async function carregarConta(u: User): Promise<Conta> {
   const email = perfil.data?.email || u.email || "";
   const nome = perfil.data?.nome || (u.user_metadata?.nome as string) || "";
   const m = membros.data?.[0];
-  const i = m?.imobiliarias as { id: string; nome: string; plano: string; limite_corretores: number; status: string; teste_ate: string | null } | null | undefined;
+  const i = m?.imobiliarias as { id: string; nome: string; plano: string; limite_corretores: number; status: string; teste_ate: string | null; slug: string | null } | null | undefined;
   // Situação da assinatura na Stripe: só o administrador vê (para os avisos e o botão de cancelar)
   const a = i && m?.papel === "admin" ? (await supabase.rpc("minha_assinatura", { p_imob: i.id })).data?.[0] : undefined;
   const meta = u.user_metadata ?? {};
@@ -217,6 +221,7 @@ async function carregarConta(u: User): Promise<Conta> {
     creciIrregular: perfil.data?.creci_status === "irregular" ? (perfil.data.creci_obs ?? "") : undefined,
     creciVerificado: perfil.data?.creci_status === "verificado",
     creciConferidoEm: perfil.data?.creci_conferido_em ?? undefined,
+    slug: perfil.data?.slug ?? undefined,
     iniciais: perfil.data?.iniciais || iniciaisDe(nome, email),
     frankkia: !!fk.data,
     papel: (m?.papel as "admin" | "corretor" | undefined) ?? null,
@@ -228,6 +233,7 @@ async function carregarConta(u: User): Promise<Conta> {
           limite: i.limite_corretores,
           status: i.status,
           testeAte: i.teste_ate,
+          slug: i.slug ?? undefined,
           assinatura: a
             ? { situacao: a.situacao as AssinaturaConta["situacao"], ciclo: a.ciclo, proximaCobranca: a.proxima_cobranca, cancelaEm: a.cancela_em }
             : null,
