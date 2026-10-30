@@ -125,13 +125,7 @@ export function Pricing() {
                       </Button>
                     )}
                     {conversa(p.name) ? (
-                      <a
-                        href={`/cadastro?plano=${encodeURIComponent(p.name)}`}
-                        onClick={irCadastro(p.name)}
-                        className={`mt-3 block text-center text-xs underline-offset-4 hover:underline ${dark ? "text-bg/60" : "text-muted"}`}
-                      >
-                        ou comece um teste grátis
-                      </a>
+                      <p className={`mt-3 text-center text-xs ${dark ? "text-bg/60" : "text-muted"}`}>O teste deste plano é combinado com o {contato.primeiroNome}</p>
                     ) : (
                       <a
                         href={linkWhatsApp(`Olá, ${contato.primeiroNome}! Quero conhecer o plano ${p.name} da Frankkia.`)}

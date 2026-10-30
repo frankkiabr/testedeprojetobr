@@ -200,9 +200,7 @@ export default function ParaPublico({ publico }: { publico: "imobiliarias" | "co
                     >
                       <WhatsAppIcon className="size-4" /> {pricing.ctaConversa}
                     </a>
-                    <Link to={`/cadastro?plano=${encodeURIComponent(pl.name)}`} className={`mt-3 text-center text-xs underline-offset-4 hover:underline ${pl.highlight ? "text-bg/60" : "text-muted"}`}>
-                      ou comece um teste grátis
-                    </Link>
+                    <p className={`mt-3 text-center text-xs ${pl.highlight ? "text-bg/60" : "text-muted"}`}>O teste deste plano é combinado com o {contato.primeiroNome}</p>
                   </>
                 ) : (
                   <>

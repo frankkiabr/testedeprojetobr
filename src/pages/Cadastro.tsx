@@ -17,7 +17,13 @@ import { useSession } from "@/app/session";
 import { mensagemErro, supabase } from "@/integrations/frankkia/client";
 import { BotaoGoogle } from "@/app/Google";
 
-const ORDEM: PlanoNome[] = ["Solo", "Equipe 5", "Equipe 10", "Equipe 30", "Equipe 60"];
+/**
+ * Planos com teste grátis pelo site. Equipe 30 e 60 começam por uma conversa com o Luiz (o banco também recusa).
+ * Quem vem da página do corretor autônomo (?plano=Solo) vê só o Solo; quem vem de um plano de equipe vê só os de equipe.
+ */
+const EQUIPES: PlanoNome[] = ["Equipe 5", "Equipe 10"];
+const opcoesDoCadastro = (plano: string | null): PlanoNome[] =>
+  plano === "Solo" ? ["Solo"] : plano?.startsWith("Equipe") ? EQUIPES : ["Solo", ...EQUIPES];
 
 /**
  * CADASTRO PELO SITE (/cadastro?plano=Solo).
@@ -30,7 +36,8 @@ export default function Cadastro() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const { modo, conta, recarregar } = useSession();
-  const inicial = ORDEM.find((p) => p === params.get("plano")) ?? "Equipe 10";
+  const [opcoes] = useState(() => opcoesDoCadastro(params.get("plano")));
+  const inicial = opcoes.find((p) => p === params.get("plano")) ?? (opcoes.includes("Equipe 10") ? "Equipe 10" : opcoes[0]);
 
   const [f, setF] = useState({
     plano: inicial as PlanoNome,
@@ -194,7 +201,7 @@ export default function Cadastro() {
                 <div>
                   <p className="mb-2 text-sm font-medium">Plano</p>
                   <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                    {ORDEM.map((p) => {
+                    {opcoes.map((p) => {
                       const ativo = f.plano === p;
                       return (
                         <button
@@ -214,6 +221,19 @@ export default function Cadastro() {
                   <p className="mt-2 text-xs text-muted">
                     {solo ? pricing.solo.seats : pricing.plans.find((x) => x.name === f.plano)?.seats}. Dá para trocar de plano depois.
                   </p>
+                  {opcoes.includes("Equipe 10") && (
+                    <p className="mt-1 text-xs text-muted">
+                      Equipe com 30 ou 60 corretores?{" "}
+                      <a
+                        href={linkWhatsApp(`Olá, ${contato.primeiroNome}! Quero conhecer os planos Equipe 30/60 da Frankkia.`)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-semibold text-ink underline-offset-4 hover:underline"
+                      >
+                        Fale com o {contato.primeiroNome} no WhatsApp
+                      </a>
+                    </p>
+                  )}
                 </div>
 
                 <Field label="Seu nome completo">
