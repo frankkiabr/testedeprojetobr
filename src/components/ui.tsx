@@ -46,13 +46,21 @@ export function Logo({ className = "" }: { className?: string }) {
   );
 }
 
-/** Símbolo redondo com o "f". */
+/** Símbolo redondo com a casa e o brilho (mesmo desenho de public/marca). */
 export function LogoMark({ className = "" }: { className?: string }) {
   return (
     <span
       className={`flex shrink-0 items-center justify-center rounded-full bg-accent font-display font-bold leading-none text-white ${className}`}
     >
-      f
+      <svg viewBox="174 186 676 676" className="size-[60%] text-accent" aria-hidden="true" strokeLinejoin="round">
+        <polygon points="512,268 770,480 770,780 254,780 254,480" fill="#fff" stroke="#fff" strokeWidth="160" />
+        <path
+          d="M512 400 Q524 528 648 548 Q524 568 512 696 Q500 568 376 548 Q500 528 512 400 Z"
+          fill="currentColor"
+          stroke="currentColor"
+          strokeWidth="22"
+        />
+      </svg>
     </span>
   );
 }
