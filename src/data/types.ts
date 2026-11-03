@@ -187,6 +187,8 @@ export type Cliente = {
   ultimoAcesso?: string;
   adminNome: string;
   adminEmail: string;
+  /** Foto de perfil do administrador (no Solo, a do corretor dono da conta). */
+  adminFoto?: string;
   /** Teste grátis: fim do período (conta a partir do 1º acesso do administrador) e duração combinada. */
   testeAte?: string;
   testeDias?: number;

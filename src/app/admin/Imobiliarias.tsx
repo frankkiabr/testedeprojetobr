@@ -151,7 +151,7 @@ function ClienteDrawer({ id, onClose }: { id: string | null; onClose: () => void
 
           {/* Administrador */}
           <div className="flex items-center gap-3 rounded-2xl border border-line p-4">
-            <Avatar user={{ id: c.adminEmail, iniciais: iniciais(c.adminNome) }} className="size-10 text-xs" />
+            <Avatar user={{ id: c.adminEmail, iniciais: iniciais(c.adminNome), fotoUrl: c.adminFoto, nome: c.adminNome }} className="size-10 text-xs" />
             <div className="min-w-0 flex-1">
               <p className="flex items-center gap-1.5 text-xs text-muted">
                 <ShieldCheck className="size-3.5" /> Administrador
@@ -553,7 +553,11 @@ export default function Imobiliarias() {
                       >
                         <td className="px-5 py-3">
                           <span className="flex items-center gap-3">
-                            <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-ink text-xs font-bold text-bg">{iniciais(c.nome)}</span>
+                            {c.adminFoto ? (
+                              <img src={c.adminFoto} alt={c.adminNome} loading="lazy" className="size-9 shrink-0 rounded-xl bg-canvas object-cover" />
+                            ) : (
+                              <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-ink text-xs font-bold text-bg">{iniciais(c.nome)}</span>
+                            )}
                             <span className="min-w-0">
                               <span className="block truncate font-semibold">{c.nome}</span>
                               <span className="block truncate text-xs text-muted">{c.cidade}</span>

@@ -328,6 +328,7 @@ export async function carregarReal(conta: ContaDados) {
           testeDias: u(c.teste_dias),
           adminNome: c.admin_nome,
           adminEmail: c.admin_email,
+          adminFoto: u(c.admin_foto),
           corretores: c.vagas,
           uso: { negocios: c.uso_negocios, performance: c.uso_performance, academy: c.uso_academy, marketing: c.uso_marketing },
         }),

@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { ArrowRight, Bath, BadgeCheck, BedDouble, Car, ChevronRight, MapPin, Menu, Ruler, X } from "lucide-react";
-import { Logo, LogoMark } from "@/components/ui";
+import { IconeMarca, Logo } from "@/components/ui";
 import { EntradaPagina, Surge } from "./anim";
 import type { CartaoAnuncio, CorretorResumo, Finalidade, ImobResumo } from "./api";
 
@@ -203,8 +203,7 @@ export function PortalShell({
             </Link>
           ) : (
             <a href="/" className="flex items-center gap-2">
-              <LogoMark className="size-8 text-lg" />
-              <Logo className="text-xl" />
+              <Logo icone="azul" className="text-base text-accent" />
               {rotulo && <span className="ml-1 text-sm font-medium text-muted">{rotulo}</span>}
             </a>
           )}
@@ -305,29 +304,29 @@ export function CartaoImovel({
         </p>
         <p className="line-clamp-2 text-sm font-medium">{a.titulo}</p>
         <p className="flex items-center gap-1.5 text-xs text-muted">
-          <MapPin className="size-3.5 shrink-0" />
+          <MapPin className="size-3.5 shrink-0 text-accent" />
           {a.bairro}, {a.cidade} - {a.uf}
         </p>
         <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 pt-2 text-xs text-muted">
           <span className="flex items-center gap-1">
-            <Ruler className="size-3.5" />
+            <Ruler className="size-3.5 text-accent" />
             {area(a.area)}
           </span>
           {!!a.quartos && (
             <span className="flex items-center gap-1">
-              <BedDouble className="size-3.5" />
+              <BedDouble className="size-3.5 text-accent" />
               {a.quartos} {a.quartos === 1 ? "quarto" : "quartos"}
             </span>
           )}
           {!!a.banheiros && (
             <span className="flex items-center gap-1">
-              <Bath className="size-3.5" />
+              <Bath className="size-3.5 text-accent" />
               {a.banheiros}
             </span>
           )}
           {!!a.vagas && (
             <span className="flex items-center gap-1">
-              <Car className="size-3.5" />
+              <Car className="size-3.5 text-accent" />
               {a.vagas}
             </span>
           )}
@@ -404,7 +403,7 @@ export function BannerBusca({ titulo, texto }: { titulo: string; texto: string }
   return (
     <Surge y={16} className="mb-6 flex items-center gap-5 overflow-hidden rounded-3xl bg-ink p-6 text-bg sm:p-8">
       <span className="hidden size-16 shrink-0 place-items-center rounded-2xl bg-white/10 sm:grid">
-        <LogoMark className="size-8" />
+        <IconeMarca cor="azul" animado className="size-8" />
       </span>
       <div className="min-w-0">
         <h1 className="font-display text-2xl font-bold tracking-tight sm:text-4xl">{titulo}</h1>

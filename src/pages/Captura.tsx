@@ -87,7 +87,7 @@ export default function Captura() {
       {/* Topo enxuto: sem menu, para não tirar a pessoa do funil */}
       <header className="absolute inset-x-0 top-0 z-10">
         <div className="mx-auto flex h-20 max-w-[76rem] items-center justify-between px-5 sm:px-8">
-          <Logo className="text-[1.75rem]" />
+          <Logo icone="escuro" animado className="text-base" />
           <a
             href={whatsapp}
             target="_blank"

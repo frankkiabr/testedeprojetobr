@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, type AnchorHTMLAttributes, type ReactNode } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState, type AnchorHTMLAttributes, type ReactNode } from "react";
 import { animate } from "framer-motion";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 
@@ -37,11 +37,47 @@ export function Button({
   );
 }
 
-/** Marca escrita: "frankkia" (sem ponto). */
-export function Logo({ className = "" }: { className?: string }) {
+/**
+ * Marca escrita: "Frankkia" (F maiúsculo, sem ponto). Com `icone`, a casa com brilho vem logo à esquerda do nome,
+ * na mesma proporção do menu da home (casa 18 px, espaço 6 px, nome 16 px). Menus superiores usam `text-base`.
+ */
+export function Logo({ className = "", icone, animado }: { className?: string; icone?: CorIcone; animado?: AnimacaoIcone }) {
   return (
-    <span className={`font-display font-semibold tracking-tight ${className}`}>
-      frankkia
+    <span className={`inline-flex items-center gap-[0.375em] font-display font-semibold tracking-tight ${className}`}>
+      {icone && <IconeMarca cor={icone} animado={animado} className="size-[1.125em]" />}
+      Frankkia
+    </span>
+  );
+}
+
+const CASA = "512,268 770,480 770,780 254,780 254,480";
+const BRILHO = "M512 400 Q524 528 648 548 Q524 568 512 696 Q500 568 376 548 Q500 528 512 400 Z";
+
+type CorIcone = "azul" | "escuro" | "branco";
+/** true = o brilho pisca e gira a cada 4 s (animação padrão); "carregando" = sem parar, para telas de espera. */
+type AnimacaoIcone = boolean | "carregando";
+const COR_ICONE: Record<CorIcone, string> = { azul: "text-accent", escuro: "text-ink", branco: "text-white" };
+
+/** Ícone da marca: casa com o brilho vazado (mesmo desenho de public/marca, versões "brilho-vazado"). */
+export function IconeMarca({ cor = "azul", animado = false, className = "" }: { cor?: CorIcone; animado?: AnimacaoIcone; className?: string }) {
+  const mascara = `brilho-${useId().replace(/:/g, "")}`;
+  const animacao = animado === "carregando" ? "marca-brilho-carregando" : animado ? "marca-brilho" : undefined;
+  return (
+    <svg viewBox="174 186 676 676" className={`shrink-0 ${COR_ICONE[cor]} ${className}`} aria-hidden="true" strokeLinejoin="round">
+      <mask id={mascara} maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
+        <rect width="1024" height="1024" fill="#fff" />
+        <path d={BRILHO} fill="#000" stroke="#000" strokeWidth="22" className={animacao} />
+      </mask>
+      <polygon points={CASA} fill="currentColor" stroke="currentColor" strokeWidth="160" mask={`url(#${mascara})`} />
+    </svg>
+  );
+}
+
+/** Marca d'água das fotos do anúncio: casa branca com brilho vazado, no centro e meio transparente. Vai dentro de um pai `relative`. */
+export function MarcaDagua({ className = "w-[16%]" }: { className?: string }) {
+  return (
+    <span className="pointer-events-none absolute inset-0 grid place-items-center" aria-hidden="true">
+      <IconeMarca cor="branco" className={`aspect-square h-auto max-w-28 opacity-60 drop-shadow-[0_2px_10px_rgba(0,0,0,0.35)] ${className}`} />
     </span>
   );
 }
@@ -53,13 +89,8 @@ export function LogoMark({ className = "" }: { className?: string }) {
       className={`flex shrink-0 items-center justify-center rounded-full bg-accent font-display font-bold leading-none text-white ${className}`}
     >
       <svg viewBox="174 186 676 676" className="size-[60%] text-accent" aria-hidden="true" strokeLinejoin="round">
-        <polygon points="512,268 770,480 770,780 254,780 254,480" fill="#fff" stroke="#fff" strokeWidth="160" />
-        <path
-          d="M512 400 Q524 528 648 548 Q524 568 512 696 Q500 568 376 548 Q500 528 512 400 Z"
-          fill="currentColor"
-          stroke="currentColor"
-          strokeWidth="22"
-        />
+        <polygon points={CASA} fill="#fff" stroke="#fff" strokeWidth="160" />
+        <path d={BRILHO} fill="currentColor" stroke="currentColor" strokeWidth="22" />
       </svg>
     </span>
   );

@@ -334,7 +334,7 @@ function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-canvas/60">
       <header className="flex h-16 items-center justify-between border-b border-line bg-bg px-6">
-        <Logo className="text-[1.75rem]" />
+        <Logo icone="escuro" className="text-base" />
         <Link to="/app/configuracoes?aba=plano" className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-ink">
           <ArrowLeft className="size-4" /> Voltar
         </Link>

@@ -1,9 +1,11 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { MarcaDagua } from "./ui";
 
 /**
  * Carrossel de fotos: setas, pontinhos, contador e arrastar com o dedo no celular.
- * `inicio`: foto que aparece primeiro; `inteira`: mostra a foto toda (tela cheia); `teclado`: setas do teclado.
+ * `inicio`: foto que aparece primeiro; `inteira`: mostra a foto toda (tela cheia); `teclado`: setas do teclado;
+ * `marcaDagua`: casa da Frankkia sobre cada foto (só no anúncio do portal).
  */
 export function Carrossel({
   fotos,
@@ -12,6 +14,7 @@ export function Carrossel({
   inicio = 0,
   inteira = false,
   teclado = false,
+  marcaDagua = false,
 }: {
   fotos: string[];
   className?: string;
@@ -19,6 +22,7 @@ export function Carrossel({
   inicio?: number;
   inteira?: boolean;
   teclado?: boolean;
+  marcaDagua?: boolean;
 }) {
   const [i, setI] = useState(inicio);
   const [toque, setToque] = useState<number | null>(null);
@@ -50,7 +54,10 @@ export function Carrossel({
     >
       <div className="flex h-full transition-transform duration-500 ease-out-expo" style={{ transform: `translateX(-${i * 100}%)` }}>
         {fotos.map((url, k) => (
-          <img key={url} src={url} alt={`Foto ${k + 1} de ${n}`} loading={k === i ? "eager" : "lazy"} className={`h-full w-full shrink-0 ${inteira ? "object-contain" : "object-cover"}`} />
+          <div key={url} className="relative h-full w-full shrink-0">
+            <img src={url} alt={`Foto ${k + 1} de ${n}`} loading={k === i ? "eager" : "lazy"} className={`h-full w-full ${inteira ? "object-contain" : "object-cover"}`} />
+            {marcaDagua && <MarcaDagua className="w-[12%]" />}
+          </div>
         ))}
       </div>
       {sobre}

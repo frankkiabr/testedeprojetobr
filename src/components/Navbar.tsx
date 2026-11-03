@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, ArrowUp, LogIn, Search } from "lucide-react";
 import { nav, site } from "@/content";
 import { EASE_OUT_EXPO, scrollToId } from "@/lib/scroll";
-import { Logo, LogoMark } from "./ui";
+import { IconeMarca, Logo } from "./ui";
 
 const SECTIONS = ["top", ...nav.map((n) => n.id), "contato"];
 const LABELS: Record<string, string> = {
@@ -91,13 +91,11 @@ export function Navbar() {
               animate={{ opacity: 1, filter: "blur(0px)" }}
               exit={{ opacity: 0, filter: "blur(6px)" }}
               transition={{ duration: 0.3 }}
-              className="flex h-14 items-center gap-9 pl-2.5 pr-2"
+              className="flex h-14 items-center gap-9 pl-5 pr-2"
             >
-              <a href="#top" onClick={go("top")} className="flex items-center gap-2.5 rounded-full">
-                <span className="inline-flex rounded-full ring-1 ring-white/15">
-                  <LogoMark className="size-8 text-base" />
-                </span>
-                <Logo className="whitespace-nowrap text-[1.0625rem]" />
+              <a href="#top" onClick={go("top")} className="flex items-center gap-1.5 rounded-full">
+                <IconeMarca cor="azul" animado className="size-[1.125rem]" />
+                <Logo className="whitespace-nowrap text-base" />
               </a>
               <ul className="flex items-center gap-7">
                 {nav.map(({ id, label }) => (
@@ -132,9 +130,9 @@ export function Navbar() {
               animate={{ opacity: 1, filter: "blur(0px)" }}
               exit={{ opacity: 0, filter: "blur(6px)" }}
               transition={{ duration: 0.3 }}
-              className="flex h-12 items-center gap-3 pl-2 pr-2"
+              className="flex h-12 items-center gap-3 pl-4 pr-2"
             >
-              <LogoMark className="size-7 text-sm" />
+              <IconeMarca cor="azul" animado className="size-[1.125rem]" />
               <motion.span
                 key={active}
                 initial={{ y: 10, opacity: 0 }}

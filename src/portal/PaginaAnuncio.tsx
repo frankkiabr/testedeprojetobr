@@ -148,7 +148,7 @@ export default function PaginaAnuncio({ a, url }: { a: AnuncioPublico; url: stri
   ].filter(Boolean) as { icon: typeof Ruler; texto: string }[];
 
   return (
-    <PortalShell imob={a.imobiliaria} corretor={a.corretor}>
+    <PortalShell>
       <Trilha itens={trilhaDoAnuncio(a)} />
       <Surge y={16}>
         <Galeria fotos={a.fotos.map((f) => f.url)} titulo={a.titulo} />

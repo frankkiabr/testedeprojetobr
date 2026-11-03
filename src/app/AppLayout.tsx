@@ -26,7 +26,7 @@ import { clienteById, ehSolo } from "@/data/platform";
 import { useStore } from "@/data/store";
 import type { Role } from "@/data/types";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
-import { Logo, LogoMark } from "@/components/ui";
+import { IconeMarca, Logo } from "@/components/ui";
 import { BotaoRecolher, useMenuRecolhido } from "./menuLateral";
 import { useSession } from "./session";
 import { ProgressBar } from "./kit";
@@ -88,7 +88,7 @@ function Sidebar({ onNavigate, recolhido }: { onNavigate?: () => void; recolhido
   return (
     <div className={`flex h-full flex-col pb-5 ${recolhido ? "px-3" : "px-4"}`}>
       <Link to="/" className={`flex h-16 items-center ${recolhido ? "justify-center" : "px-2"}`}>
-        {recolhido ? <LogoMark className="size-9 text-lg" /> : <Logo className="text-[1.75rem]" />}
+        {recolhido ? <IconeMarca cor="escuro" className="size-6" /> : <Logo icone="escuro" className="text-lg" />}
       </Link>
       {!recolhido && <p className="mt-4 px-3 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-subtle">Seu universo</p>}
       <nav className="mt-3 min-h-0 flex-1 space-y-1 overflow-y-auto [scrollbar-width:none]">
@@ -275,7 +275,7 @@ export function AppLayout() {
           </button>
           <BotaoRecolher recolhido={recolhido} onClick={alternar} />
           <Link to="/" className="lg:hidden">
-            <Logo className="text-xl" />
+            <Logo icone="escuro" className="text-base" />
           </Link>
           <div className="ml-auto flex items-center gap-3 sm:gap-5">
             <div className="hidden md:block">

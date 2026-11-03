@@ -114,6 +114,12 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
 - `/exclusao-de-dados` (`src/pages/ExclusaoDados.tsx`): pedido LGPD grava em `interessados` com origem `lgpd` (Painel → Interessados).
 - Atendimento: o site sempre diz "Falar com a Frankkia" (nunca "com o Luiz"); o número em `contato` ainda é o do Luiz e será
   trocado por um WhatsApp com IA de atendimento.
+- Marca: o nome é sempre "Frankkia" (F maiúsculo). Ícone = casa com brilho de 4 pontas (`IconeMarca` em `src/components/ui.tsx`;
+  `<Logo icone="escuro|azul">` põe o ícone à esquerda do nome, como no menu da home). Em menu superior, sempre `text-base`
+  (casa 18 px, nome 16 px, igual à home). Portal (busca e anúncio): topo sempre com a marca Frankkia em azul (o anúncio não
+  mostra a foto/nome do corretor no topo); fotos do anúncio com marca d'água (`MarcaDagua`, também no `Carrossel marcaDagua`).
+  Painel Frankkia → Corretores e Contas mostram a foto de perfil (`painel_corretores.foto_url`, `painel_imobiliarias.admin_foto`). Fundo claro → `escuro`; fundo escuro → `azul`. `animado` = animação padrão do brilho (a cada 4 s);
+  `animado="carregando"` = telas de espera. Arquivos para baixar em `public/marca/` (azul #2f5bea, branco, #0F1A33).
 - Rodapé: "Pergunte à IA" (`src/components/PergunteIA.tsx`); resumo para IAs em `public/llms.txt` (atualize se mudar preço ou plano).
 - Janelas (`Modal`, `Drawer centro` em `src/app/forms.tsx`): abrem no meio da tela (itens de Negócios no tamanho do "Editar" do estudo,
   `largo="extra"`), por cima de tudo (portal no `body`) e NÃO fecham ao clicar fora nem com Esc; fecham pelo X, Cancelar ou ao salvar.

@@ -36,7 +36,7 @@ export default function Demo() {
     <div className="grid min-h-screen place-items-center bg-canvas/60 px-4">
       <div className="w-full max-w-md rounded-3xl border border-line bg-bg p-10 text-center">
         <Link to="/" className="inline-block">
-          <Logo className="text-[1.75rem]" />
+          <Logo icone="escuro" animado className="text-[1.75rem]" />
         </Link>
         {estado === "invalido" ? (
           <>

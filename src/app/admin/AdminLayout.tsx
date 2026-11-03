@@ -5,7 +5,7 @@ import { AlertOctagon, BadgeCheck, Building2, Camera, Users, CalendarDays, Exter
 import { errosSistema, interessados, pedidosUpgrade, todosChamados } from "@/data/platform";
 import { useStore } from "@/data/store";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
-import { Logo, LogoMark } from "@/components/ui";
+import { IconeMarca, Logo } from "@/components/ui";
 import { BotaoRecolher, useMenuRecolhido } from "../menuLateral";
 import { useSession } from "../session";
 import { RoleSwitcher } from "../AppLayout";
@@ -35,10 +35,10 @@ function Sidebar({ onNavigate, recolhido }: { onNavigate?: () => void; recolhido
     <div className={`flex h-full flex-col pb-5 ${recolhido ? "px-3" : "px-4"}`}>
       <Link to="/" className={`flex h-16 items-center gap-3 ${recolhido ? "justify-center" : "px-2"}`}>
         {recolhido ? (
-          <LogoMark className="size-9 text-lg" />
+          <IconeMarca cor="azul" className="size-6" />
         ) : (
           <>
-            <Logo className="text-[1.75rem] text-bg" />
+            <Logo icone="azul" className="text-lg text-bg" />
             <span className="rounded-full bg-accent px-2 py-0.5 text-[0.625rem] font-bold uppercase tracking-[0.12em] text-white">Criador</span>
           </>
         )}

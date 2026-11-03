@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Images, X } from "lucide-react";
 import { Carrossel } from "@/components/Carrossel";
+import { MarcaDagua } from "@/components/ui";
 
 /**
  * Fotos do anúncio: uma grande e até quatro menores (mesmo tamanho) ao lado.
@@ -46,6 +47,7 @@ export function Galeria({ fotos, titulo }: { fotos: string[]; titulo: string }) 
             alt={titulo}
             className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
           />
+          <MarcaDagua />
         </button>
         {menores.map((url, k) => (
           <button
@@ -59,6 +61,7 @@ export function Galeria({ fotos, titulo }: { fotos: string[]; titulo: string }) 
               loading="lazy"
               className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
             />
+            <MarcaDagua className="w-[24%]" />
             {k === s - 1 && restantes > 0 && (
               <span className="absolute inset-0 flex items-center justify-center bg-ink/55 font-semibold text-white">
                 +{restantes}
@@ -92,7 +95,7 @@ export function Galeria({ fotos, titulo }: { fotos: string[]; titulo: string }) 
             </button>
           </div>
           <div className="min-h-0 flex-1 px-2 pb-6 sm:px-10">
-            <Carrossel fotos={fotos} inicio={aberta} inteira teclado className="h-full w-full" />
+            <Carrossel fotos={fotos} inicio={aberta} inteira teclado marcaDagua className="h-full w-full" />
           </div>
         </div>
       )}

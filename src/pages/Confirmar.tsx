@@ -47,7 +47,7 @@ export default function Confirmar() {
         transition={{ duration: 0.6, ease: EASE_OUT_EXPO }}
         className="w-full max-w-md rounded-3xl border border-line bg-bg p-10 text-center"
       >
-        <Logo className="text-[1.75rem]" />
+        <Logo icone="escuro" className="text-[1.75rem]" />
         {erro ? (
           <>
             <span className="mx-auto mt-8 grid size-14 place-items-center rounded-2xl bg-amber-50 text-amber-700">

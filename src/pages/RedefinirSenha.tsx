@@ -31,7 +31,7 @@ export default function RedefinirSenha() {
     <div className="min-h-screen bg-canvas/60">
       <header className="flex h-16 items-center border-b border-line bg-bg px-6">
         <Link to="/">
-          <Logo className="text-[1.75rem]" />
+          <Logo icone="escuro" className="text-base" />
         </Link>
       </header>
       <main className="mx-auto w-full max-w-md px-4 py-12">

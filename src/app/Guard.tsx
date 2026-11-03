@@ -1,15 +1,19 @@
 import { useState, type ReactNode } from "react";
 import { Link, Navigate, useLocation } from "react-router-dom";
 import { Hourglass, LogOut, Rocket, ShieldAlert } from "lucide-react";
-import { Logo } from "@/components/ui";
+import { IconeMarca, Logo } from "@/components/ui";
 import { pedidoAberto } from "@/data/platform";
 import { useStore } from "@/data/store";
 import { assinaturaEncerrada, inicioDe, lerErroCadastro, testeEncerrado, useSession } from "./session";
 import { mensagemErro } from "@/integrations/frankkia/client";
 import { PedidoUpgradeStatus, UpgradeModal } from "./upgrade";
 
-/** Tela neutra enquanto a sessão é verificada (evita piscar a tela de login). */
-export const Carregando = () => <div className="min-h-screen bg-canvas/50" />;
+/** Tela neutra enquanto a sessão é verificada (evita piscar a tela de login). O ícone só aparece se demorar. */
+export const Carregando = () => (
+  <div className="grid min-h-screen place-items-center bg-canvas/50">
+    <IconeMarca cor="azul" animado="carregando" className="conteudo-servidor size-10" />
+  </div>
+);
 
 /** Conta criada, mas sem acesso ativo a nenhuma imobiliária (desativada ou convite ainda não aceito). */
 function SemAcesso() {
@@ -20,7 +24,7 @@ function SemAcesso() {
     <div className="grid min-h-screen place-items-center bg-canvas/60 px-4">
       <div className="w-full max-w-md rounded-3xl border border-line bg-bg p-10 text-center">
         <Link to="/" className="inline-block">
-          <Logo className="text-[1.75rem]" />
+          <Logo icone="escuro" className="text-[1.75rem]" />
         </Link>
         <span className="mx-auto mt-8 grid size-14 place-items-center rounded-2xl bg-canvas text-accent">
           <ShieldAlert className="size-6" />
@@ -56,7 +60,7 @@ function TesteEncerrado({ assinatura = false }: { assinatura?: boolean }) {
     <div className="grid min-h-screen place-items-center bg-canvas/60 px-4">
       <div className="w-full max-w-md rounded-3xl border border-line bg-bg p-10 text-center">
         <Link to="/" className="inline-block">
-          <Logo className="text-[1.75rem]" />
+          <Logo icone="escuro" className="text-[1.75rem]" />
         </Link>
         <span className="mx-auto mt-8 grid size-14 place-items-center rounded-2xl bg-accent-soft text-accent">
           <Hourglass className="size-6" />

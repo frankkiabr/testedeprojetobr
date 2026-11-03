@@ -42,7 +42,7 @@ function Pagina() {
       </NaoEncontrado>
     );
   return (
-    <PortalShell rotulo="Imóveis">
+    <PortalShell>
       <Trilha itens={[{ rotulo: "Início", href: "/" }, { rotulo: "Imóveis", href: "/imoveis" }, { rotulo: d.uf, href: `/imoveis?uf=${d.uf}` }, { rotulo: `${d.cidade} - ${d.uf}` }]} />
       <BannerBusca
         titulo={`Imóveis em ${d.cidade} - ${d.uf}`}

@@ -48,7 +48,7 @@ export default function Sobre() {
       <header className="border-b border-line">
         <div className="mx-auto flex h-16 max-w-4xl items-center justify-between px-5 sm:px-8">
           <Link to="/">
-            <Logo className="text-2xl" />
+            <Logo icone="escuro" className="text-base" />
           </Link>
           <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-ink">
             <ArrowLeft className="size-4" /> Voltar ao site

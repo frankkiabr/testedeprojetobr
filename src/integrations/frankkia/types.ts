@@ -2264,6 +2264,7 @@ export type Database = {
           ativo: boolean
           desde: string
           email: string
+          foto_url: string
           imobiliaria: string
           imobiliaria_id: string
           nome: string
@@ -2292,6 +2293,7 @@ export type Database = {
         Args: never
         Returns: {
           admin_email: string
+          admin_foto: string
           admin_nome: string
           cidade: string
           cliente_desde: string

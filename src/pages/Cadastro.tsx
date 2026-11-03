@@ -138,7 +138,7 @@ export default function Cadastro() {
       <div className="flex flex-col px-6 py-8 sm:px-12">
         <div className="flex items-center justify-between">
           <Link to="/">
-            <Logo className="text-[1.75rem]" />
+            <Logo icone="escuro" animado className="text-base" />
           </Link>
           <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-ink">
             <ArrowLeft className="size-4" /> Voltar ao site

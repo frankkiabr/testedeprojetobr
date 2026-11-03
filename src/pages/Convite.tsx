@@ -141,7 +141,7 @@ export default function Convite() {
     <div className="min-h-screen bg-canvas/60">
       <header className="flex h-16 items-center justify-between border-b border-line bg-bg px-6">
         <Link to="/">
-          <Logo className="text-[1.75rem]" />
+          <Logo icone="escuro" animado className="text-base" />
         </Link>
         <span className="rounded-full bg-canvas px-3 py-1 text-xs font-semibold text-muted">Primeiro acesso</span>
       </header>

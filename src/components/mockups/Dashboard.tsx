@@ -75,7 +75,7 @@ export function Dashboard({ active }: { active: boolean }) {
     <div className="flex size-full flex-col overflow-hidden rounded-[28px] bg-white text-ink">
       {/* Topo */}
       <div className="flex h-[64px] shrink-0 items-center justify-between border-b border-line px-7">
-        <Logo className="text-[28px]" />
+        <Logo icone="escuro" className="text-[18px]" />
         <div className="flex items-center gap-5 text-[13px] text-muted">
           <span>Imobiliária Exemplo</span>
           <span className="relative">

@@ -44,7 +44,7 @@ export function Footer({ onSearch }: { onSearch: () => void }) {
               viewport={{ once: true }}
               transition={{ duration: 0.9, ease: EASE_OUT_EXPO }}
             >
-              <Logo className="text-[2.25rem] text-bg" />
+              <Logo icone="azul" animado className="text-[2.25rem] text-bg" />
               <p className="type-title mt-6 max-w-[30rem]">{site.slogan}</p>
               <p className="mt-4 max-w-[30rem] text-bg/60 sm:text-lg">{site.description}</p>
               <PergunteIA className="mt-10" />

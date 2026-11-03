@@ -18,6 +18,7 @@ type Linha = {
   papel: "admin" | "corretor";
   ativo: boolean;
   desde: string;
+  fotoUrl?: string;
 };
 type Filtro = "todos" | "ativos" | "desativados";
 
@@ -54,6 +55,7 @@ export default function Corretores() {
           papel: u.papel,
           ativo: u.ativo !== false,
           desde: new Date().toISOString(),
+          fotoUrl: u.fotoUrl,
         })),
       );
       return;
@@ -75,6 +77,7 @@ export default function Corretores() {
         papel: r.papel as Linha["papel"],
         ativo: r.ativo,
         desde: r.desde,
+        fotoUrl: r.foto_url ?? undefined,
       })),
     );
   }, [modo, toast]);
@@ -140,7 +143,7 @@ export default function Corretores() {
                   className="flex flex-wrap items-center gap-4 px-5 py-4 sm:px-6"
                 >
                   <Avatar
-                    user={{ id: l.usuarioId, iniciais: iniciais(l.nome) }}
+                    user={{ id: l.usuarioId, iniciais: iniciais(l.nome), fotoUrl: l.fotoUrl, nome: l.nome }}
                     className={`size-10 text-xs ${l.ativo ? "" : "opacity-50"}`}
                   />
                   <div className={`min-w-0 flex-1 ${l.ativo ? "" : "opacity-60"}`}>

@@ -24,7 +24,7 @@ export const Route = createFileRoute("/imoveis")({
 function Pagina() {
   const anuncios = Route.useLoaderData() ?? [];
   return (
-    <PortalShell rotulo="Imóveis">
+    <PortalShell>
       <Trilha itens={[{ rotulo: "Início", href: "/" }, { rotulo: "Imóveis" }]} />
       <BannerBusca
         titulo="Imóveis à venda e para alugar"

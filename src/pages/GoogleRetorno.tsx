@@ -15,7 +15,7 @@ export default function GoogleRetorno() {
   return (
     <div className="grid min-h-screen place-items-center bg-canvas/60 px-4">
       <div className="text-center">
-        <Logo className="text-[1.75rem]" />
+        <Logo icone="escuro" animado="carregando" className="text-[1.75rem]" />
         <p className="mt-6 flex items-center justify-center gap-2 text-muted">
           <Loader2 className="size-4 animate-spin" /> Conectando ao Google Agenda...
         </p>
