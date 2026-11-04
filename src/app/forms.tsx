@@ -170,7 +170,7 @@ export function Modal({
             className={`relative flex max-h-[92vh] w-full ${largo === "extra" ? "max-w-5xl" : largo ? "max-w-3xl" : "max-w-lg"} flex-col overflow-hidden rounded-t-3xl bg-bg shadow-float sm:rounded-3xl`}
           >
             {banner ? (
-              <div className="relative overflow-hidden bg-ink px-6 pb-8 pt-7 text-bg">
+              <div className="relative overflow-hidden bg-ink px-6 pb-9 pt-7 text-bg">
                 <div className="absolute inset-0 bg-[radial-gradient(70%_80%_at_100%_0%,rgb(47_91_234/0.5),transparent_70%)]" />
                 <div className="relative flex items-start justify-between gap-4">
                   <div className="min-w-0">

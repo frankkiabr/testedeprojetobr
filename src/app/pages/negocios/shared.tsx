@@ -293,7 +293,7 @@ export function ProprietarioFormModal({ open, onClose }: { open: boolean; onClos
       onClose={onClose}
       banner
       title="Novo proprietário"
-      subtitle="O WhatsApp é usado para enviar os relatórios de divulgação."
+      subtitle="O WhatsApp recebe os relatórios de divulgação."
       footer={
         <>
           <button onClick={onClose} className={btn.outline}>
@@ -410,7 +410,7 @@ export function ImovelFormModal({
       subtitle={
         imovel
           ? "Vale para todas as captações deste endereço (por exemplo, outros apartamentos do mesmo prédio)."
-          : "O endereço é o lugar físico (prédio, casa, galpão...). Depois ele é usado nas captações, estudos e leads."
+          : "Prédio, casa ou galpão, com o ponto exato no mapa."
       }
       footer={
         <>
@@ -687,7 +687,7 @@ export function CaptacaoFormModal({ open, onClose }: { open: boolean; onClose: (
       onClose={onClose}
       banner
       title="Novo imóvel"
-      subtitle="Cadastre o imóvel captado de uma vez: endereço, dados e proprietário. Publicar no portal é opcional."
+      subtitle="Endereço, dados e proprietário em um só cadastro."
       footer={
         <>
           <button onClick={onClose} className={btn.outline}>
@@ -918,7 +918,7 @@ export function ParceiroFormModal({ open, onClose, onCreated }: { open: boolean;
       onClose={onClose}
       banner
       title="Novo parceiro externo"
-      subtitle="Corretor de fora da imobiliária. Ele não recebe acesso; serve só para registrar parcerias."
+      subtitle="Corretor de fora da imobiliária, só para registrar parcerias."
       footer={
         <>
           <button onClick={onClose} className={btn.outline}>
@@ -1022,7 +1022,7 @@ export function TransacaoFormModal({
         onClose={onClose}
         banner
         title={tipo === "venda" ? "Registrar venda" : "Registrar locação"}
-        subtitle="Somente o administrador registra. Defina os honorários e quem recebe cada parte."
+        subtitle="Defina os honorários e quem recebe cada parte."
         footer={
           <>
             <button onClick={onClose} className={btn.outline}>
