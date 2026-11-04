@@ -197,6 +197,7 @@ export function mensagemErro(e: unknown): string {
     [/Signups? not allowed|signup.*disabled/i, "Os cadastros estão pausados no momento. Fale com a gente pelo WhatsApp."],
     [/Unable to validate email|invalid.*email/i, "Este e-mail não parece válido. Confira e tente de novo."],
     [/rate limit|too many/i, "Muitas tentativas seguidas. Aguarde alguns minutos e tente de novo."],
+    [/PLANO_VENCIDO/, "O plano venceu: a conta está só para consulta. Renove para voltar a cadastrar e editar."],
     [/LIMITE_DO_PLANO/, "Todas as vagas do plano estão em uso."],
     [/CONVITE_INVALIDO/, "Este convite já foi usado ou foi cancelado."],
     [/EMAIL_DIFERENTE_DO_CONVITE/, "Você entrou com um e-mail diferente do convite."],

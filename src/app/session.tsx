@@ -30,6 +30,8 @@ export type ImobiliariaConta = {
   limite: number;
   status: string;
   testeAte: string | null;
+  /** Desde quando a conta está suspensa (plano vencido). */
+  suspensaEm?: string | null;
   assinatura: AssinaturaConta | null;
   /** Endereço da página pública da imobiliária (frankkia.com/imobiliaria/<slug>), criado ao publicar o 1º imóvel. */
   slug?: string;
@@ -41,6 +43,31 @@ export const assinaturaEncerrada = (i: ImobiliariaConta | null | undefined) => !
 /** Teste grátis vencido: a imobiliária fica bloqueada até contratar um plano. */
 export const testeEncerrado = (i: ImobiliariaConta | null | undefined) =>
   !!i && i.status === "teste" && !!i.testeAte && new Date(i.testeAte).getTime() < Date.now();
+
+/** Dias que os dados ficam guardados depois de o plano vencer (modo só leitura). */
+export const PRAZO_DADOS_DIAS = 90;
+/** Quando o plano venceu (teste grátis acabou ou conta suspensa); null = em dia. */
+export function vencidaDesde(i: ImobiliariaConta | null | undefined): Date | null {
+  if (!i) return null;
+  if (testeEncerrado(i)) return new Date(i.testeAte!);
+  if (i.status === "suspensa") return i.suspensaEm ? new Date(i.suspensaEm) : new Date();
+  return null;
+}
+/** Data em que os dados serão excluídos (90 dias depois de vencer). */
+export const excluirEm = (i: ImobiliariaConta | null | undefined) => {
+  const d = vencidaDesde(i);
+  return d ? new Date(d.getTime() + PRAZO_DADOS_DIAS * 864e5) : null;
+};
+/** Plano vencido há menos de 90 dias: dá para entrar e ver tudo, mas não gravar nada. */
+export const soLeitura = (i: ImobiliariaConta | null | undefined) => {
+  const fim = excluirEm(i);
+  return !!fim && fim.getTime() > Date.now();
+};
+/** Passou o prazo de 90 dias: a conta fica bloqueada até a Frankkia excluir (ou o plano ser contratado). */
+export const prazoEncerrado = (i: ImobiliariaConta | null | undefined) => {
+  const fim = excluirEm(i);
+  return !!fim && fim.getTime() <= Date.now();
+};
 export type Conta = {
   usuarioId: string;
   email: string;
@@ -196,7 +223,7 @@ async function carregarConta(u: User): Promise<Conta> {
     supabase.from("perfis").select("nome, iniciais, email, creci_status, creci_obs, creci_conferido_em, slug").eq("id", u.id).maybeSingle(),
     supabase
       .from("membros")
-      .select("papel, imobiliarias(id, nome, plano, limite_corretores, status, teste_ate, slug)")
+      .select("papel, imobiliarias(id, nome, plano, limite_corretores, status, teste_ate, suspensa_em, slug)")
       .eq("usuario_id", u.id)
       .eq("ativo", true)
       .order("criado_em")
@@ -208,7 +235,7 @@ async function carregarConta(u: User): Promise<Conta> {
   const email = perfil.data?.email || u.email || "";
   const nome = perfil.data?.nome || (u.user_metadata?.nome as string) || "";
   const m = membros.data?.[0];
-  const i = m?.imobiliarias as { id: string; nome: string; plano: string; limite_corretores: number; status: string; teste_ate: string | null; slug: string | null } | null | undefined;
+  const i = m?.imobiliarias as { id: string; nome: string; plano: string; limite_corretores: number; status: string; teste_ate: string | null; suspensa_em: string | null; slug: string | null } | null | undefined;
   // Situação da assinatura na Stripe: só o administrador vê (para os avisos e o botão de cancelar)
   const a = i && m?.papel === "admin" ? (await supabase.rpc("minha_assinatura", { p_imob: i.id })).data?.[0] : undefined;
   const meta = u.user_metadata ?? {};
@@ -233,6 +260,7 @@ async function carregarConta(u: User): Promise<Conta> {
           limite: i.limite_corretores,
           status: i.status,
           testeAte: i.teste_ate,
+          suspensaEm: i.suspensa_em,
           slug: i.slug ?? undefined,
           assinatura: a
             ? { situacao: a.situacao as AssinaturaConta["situacao"], ciclo: a.ciclo, proximaCobranca: a.proxima_cobranca, cancelaEm: a.cancela_em }

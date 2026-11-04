@@ -1,5 +1,5 @@
 // Envia os e-mails automáticos da fila avisos_email (boas-vindas, teste acabando/terminou, pagamento,
-// renovação recusada, assinatura cancelada). Chamada pelo banco a cada 5 minutos (pg_cron).
+// renovação recusada, assinatura cancelada, plano vencendo/vencido e exclusão próxima). Chamada pelo banco a cada 5 minutos (pg_cron).
 // Não recebe dados nem devolve nada sensível: só manda o que já está na fila.
 import { admin, json } from "../_shared/comum.ts";
 import { emailFrankkia, esc } from "../_shared/email.ts";
@@ -8,8 +8,10 @@ const SITE = "https://frankkia.com";
 const WHATSAPP = "(91) 98095-9265";
 const forte = (s: string) => `<strong style="color:#0f1a33">${esc(s)}</strong>`;
 const dia = (iso?: string) => (iso ? new Date(iso).toLocaleDateString("pt-BR", { timeZone: "America/Belem", day: "2-digit", month: "2-digit" }) : "");
+const diaAno = (iso?: string) => (iso ? new Date(iso).toLocaleDateString("pt-BR", { timeZone: "America/Belem" }) : "");
+const SO_LEITURA = "Você e sua equipe continuam entrando para consultar tudo, mas não dá para cadastrar, editar, fazer estudos nem publicar, e os anúncios saem do portal.";
 
-type Dados = { nome?: string; imobiliaria?: string; teste_ate?: string; plano?: string; limite?: number; ciclo?: string; cancela_em?: string };
+type Dados = { nome?: string; imobiliaria?: string; teste_ate?: string; plano?: string; limite?: number; ciclo?: string; cancela_em?: string; vence_em?: string; excluir_em?: string };
 
 function montar(tipo: string, d: Dados): { assunto: string; html: string } | null {
   const imob = d.imobiliaria ?? "sua imobiliária";
@@ -24,7 +26,7 @@ function montar(tipo: string, d: Dados): { assunto: string; html: string } | nul
           titulo: `Seu teste grátis começou${ola}!`,
           texto: `A conta da ${forte(imob)} está pronta e você pode usar tudo até ${forte(dia(d.teste_ate))}. Para aproveitar o teste:<br><br>1. Cadastre seu primeiro imóvel e publique no portal<br>2. Lance seus leads no funil<br>3. Convide sua equipe`,
           botao: { rotulo: "Entrar na Frankkia", link: `${SITE}/login` },
-          nota: `Quer ajuda para configurar? Chame o Luiz no WhatsApp ${WHATSAPP}.`,
+          nota: `Quer ajuda para configurar? Fale com a Frankkia no WhatsApp ${WHATSAPP}.`,
         }),
       };
     case "teste_acabando":
@@ -34,7 +36,7 @@ function montar(tipo: string, d: Dados): { assunto: string; html: string } | nul
           previa: "Contrate um plano para não perder o acesso.",
           etiqueta: "Teste grátis",
           titulo: "Seu teste está acabando",
-          texto: `O teste grátis da ${forte(imob)} termina em ${forte(dia(d.teste_ate))}. Para continuar usando sem interrupção, contrate um plano: tudo o que vocês cadastraram continua lá.`,
+          texto: `O teste grátis da ${forte(imob)} termina em ${forte(dia(d.teste_ate))}. Depois dessa data a conta fica só para consulta. Para continuar usando sem interrupção, contrate um plano: tudo o que vocês cadastraram continua lá.`,
           botao: { rotulo: "Ver os planos", link: `${SITE}/app/configuracoes?aba=plano` },
           nota: "Plano anual: 12 meses pelo preço de 10.",
         }),
@@ -46,9 +48,9 @@ function montar(tipo: string, d: Dados): { assunto: string; html: string } | nul
           previa: "Seus dados continuam guardados.",
           etiqueta: "Teste grátis",
           titulo: "Seu teste grátis terminou",
-          texto: `O acesso da ${forte(imob)} está pausado, mas nada foi apagado: leads, imóveis e negócios continuam guardados. Contrate um plano e o acesso volta na hora.`,
-          botao: { rotulo: "Contratar um plano", link: `${SITE}/login` },
-          nota: `Ficou com alguma dúvida? Chame o Luiz no WhatsApp ${WHATSAPP}.`,
+          texto: `A conta da ${forte(imob)} agora está no modo só leitura. ${SO_LEITURA}<br><br>Os dados ficam guardados até ${forte(diaAno(d.excluir_em))}. Contrate um plano e tudo volta a funcionar na hora.`,
+          botao: { rotulo: "Contratar um plano", link: `${SITE}/app/configuracoes?aba=plano` },
+          nota: `Ficou com alguma dúvida? Fale com a Frankkia no WhatsApp ${WHATSAPP}.`,
         }),
       };
     case "pagamento_confirmado": {
@@ -87,6 +89,42 @@ function montar(tipo: string, d: Dados): { assunto: string; html: string } | nul
           texto: `A assinatura da ${forte(imob)} foi cancelada.${d.cancela_em ? ` O acesso continua até ${forte(dia(d.cancela_em))}` : " O acesso continua até o fim do período já pago"} e não haverá nova cobrança.`,
           botao: { rotulo: "Manter minha assinatura", link: `${SITE}/app/configuracoes?aba=plano` },
           nota: "Cancelou nos primeiros 7 dias? Você tem direito a reembolso integral: escreva para frankkiabr@gmail.com.",
+        }),
+      };
+    case "plano_vencendo":
+      return {
+        assunto: "Seu plano na Frankkia vence em breve",
+        html: emailFrankkia({
+          previa: "Renove para não perder o acesso.",
+          etiqueta: "Assinatura",
+          titulo: "Seu plano vence em breve",
+          texto: `O plano da ${forte(imob)} vence em ${forte(dia(d.vence_em))}. Depois dessa data a conta fica só para consulta: não dá para cadastrar, editar, fazer estudos nem publicar. Para continuar usando normalmente, renove a assinatura.`,
+          botao: { rotulo: "Renovar minha assinatura", link: `${SITE}/app/configuracoes?aba=plano` },
+          nota: "Plano anual: 12 meses pelo preço de 10.",
+        }),
+      };
+    case "plano_vencido":
+      return {
+        assunto: "Seu plano na Frankkia venceu",
+        html: emailFrankkia({
+          previa: "A conta está no modo só leitura.",
+          etiqueta: "Assinatura",
+          titulo: "Seu plano venceu",
+          texto: `A conta da ${forte(imob)} agora está no modo só leitura. ${SO_LEITURA}<br><br>Os dados ficam guardados até ${forte(diaAno(d.excluir_em))}. Contrate um plano e tudo volta a funcionar na hora.`,
+          botao: { rotulo: "Contratar um plano", link: `${SITE}/app/configuracoes?aba=plano` },
+          nota: `Ficou com alguma dúvida? Fale com a Frankkia no WhatsApp ${WHATSAPP}.`,
+        }),
+      };
+    case "exclusao_proxima":
+      return {
+        assunto: "Seus dados na Frankkia serão excluídos em 7 dias",
+        html: emailFrankkia({
+          previa: "Contrate um plano para manter tudo.",
+          etiqueta: "Seus dados",
+          titulo: "Seus dados serão excluídos em 7 dias",
+          texto: `O plano da ${forte(imob)} está vencido há quase 90 dias. Em ${forte(diaAno(d.excluir_em))}, leads, imóveis, proprietários, negócios e arquivos da conta serão excluídos de vez, como previsto nos Termos de Uso.<br><br>Para manter tudo, contrate um plano antes dessa data. Se preferir, peça uma cópia dos seus dados em planilha pelo e-mail frankkiabr@gmail.com.`,
+          botao: { rotulo: "Contratar um plano", link: `${SITE}/app/configuracoes?aba=plano` },
+          nota: "Depois da exclusão não é possível recuperar os dados.",
         }),
       };
   }

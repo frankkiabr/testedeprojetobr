@@ -49,7 +49,13 @@ export function BotaoSalvar({
       disabled={disabled || salvando || (salvo && !!depois)}
       onClick={async () => {
         setSalvando(true);
-        const r = await onSalvar();
+        let r: unknown;
+        try {
+          r = await onSalvar();
+        } catch {
+          // Ex.: plano vencido (modo só leitura): o aviso já apareceu
+          r = false;
+        }
         setSalvando(false);
         if (r !== false) setSalvo(true);
       }}

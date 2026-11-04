@@ -227,10 +227,24 @@ function useAvisos(): Aviso[] {
           to: "/app/equipe",
         });
 
+    const cancela = conta?.imobiliaria?.assinatura?.situacao === "cancelamento_agendado" ? conta.imobiliaria.assinatura.cancelaEm : null;
+    if (cancela) {
+      const dias = Math.ceil((new Date(cancela).getTime() - Date.now()) / (24 * HORA));
+      if (dias > 0 && dias <= 7)
+        out.push({
+          id: `vence-${dias}`,
+          icone: Rocket,
+          titulo: dias <= 1 ? "Seu plano vence amanhã" : `Seu plano vence em ${dias} dias`,
+          texto: "Depois disso a conta fica só para consulta. Renove para continuar usando.",
+          quando: new Date().toISOString(),
+          to: "/app/configuracoes?aba=plano",
+          destaque: true,
+        });
+    }
     const ate = conta?.imobiliaria?.testeAte;
     if (conta?.imobiliaria?.status === "teste" && ate && !testeEncerrado(conta.imobiliaria)) {
       const dias = Math.ceil((new Date(ate).getTime() - Date.now()) / (24 * HORA));
-      if (dias <= 3)
+      if (dias <= 7)
         out.push({
           id: `teste-${dias}`,
           icone: Rocket,

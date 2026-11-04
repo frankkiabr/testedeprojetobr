@@ -30,6 +30,7 @@ import {
 import { captacaoTitulo, captacaoById, corretoresAtivos, vagasLivres } from "./queries";
 import { aplicarReducaoNaStripe, enviarConvitePorEmail, excluirImobiliariaNaStripe, mensagemErro } from "@/integrations/frankkia/client";
 import { comprimirFoto } from "@/lib/files";
+import { soLeitura, useSession } from "@/app/session";
 import { excluirDocumento, listarDocumentos } from "./documentos";
 import { aoMudar, compromissoParaBanco, configurarGravacao, contexto as ctxDados, ehReal, enfileirar, falhou, gravar, leadParaBanco, novoId, supabase } from "./sync";
 import { acessosDemo, clientes, errosSistema, frankkiaUser, interessados, linkDemo, nomeDaTela, novaReferencia, pedidoAberto, pedidoById, pedidosUpgrade, PLANOS, todosChamados } from "./platform";
@@ -58,6 +59,8 @@ import type {
   Trilha,
   Usuario,
   FichaPredio,
+  CategoriaImovel,
+  Finalidade,
 } from "./types";
 
 type Toast = { id: number; text: string };
@@ -178,8 +181,20 @@ function dadosCaptacao(c: Captacao) {
 const salvarChecklists = (c: Captacao) =>
   gravar(() => supabase.from("captacoes").update({ checklist_captacao: c.checklistCaptacao, checklist_marketing: c.checklistMarketing }).eq("id", c.id));
 
+const ERRO_SO_LEITURA = "SO_LEITURA";
+const MSG_SO_LEITURA = "O plano venceu: a conta está só para consulta. Renove o plano para cadastrar e editar.";
+/** Ações que gravam dados da imobiliária: bloqueadas no modo só leitura (plano vencido). */
+const BLOQUEADAS_SO_LEITURA = [
+  "importarLeads", "importarProprietarios", "importarImoveis", "configurarRodizio", "addLead", "updateLead", "addCompromisso",
+  "updateCompromisso", "removeCompromisso", "toggleLeadStep", "registrarContato", "addProprietario", "addImovel", "addCaptacao",
+  "updateCaptacao", "toggleCaptacao", "toggleMarketing", "salvarAnuncio", "salvarPortais", "linkPortais", "publicarAnuncio",
+  "adicionarFotos", "removerFoto", "definirCapa", "addTransacao", "excluir", "addParceiro", "informarFechamento", "descartarFechamento",
+  "addTrilha", "updateTrilha", "removeTrilha", "addAula", "removeAula", "toggleAula", "setLogo", "invite", "cancelInvite", "resendInvite",
+  "setCorretorAtivo", "updateImobiliaria", "salvarPredio", "updateImovel", "setLocalImovel", "setFotoParceiro",
+];
+
 function createActions(bump: () => void, toast: (text: string) => void) {
-  return {
+  const acoes = {
     toast,
 
     /** Importação de planilha: cria os leads de uma vez e grava no banco em lotes de 200. */
@@ -199,6 +214,129 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       }
       bump();
       toast(`${novos.length} ${novos.length === 1 ? "lead importado" : "leads importados"}.`);
+    },
+
+    /** Importação de planilha de proprietários (sem aviso por linha). Devolve os criados. */
+    importarProprietarios(lista: Pick<Proprietario, "corretorId" | "nome" | "whatsapp">[], aviso = true) {
+      const agora = Date.now();
+      const novos: Proprietario[] = lista.map((x, i) => ({ ...x, id: uid("p"), criadoEm: new Date(agora - i).toISOString() }));
+      proprietarios.unshift(...novos);
+      for (let i = 0; i < novos.length; i += 200) {
+        const lote = novos.slice(i, i + 200);
+        gravar(() =>
+          supabase.from("proprietarios").insert(lote.map((p) => ({ id: p.id, imobiliaria_id: ctxDados.imobId, corretor_id: p.corretorId, nome: p.nome, whatsapp: p.whatsapp }))),
+        );
+      }
+      bump();
+      if (aviso) toast(`${novos.length} ${novos.length === 1 ? "proprietário importado" : "proprietários importados"}.`);
+      return novos;
+    },
+
+    /**
+     * Importação de planilha de imóveis: para cada linha cria (ou reaproveita) o proprietário e o imóvel do mesmo
+     * endereço e cria a captação; quartos/suítes/banheiros/vagas vão para o anúncio (não publicado).
+     */
+    importarImoveis(
+      lista: {
+        corretorId: string;
+        propNome: string;
+        propWhats: string;
+        categoria: CategoriaImovel;
+        nome?: string;
+        endereco: Imovel["endereco"];
+        cep?: string;
+        unidade?: string;
+        finalidade: Finalidade;
+        valor: number;
+        areaM2: number;
+        comodos: { quartos?: number; suites?: number; banheiros?: number; vagas?: number };
+      }[],
+      chave: (e: Imovel["endereco"]) => string,
+    ) {
+      const agora = Date.now();
+      // 1) proprietários: o mesmo WhatsApp do mesmo corretor é a mesma pessoa
+      const novosProps: Pick<Proprietario, "corretorId" | "nome" | "whatsapp">[] = [];
+      const propDe = (corretorId: string, whatsapp: string) => proprietarios.find((p) => p.corretorId === corretorId && p.whatsapp === whatsapp);
+      for (const r of lista)
+        if (!propDe(r.corretorId, r.propWhats) && !novosProps.some((p) => p.corretorId === r.corretorId && p.whatsapp === r.propWhats))
+          novosProps.push({ corretorId: r.corretorId, nome: r.propNome, whatsapp: r.propWhats });
+      if (novosProps.length) acoes.importarProprietarios(novosProps, false);
+      // 2) imóveis (lugar físico): mesmo endereço = mesmo imóvel
+      const novosImoveis: Imovel[] = [];
+      const imovelDe = (e: Imovel["endereco"]) => imoveis.find((i) => chave(i.endereco) === chave(e));
+      lista.forEach((r, i) => {
+        if (imovelDe(r.endereco)) return;
+        const im: Imovel = { categoria: r.categoria, nome: r.nome, endereco: r.endereco, cep: r.cep, id: uid("im"), criadoEm: new Date(agora - i).toISOString() };
+        imoveis.unshift(im);
+        novosImoveis.push(im);
+      });
+      for (let i = 0; i < novosImoveis.length; i += 200) {
+        const lote = novosImoveis.slice(i, i + 200);
+        gravar(() =>
+          supabase.from("imoveis").insert(
+            lote.map((im) => ({
+              id: im.id,
+              imobiliaria_id: ctxDados.imobId,
+              categoria: im.categoria,
+              nome: im.nome ?? null,
+              logradouro: im.endereco.logradouro,
+              numero: im.endereco.numero,
+              bairro: im.endereco.bairro,
+              cidade: im.endereco.cidade,
+              uf: im.endereco.uf,
+              cep: im.cep ?? null,
+              criado_por: ctxDados.userId,
+            })),
+          ),
+        );
+      }
+      // 3) captações
+      const novas: Captacao[] = lista.map((r, i) => ({
+        id: uid("cp"),
+        codigo: gerarCodigoImovel(),
+        corretorId: r.corretorId,
+        proprietarioId: propDe(r.corretorId, r.propWhats)!.id,
+        imovelId: imovelDe(r.endereco)!.id,
+        unidade: r.unidade,
+        finalidade: r.finalidade,
+        valor: r.valor,
+        areaM2: r.areaM2,
+        status: "ativa",
+        captadoEm: new Date(agora - i).toISOString(),
+        checklistCaptacao: CHECKLIST_CAPTACAO.map(() => false),
+        checklistMarketing: CHECKLIST_MARKETING.map(() => false),
+      }));
+      captacoes.unshift(...novas);
+      for (let i = 0; i < novas.length; i += 200) {
+        const lote = novas.slice(i, i + 200);
+        gravar(() =>
+          supabase.from("captacoes").insert(
+            lote.map((c) => ({
+              id: c.id,
+              codigo: c.codigo,
+              imobiliaria_id: ctxDados.imobId,
+              corretor_id: c.corretorId,
+              proprietario_id: c.proprietarioId,
+              imovel_id: c.imovelId,
+              unidade: c.unidade ?? null,
+              finalidade: c.finalidade,
+              valor: c.valor,
+              area_m2: c.areaM2,
+              status: c.status,
+              captado_em: c.captadoEm,
+              checklist_captacao: c.checklistCaptacao,
+              checklist_marketing: c.checklistMarketing,
+            })),
+          ),
+        );
+      }
+      // 4) cômodos no anúncio (rascunho)
+      novas.forEach((c, i) => {
+        const cm = lista[i].comodos;
+        if (Object.values(cm).some((x) => x !== undefined)) acoes.salvarAnuncio(c.id, cm, "");
+      });
+      bump();
+      toast(`${novas.length} ${novas.length === 1 ? "imóvel importado" : "imóveis importados"}.`);
     },
 
     // ---------- Rodízio de leads (planos de equipe) ----------
@@ -1465,6 +1603,7 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       bump();
     },
   };
+  return acoes;
 }
 
 type Store = ReturnType<typeof createActions> & { version: number; toasts: Toast[] };
@@ -1480,7 +1619,26 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     // Avisos ficam 5 segundos na tela (tempo de ler com calma)
     setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 5000);
   }, []);
-  const actions = useMemo(() => createActions(bump, toast), [bump, toast]);
+  const { conta, modo } = useSession();
+  const leitura = modo === "real" && soLeitura(conta?.imobiliaria);
+  const actions = useMemo(() => {
+    const a = createActions(bump, toast);
+    if (!leitura) return a;
+    // Plano vencido: as ações que gravam dados da imobiliária param aqui (o banco também recusa).
+    // O erro interrompe o clique sem deixar a tela pela metade; ele não vai para "Erros do sistema".
+    const guardadas = new Set<string>(BLOQUEADAS_SO_LEITURA);
+    return Object.fromEntries(
+      Object.entries(a).map(([k, fn]) => [
+        k,
+        guardadas.has(k)
+          ? () => {
+              toast(MSG_SO_LEITURA);
+              throw new Error(ERRO_SO_LEITURA);
+            }
+          : fn,
+      ]),
+    ) as unknown as typeof a;
+  }, [bump, toast, leitura]);
 
   // Dados recarregados do banco (ou de volta à demonstração): redesenha as telas.
   useEffect(() => aoMudar(bump), [bump]);
@@ -1488,9 +1646,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   // Captura erros reais do navegador e envia para "Erros do sistema" no painel Frankkia.
   useEffect(() => {
-    const onError = (e: ErrorEvent) => actions.captureErro(e.message || "Erro desconhecido", window.location.pathname);
+    const onError = (e: ErrorEvent) => (e.message ?? "").includes(ERRO_SO_LEITURA) ? undefined : actions.captureErro(e.message || "Erro desconhecido", window.location.pathname);
     const onRejection = (e: PromiseRejectionEvent) =>
-      actions.captureErro(e.reason instanceof Error ? e.reason.message : String(e.reason), window.location.pathname);
+      String(e.reason?.message ?? e.reason).includes(ERRO_SO_LEITURA) ? undefined : actions.captureErro(e.reason instanceof Error ? e.reason.message : String(e.reason), window.location.pathname);
     window.addEventListener("error", onError);
     window.addEventListener("unhandledrejection", onRejection);
     return () => {

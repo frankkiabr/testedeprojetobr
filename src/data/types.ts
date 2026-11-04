@@ -191,6 +191,8 @@ export type Cliente = {
   adminFoto?: string;
   /** Teste grátis: fim do período (conta a partir do 1º acesso do administrador) e duração combinada. */
   testeAte?: string;
+  /** Plano vencido: data em que acaba o prazo de 90 dias (depois disso, a Frankkia exclui a conta). */
+  excluirEm?: string;
   testeDias?: number;
   /** Vagas em uso (corretores ativos + convites). */
   corretores: number;

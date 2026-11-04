@@ -13,7 +13,7 @@ import { Logo } from "@/components/ui";
  * Textos-base escritos para a Frankkia (plataforma + portal). Antes de divulgar em larga escala,
  * vale a revisão de um advogado e completar os dados da empresa (razão social, CNPJ e endereço).
  */
-const ATUALIZACAO = "29 de outubro de 2026";
+const ATUALIZACAO = "4 de novembro de 2026";
 
 type Secao = { titulo: string; texto: ReactNode };
 
@@ -117,6 +117,10 @@ export function Termos() {
               </li>
               <li>
                 Cada corretor vê apenas os próprios leads, captações, proprietários e negócios; o administrador vê todos os dados da imobiliária.
+              </li>
+              <li>
+                A assinatura é uma <strong>licença de uso por conta</strong>: vale para a imobiliária (ou o corretor Solo) que contratou, dentro das
+                vagas do plano. Não é permitido ceder, revender ou compartilhar o acesso com terceiros de fora da conta.
               </li>
               <li>Você é responsável pelas informações que cadastra e por ter autorização para tratá-las (por exemplo, dados de clientes e proprietários).</li>
             </ul>
@@ -228,16 +232,28 @@ export function Termos() {
                 usuários.
               </li>
               <li>Os cálculos da plataforma (VGV, comissões, metas, estudo de mercado) são ferramentas de apoio e não substituem a análise profissional.</li>
+              <li>
+                Ressalvados os casos em que a lei não permite limitação (como dolo ou os direitos garantidos ao consumidor), a responsabilidade da
+                Frankkia por danos ligados ao uso da plataforma fica limitada ao valor pago pela conta nos <strong>12 meses</strong> anteriores ao fato.
+              </li>
             </ul>
           ),
         },
         {
           titulo: "Encerramento",
           texto: (
-            <p>
-              Você pode encerrar o uso a qualquer momento. Encerrada a conta, os dados são mantidos pelo prazo necessário para cumprir obrigações
-              legais e depois excluídos, conforme a Política de Privacidade.
-            </p>
+            <ul>
+              <li>Você pode encerrar o uso a qualquer momento.</li>
+              <li>
+                Depois do fim do período pago (ou do teste grátis), os dados ficam <strong>guardados por 90 dias</strong>. Nesse prazo você pode
+                reativar a conta com tudo como estava ou pedir pelo e-mail {email} uma <strong>cópia dos seus dados em planilha</strong> (leads,
+                imóveis, proprietários e negócios), enviada em até 15 dias. A plataforma não tem exportação automática.
+              </li>
+              <li>
+                Avisamos por e-mail antes de excluir. Passado esse prazo, ou se você pedir a exclusão, os dados são excluídos, exceto o que a lei obriga a guardar, conforme a Política
+                de Privacidade.
+              </li>
+            </ul>
           ),
         },
         {

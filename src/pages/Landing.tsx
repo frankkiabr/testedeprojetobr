@@ -5,6 +5,7 @@ import { Hero } from "@/components/Hero";
 import { Publicos } from "@/components/Publicos";
 import { Ecosystem } from "@/components/Ecosystem";
 import { Features } from "@/components/Features";
+import { Blocos } from "@/components/Blocos";
 import { Pricing } from "@/components/Pricing";
 import { Clientes } from "@/components/Clientes";
 import { Vitrine } from "@/components/Vitrine";
@@ -32,6 +33,7 @@ export default function Landing() {
         <Hero />
         <Publicos />
         <Ecosystem />
+        <Blocos />
         <Features />
         <Vitrine />
         <Clientes />

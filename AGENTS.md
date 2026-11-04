@@ -59,6 +59,12 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
 - Arquivos: vídeos da Academy são links do YouTube/Vimeo ("não listado", tocam em iframe); PDFs/Word vão para o
   armazenamento `academy` (privado, até 20 MB) e a logo para `marca` (pública, PNG até 5 MB), na pasta `<id da imobiliária>/`.
 - Painel Frankkia no login real: `painel_imobiliarias()` traz só dados de conta e volumes de uso.
+- Plano vencido (teste acabou ou conta suspensa, `suspensa_em`): **modo só leitura por 90 dias** (`imob_legivel` no `is_member`/`is_admin`;
+  gatilho `bloquear_escrita_vencida` recusa gravações com `PLANO_VENCIDO`; no app, `soLeitura()` em `session.tsx` trava as ações de
+  `BLOQUEADAS_SO_LEITURA` no store e mostra a faixa vermelha). Portal continua usando `imob_liberada` (anúncios saem). Avisos por e-mail:
+  7 dias antes (`teste_acabando`/`plano_vencendo`), ao vencer (`teste_terminou`/`plano_vencido`) e 7 dias antes da exclusão
+  (`exclusao_proxima`). Depois de 90 dias, Painel → Contas mostra "Prazo encerrado: excluir" e a Frankkia exclui à mão.
+  NÃO existe exportação no app: cópia dos dados só por pedido no e-mail. Importar leads/imóveis/proprietários: `ImportarCarteira.tsx`.
 - Teste grátis: `imobiliarias.teste_dias` (definido pela Frankkia) vira `teste_ate` no 1º acesso do administrador;
   vencido, o banco bloqueia os dados (`imob_liberada`) e o app mostra a tela de contratar plano.
 - Teste grátis pelo site (`/cadastro`) só em Solo, Equipe 5 e Equipe 10; Equipe 30/60 é combinado com a Frankkia pelo WhatsApp (o gatilho

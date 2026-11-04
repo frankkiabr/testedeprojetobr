@@ -1,8 +1,9 @@
 import { dataHora } from "@/lib/format";
+import { ImportarCarteiraModal } from "./ImportarCarteira";
 import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ChevronRight, Plus, UserRound, Users } from "lucide-react";
+import { ChevronRight, FileSpreadsheet, Plus, UserRound, Users } from "lucide-react";
 import { CHECKLIST_MARKETING, proprietarios } from "@/data/demo";
 import { fotoCapa, captacaoCategoria, captacaoTitulo, captacoesDoProprietario, corretoresAtivos, done, proprietariosOf, pessoa, userById } from "@/data/queries";
 import { useStore } from "@/data/store";
@@ -117,9 +118,14 @@ export default function Proprietarios() {
             />
           )}
         </div>
-        <button onClick={() => setParam("novo", "1")} className={btn.accent}>
-          <Plus className="size-4" /> Novo proprietário
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setParam("importar", "1")} className={btn.outline} title="Importar proprietários de uma planilha">
+            <FileSpreadsheet className="size-4" /> <span className="hidden sm:inline">Importar</span>
+          </button>
+          <button onClick={() => setParam("novo", "1")} className={btn.accent}>
+            <Plus className="size-4" /> Novo proprietário
+          </button>
+        </div>
       </div>
 
       <Card className="overflow-hidden">
@@ -194,6 +200,7 @@ export default function Proprietarios() {
       </Card>
 
       <ProprietarioDrawer id={params.get("proprietario")} onClose={() => setParam("proprietario", null)} />
+      <ImportarCarteiraModal tipo="proprietarios" open={params.get("importar") === "1"} onClose={() => setParam("importar", null)} />
       <ProprietarioFormModal open={params.get("novo") === "1"} onClose={() => setParam("novo", null)} />
     </div>
   );

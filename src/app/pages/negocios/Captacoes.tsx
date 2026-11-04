@@ -1,13 +1,14 @@
 import { TIPOS_COM_UNIDADE, unidadeEhSala } from "@/lib/imovel";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 import { AnuncioEditor } from "./Anuncio";
+import { ImportarCarteiraModal } from "./ImportarCarteira";
 import { Carrossel } from "@/components/Carrossel";
 import { LocalImovel } from "./LocalImovel";
 import { anuncios } from "@/data/demo";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { PartyPopper, BadgeDollarSign, Calculator, FileText, Handshake, MapPin, Plus, Ruler, UserRound, Users } from "lucide-react";
+import { FileSpreadsheet, PartyPopper, BadgeDollarSign, Calculator, FileText, Handshake, MapPin, Plus, Ruler, UserRound, Users } from "lucide-react";
 import { Simulador } from "@/components/Simulador";
 import { CHECKLIST_CAPTACAO, CHECKLIST_MARKETING } from "@/data/demo";
 import {
@@ -576,6 +577,9 @@ export default function Captacoes() {
               { value: "todas", label: "Todas" },
             ]}
           />
+<button onClick={() => setParam("importar", "1")} className={btn.outline} title="Importar imóveis de uma planilha">
+            <FileSpreadsheet className="size-4" /> <span className="hidden sm:inline">Importar</span>
+          </button>
           <button onClick={() => setParam("novo", "1")} className={btn.accent}>
             <Plus className="size-4" /> Novo imóvel
           </button>
@@ -596,6 +600,7 @@ export default function Captacoes() {
         </motion.div>
       )}
 
+      <ImportarCarteiraModal tipo="imoveis" open={params.get("importar") === "1"} onClose={() => setParam("importar", null)} />
       <CaptacaoDrawer id={params.get("captacao")} onClose={() => setParam("captacao", null)} />
       <CaptacaoFormModal
         open={params.get("novo") === "1"}

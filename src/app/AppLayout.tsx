@@ -28,7 +28,7 @@ import type { Role } from "@/data/types";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { IconeMarca, Logo } from "@/components/ui";
 import { BotaoRecolher, useMenuRecolhido } from "./menuLateral";
-import { useSession } from "./session";
+import { excluirEm, soLeitura as estaSoLeitura, useSession } from "./session";
 import { ProgressBar } from "./kit";
 import { Toaster } from "./forms";
 import { UpgradeModal, UpgradeNudge } from "./upgrade";
@@ -219,8 +219,14 @@ export function AppLayout() {
   const nomeImob = (modo === "real" && conta?.imobiliaria?.nome) || imobiliaria.nome;
   const suspensa = modo === "real" ? conta?.imobiliaria?.status === "suspensa" : clienteById(imobiliaria.id)?.status === "suspensa";
   const [planos, setPlanos] = useState(false);
+  // Plano vencido há menos de 90 dias: tudo só para consulta
+  const leitura = modo === "real" && estaSoLeitura(conta?.imobiliaria);
+  const dataExclusao = excluirEm(conta?.imobiliaria)?.toLocaleDateString("pt-BR");
+  // Assinatura cancelada que termina em até 7 dias
+  const cancelaEm = modo === "real" && conta?.imobiliaria?.assinatura?.situacao === "cancelamento_agendado" ? conta.imobiliaria.assinatura.cancelaEm : null;
+  const diasParaVencer = cancelaEm ? Math.ceil((new Date(cancelaEm).getTime() - Date.now()) / 864e5) : null;
   const fimTeste = modo === "real" && conta?.imobiliaria?.status === "teste" && conta.imobiliaria.testeAte ? new Date(conta.imobiliaria.testeAte).getTime() : null;
-  const diasDeTeste = fimTeste ? Math.max(1, Math.ceil((fimTeste - Date.now()) / 864e5)) : null;
+  const diasDeTeste = fimTeste && fimTeste > Date.now() ? Math.max(1, Math.ceil((fimTeste - Date.now()) / 864e5)) : null;
   // Renovação recusada: a Stripe tenta de novo por alguns dias; o administrador atualiza o cartão
   const { toast } = useStore();
   const pagamentoRecusado = modo === "real" && role === "admin" && conta?.imobiliaria?.assinatura?.situacao === "pagamento_recusado";
@@ -313,7 +319,32 @@ export function AppLayout() {
           </div>
         )}
 
-        {suspensa && (
+        {leitura && (
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 bg-rose-600 px-4 py-2.5 text-center text-sm font-medium text-white">
+            <AlertTriangle className="size-4 shrink-0" />
+            O plano venceu: a conta está só para consulta (nada pode ser cadastrado ou editado). Os dados ficam guardados até {dataExclusao}.
+            {role === "admin" ? (
+              <button onClick={() => setPlanos(true)} className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-rose-700 transition hover:bg-white/90">
+                Contratar plano
+              </button>
+            ) : (
+              <span>Fale com o administrador.</span>
+            )}
+          </div>
+        )}
+        {diasParaVencer !== null && diasParaVencer > 0 && diasParaVencer <= 7 && (
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 bg-amber-500 px-4 py-2.5 text-center text-sm font-medium text-white">
+            <AlertTriangle className="size-4 shrink-0" />
+            Seu plano vence {diasParaVencer <= 1 ? "amanhã" : `em ${diasParaVencer} dias`}. Renove para continuar cadastrando e usando a Frankkia.
+            {role === "admin" && (
+              <Link to="/app/configuracoes?aba=plano" className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-amber-700 transition hover:bg-white/90">
+                Renovar
+              </Link>
+            )}
+          </div>
+        )}
+
+        {suspensa && !leitura && (
           <div className="flex items-center justify-center gap-2 bg-rose-600 px-4 py-2.5 text-center text-sm font-medium text-white">
             <AlertTriangle className="size-4 shrink-0" />
             O acesso da {nomeImob} está suspenso. Fale com a Frankkia para regularizar.

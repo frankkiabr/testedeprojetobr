@@ -278,7 +278,12 @@ export function nomeDaTela(path: string) {
 }
 
 /** Situação para mostrar: um teste grátis com prazo vencido aparece como "Teste encerrado". */
-export function statusDe(c: Pick<Cliente, "status" | "testeAte">) {
+export function statusDe(c: Pick<Cliente, "status" | "testeAte" | "excluirEm">) {
+  if (c.excluirEm) {
+    const fim = new Date(c.excluirEm);
+    if (fim.getTime() <= Date.now()) return { label: "Prazo encerrado: excluir", tone: "danger" as const };
+    return { label: `Só leitura até ${fim.toLocaleDateString("pt-BR")}`, tone: "warn" as const };
+  }
   if (c.status === "teste" && c.testeAte && new Date(c.testeAte).getTime() < Date.now()) return { label: "Teste encerrado", tone: "danger" as const };
   return STATUS_CLIENTE[c.status];
 }

@@ -106,6 +106,20 @@ export const features = {
   ] as { key: FeatureKey; title: string; tag?: string; text: string }[],
 };
 
+/** Seção "Tudo incluso": as funções agrupadas em 4 blocos (um produto só, um preço só). */
+export const blocos = {
+  eyebrow: "Tudo incluso",
+  title: "Uma plataforma, quatro frentes do seu negócio.",
+  text: "Sem módulos pagos à parte: tudo abaixo vem em todos os planos.",
+  selo: "Tudo incluso em todos os planos",
+  items: [
+    { titulo: "Atender", itens: ["Funil de leads", "Rodízio de leads na equipe", "Agenda com Google Agenda", "Aviso de lead sem contato"] },
+    { titulo: "Captar e avaliar", itens: ["Cadastro de imóveis e proprietários", "Estudo de mercado", "Edifícios e condomínios", "Documentos do cliente"] },
+    { titulo: "Anunciar", itens: ["Portal de imóveis próprio", "Envio para ZAP, VivaReal e OLX", "Página do corretor e da imobiliária", "Relatório ao proprietário"] },
+    { titulo: "Gerir", itens: ["Equipe e convites", "Performance e ranking", "Vendas, locações e comissões", "Academy (nos planos de equipe)"] },
+  ],
+};
+
 /** Seção "Seus imóveis na vitrine": o portal de imóveis como benefício de quem assina. */
 export const vitrine = {
   eyebrow: "Portal Frankkia",

@@ -1203,6 +1203,7 @@ export type Database = {
           rodizio_minutos: number | null
           slug: string | null
           status: string
+          suspensa_em: string | null
           telefone: string | null
           teste_ate: string | null
           teste_dias: number | null
@@ -1226,6 +1227,7 @@ export type Database = {
           rodizio_minutos?: number | null
           slug?: string | null
           status?: string
+          suspensa_em?: string | null
           telefone?: string | null
           teste_ate?: string | null
           teste_dias?: number | null
@@ -1249,6 +1251,7 @@ export type Database = {
           rodizio_minutos?: number | null
           slug?: string | null
           status?: string
+          suspensa_em?: string | null
           telefone?: string | null
           teste_ate?: string | null
           teste_dias?: number | null
@@ -2208,6 +2211,10 @@ export type Database = {
         Args: { p_usuario: string }
         Returns: undefined
       }
+      imob_legivel: {
+        Args: { p_status: string; p_suspensa_em: string; p_teste_ate: string }
+        Returns: boolean
+      }
       imob_liberada: {
         Args: { p_status: string; p_teste_ate: string }
         Returns: boolean
@@ -2298,6 +2305,7 @@ export type Database = {
           cidade: string
           cliente_desde: string
           cnpj: string
+          excluir_em: string
           id: string
           nome: string
           plano: string
@@ -2421,6 +2429,10 @@ export type Database = {
       }
       vagas_em_uso: { Args: { p_imob: string }; Returns: number }
       validar_demo: { Args: { p_token: string }; Returns: string }
+      vencida_desde: {
+        Args: { p_status: string; p_suspensa_em: string; p_teste_ate: string }
+        Returns: string
+      }
       vendidos_regiao: {
         Args: {
           p_bairro?: string

@@ -4,7 +4,7 @@ import { Hourglass, LogOut, Rocket, ShieldAlert } from "lucide-react";
 import { IconeMarca, Logo } from "@/components/ui";
 import { pedidoAberto } from "@/data/platform";
 import { useStore } from "@/data/store";
-import { assinaturaEncerrada, inicioDe, lerErroCadastro, testeEncerrado, useSession } from "./session";
+import { assinaturaEncerrada, excluirEm, inicioDe, lerErroCadastro, prazoEncerrado, testeEncerrado, useSession } from "./session";
 import { mensagemErro } from "@/integrations/frankkia/client";
 import { PedidoUpgradeStatus, UpgradeModal } from "./upgrade";
 
@@ -50,7 +50,7 @@ function SemAcesso() {
 }
 
 /** Fim do teste grátis (ou da assinatura): o administrador contrata um plano; o corretor é avisado. Os dados ficam guardados. */
-function TesteEncerrado({ assinatura = false }: { assinatura?: boolean }) {
+function TesteEncerrado({ assinatura = false, prazo = false }: { assinatura?: boolean; prazo?: boolean }) {
   const { conta, sair } = useSession();
   const [planos, setPlanos] = useState(false);
   const admin = conta?.papel === "admin";
@@ -67,7 +67,9 @@ function TesteEncerrado({ assinatura = false }: { assinatura?: boolean }) {
         </span>
         <h1 className="type-title mt-6 !text-[1.75rem]">{assinatura ? "Sua assinatura foi encerrada" : "O teste grátis terminou"}</h1>
         <p className="mt-3 text-muted">
-          {assinatura
+          {prazo
+            ? `O prazo de 90 dias para renovar o plano da ${conta?.imobiliaria?.nome} terminou em ${excluirEm(conta?.imobiliaria)?.toLocaleDateString("pt-BR")} e os dados serão excluídos. ${admin ? "Para manter tudo, contrate um plano agora." : "Fale com o administrador da sua imobiliária."}`
+            : assinatura
             ? `A assinatura da ${conta?.imobiliaria?.nome} foi cancelada ou não teve o pagamento aprovado. Contrate um plano para voltar a usar: tudo o que vocês cadastraram continua guardado.`
             : admin
               ? `Gostou da Frankkia? Contrate um plano para a ${conta?.imobiliaria?.nome} continuar usando. Tudo o que vocês cadastraram continua guardado.`
@@ -118,7 +120,9 @@ export function Guard({ area, children }: { area: "app" | "admin"; children: Rea
   // Entrou pelo Google sem ter conta: completa o cadastro do teste grátis
   if (modo === "real" && conta?.semCadastro) return <Navigate to="/cadastro" replace />;
   if (modo === "real" && !conta?.papel) return <SemAcesso />;
-  if (modo === "real" && testeEncerrado(conta?.imobiliaria)) return <TesteEncerrado />;
-  if (modo === "real" && assinaturaEncerrada(conta?.imobiliaria)) return <TesteEncerrado assinatura />;
+  // Plano vencido há menos de 90 dias: entra no modo só leitura (faixa no topo do painel).
+  // Passou do prazo: só a tela de contratar (os dados aguardam a exclusão).
+  if (modo === "real" && prazoEncerrado(conta?.imobiliaria))
+    return <TesteEncerrado assinatura={!testeEncerrado(conta?.imobiliaria) && assinaturaEncerrada(conta?.imobiliaria)} prazo />;
   return <>{children}</>;
 }

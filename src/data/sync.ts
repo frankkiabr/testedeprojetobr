@@ -325,6 +325,7 @@ export async function carregarReal(conta: ContaDados) {
           clienteDesde: c.cliente_desde,
           ultimoAcesso: u(c.ultimo_acesso),
           testeAte: u(c.teste_ate),
+          excluirEm: u(c.excluir_em),
           testeDias: u(c.teste_dias),
           adminNome: c.admin_nome,
           adminEmail: c.admin_email,
