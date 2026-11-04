@@ -114,7 +114,27 @@ export const captacaoCategoria = (c: Captacao) => imovelById(c.imovelId)?.catego
 /** Tipos que são prédio ou condomínio (várias unidades no mesmo endereço). */
 const TIPOS_PREDIO = ["Apartamento", "Cobertura", "Flat", "Kitnet", "Edifício residencial", "Casa de condomínio", "Sala comercial", "Consultório", "Prédio inteiro"];
 /** Aba "Edifícios e Condomínios": tem nome de edifício/condomínio ou é de um tipo com várias unidades. */
-export const ehPredio = (im: Imovel) => !!im.nome?.trim() || TIPOS_PREDIO.includes(im.categoria);
+export const ehPredio = (im: Imovel) => TIPOS_PREDIO.includes(im.categoria);
+/** Tipos que ficam dentro de um edifício ou condomínio (no "Novo imóvel" pedem o prédio). */
+export const pedePredio = (categoria: string) => TIPOS_PREDIO.includes(categoria) && categoria !== "Edifício residencial" && categoria !== "Prédio inteiro";
+
+/** Distância em metros entre dois pontos do mapa. */
+export function distanciaM(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
+  const r = 6371000, rad = Math.PI / 180;
+  const dLat = (b.lat - a.lat) * rad, dLng = (b.lng - a.lng) * rad;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLng / 2) ** 2;
+  return 2 * r * Math.asin(Math.sqrt(h));
+}
+/** Endereço já cadastrado bem perto deste ponto (até 30 m): evita criar o mesmo prédio duas vezes com nomes diferentes. */
+export function enderecoPerto(p: { lat: number; lng: number }, excetoId?: string) {
+  let melhor: { im: Imovel; m: number } | undefined;
+  for (const im of imoveis) {
+    if (im.id === excetoId || im.lat === undefined || im.lng === undefined) continue;
+    const m = distanciaM(p, { lat: im.lat, lng: im.lng });
+    if (m <= 30 && (!melhor || m < melhor.m)) melhor = { im, m };
+  }
+  return melhor;
+}
 export const nomePredio = (im: Imovel) => im.nome?.trim() || `${im.endereco.logradouro}, ${im.endereco.numero}`;
 
 export const fotoCapa = (captacaoId: string) => anuncios.find((a) => a.captacaoId === captacaoId)?.fotos[0]?.url;

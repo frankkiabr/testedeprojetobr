@@ -35,7 +35,9 @@ import {
   userById,
   participanteAvatar,
   ehPredio,
+  enderecoPerto,
   nomePredio,
+  pedePredio,
 } from "@/data/queries";
 import { useStore } from "@/data/store";
 import type { Captacao, CategoriaImovel, EtapaLead, FechamentoInformado, Finalidade, Participante, Imovel } from "@/data/types";
@@ -376,19 +378,22 @@ export function ImovelFormModal({
     else setAvisoMapa("Não encontramos este endereço no mapa. Confira rua, número e cidade.");
   };
 
-  const comNome = CATEGORIAS_COM_UNIDADE.includes(f.categoria);
-  const ok = f.logradouro.trim() && f.numero.trim() && f.bairro.trim() && f.cidade.trim() && f.uf && (!comNome || f.nome.trim());
+  // Edifício/condomínio pede o nome; casa, galpão, terreno pedem um título. Endereço novo sempre com o ponto no mapa.
+  const comNome = ehPredio({ categoria: f.categoria } as Imovel);
+  const perto = ponto ? enderecoPerto(ponto, imovel?.id) : undefined;
+  const ok =
+    f.logradouro.trim() && f.numero.trim() && f.bairro.trim() && f.cidade.trim() && f.uf && f.nome.trim() && (!!ponto || (!!imovel && imovel.lat === undefined));
   const endereco = { logradouro: f.logradouro.trim(), numero: f.numero.trim(), bairro: f.bairro.trim(), cidade: f.cidade.trim(), uf: f.uf };
 
   return (
     <Modal
       open={open}
       onClose={onClose}
-      title={imovel ? "Editar endereço" : "Novo imóvel"}
+      title={imovel ? "Editar endereço" : "Novo endereço"}
       subtitle={
         imovel
           ? "Vale para todas as captações deste endereço (por exemplo, outros apartamentos do mesmo prédio)."
-          : "O imóvel é o lugar físico. Depois ele pode ser usado em várias captações."
+          : "O endereço é o lugar físico (prédio, casa, galpão...). Depois ele é usado nas captações, estudos e leads."
       }
       footer={
         <>
@@ -411,19 +416,19 @@ export function ImovelFormModal({
               criado.current = addImovel(dados).id;
             }}
           >
-            {imovel ? "Salvar endereço" : "Cadastrar imóvel"}
+            {imovel ? "Salvar endereço" : "Cadastrar endereço"}
           </BotaoSalvar>
         </>
       }
     >
       <div className="grid gap-4 sm:grid-cols-6">
-        <Field label="Categoria" className="sm:col-span-6">
+        <Field label="Tipo" className="sm:col-span-6">
           <SelectField value={f.categoria} onChange={(v) => setF({ ...f, categoria: v as CategoriaImovel })} options={OPCOES_TIPO} />
         </Field>
         <Field
-          label={comNome ? "Nome do edifício ou condomínio" : "Nome (opcional)"}
+          label={comNome ? "Nome do edifício ou condomínio" : "Título"}
           className="sm:col-span-6"
-          hint={comNome ? "Ex.: Edifício Montpellier. As unidades (apto, cobertura, sala) entram na captação." : "Ex.: Galpão Logístico Norte. Pode deixar em branco."}
+          hint={comNome ? "Ex.: Edifício Montpellier. As unidades (apto, cobertura, sala) entram na captação." : "Ex.: Casa térrea na Pedreira; Galpão Logístico Norte."}
         >
           <input className={inputCls} value={f.nome} onChange={(e) => setF({ ...f, nome: e.target.value })} />
         </Field>
@@ -464,7 +469,7 @@ export function ImovelFormModal({
             {enderecoCompleto(endereco)}
           </p>
         )}
-        {/* Localização no mapa (opcional): o marcador pode ser arrastado até o ponto exato */}
+        {/* Localização no mapa (obrigatória no endereço novo): o marcador pode ser arrastado até o ponto exato */}
         <div className="space-y-2 sm:col-span-6">
           {ponto ? (
             <>
@@ -473,8 +478,15 @@ export function ImovelFormModal({
             </>
           ) : (
             <button type="button" disabled={!ok || buscando === "mapa"} onClick={localizarNoMapa} className={`${btn.outline} w-full`}>
-              <MapPin className="size-4" /> {buscando === "mapa" ? "Localizando..." : "Localizar no mapa"}
+              <MapPin className="size-4" /> {buscando === "mapa" ? "Localizando..." : "Marcar no mapa"}
             </button>
+          )}
+          {!ponto && <p className="text-xs text-muted">Obrigatório: marque o ponto exato no mapa (dá para arrastar o marcador).</p>}
+          {perto && (
+            <p className="flex items-start gap-1.5 rounded-xl bg-amber-50 px-3 py-2.5 text-xs text-amber-900">
+              <Info className="mt-0.5 size-3.5 shrink-0" />
+              Atenção: já existe {nomePredio(perto.im)} a {Math.round(perto.m)} m deste ponto. Confira se não é o mesmo endereço antes de cadastrar.
+            </p>
           )}
           {avisoMapa && <p className="text-xs font-medium text-amber-700">{avisoMapa}</p>}
         </div>
@@ -528,6 +540,8 @@ export function CaptacaoFormModal({ open, onClose }: { open: boolean; onClose: (
     suites: "",
     banheiros: "",
     vagas: "",
+    /** Prédio do apartamento/sala: "" = não escolhido, "novo" = cadastrar agora, ou o id do prédio. */
+    predioId: "",
     modo: "novo" as "existente" | "novo",
     proprietarioId: "",
     propNome: "",
@@ -548,7 +562,7 @@ export function CaptacaoFormModal({ open, onClose }: { open: boolean; onClose: (
       } else {
         // Vindo da ficha de um prédio ("Novo imóvel neste prédio"): já abre com o endereço dele
         const predio = imoveis.find((i) => i.id === new URLSearchParams(window.location.search).get("predio"));
-        setF(predio ? { ...empty(), ...camposDoPredio(predio) } : empty());
+        setF(predio ? { ...empty(), ...camposDoPredio(predio), predioId: ehPredio(predio) ? predio.id : "" } : empty());
         setPonto(predio?.lat !== undefined && predio.lng !== undefined ? { lat: predio.lat, lng: predio.lng } : null);
       }
       setAvisoMapa("");
@@ -566,7 +580,31 @@ export function CaptacaoFormModal({ open, onClose }: { open: boolean; onClose: (
   // Prédio/casa já cadastrado no mesmo endereço?
   const existente = enderecoOk ? imoveis.find((i) => chaveEndereco(i.endereco) === chaveEndereco(endereco)) : undefined;
   const propOk = f.modo === "existente" ? !!f.proprietarioId : f.propNome.trim() && normalizePhone(f.propWhats).length >= 12;
-  const ok = corretorId && enderecoOk && valor > 0 && area > 0 && propOk && (!comUnidade || f.unidade.trim()) && (!comUnidade || existente || f.nome.trim());
+  const comPredio = pedePredio(f.categoria);
+  // Apartamento, sala etc.: o prédio vem da lista (ou é cadastrado agora). Casa, galpão, terreno: título + endereço.
+  const mostrarEndereco = !comPredio || f.predioId === "novo";
+  const predioOk = !comPredio || (f.predioId === "novo" ? !!f.nome.trim() : !!f.predioId);
+  const tituloOk = comPredio || !!existente || !!f.nome.trim();
+  // Endereço novo sempre com o ponto exato no mapa (nunca só pelo nome)
+  const mapaOk = !!ponto || existente?.lat !== undefined;
+  const perto = ponto && !existente ? enderecoPerto(ponto) : undefined;
+  const ok =
+    corretorId && enderecoOk && valor > 0 && area > 0 && propOk && (!comUnidade || f.unidade.trim()) && predioOk && tituloOk && mapaOk;
+  const usarEndereco = (p: Imovel) => {
+    setF((x) => ({ ...x, ...camposDoPredio(p), categoria: x.categoria, predioId: ehPredio(p) && pedePredio(x.categoria) ? p.id : "" }));
+    setPonto(p.lat !== undefined && p.lng !== undefined ? { lat: p.lat, lng: p.lng } : null);
+    setAvisoMapa("");
+  };
+  const escolherPredio = (id: string) => {
+    if (id === "novo") {
+      setF((x) => ({ ...x, predioId: "novo", nome: "", cep: "", logradouro: "", numero: "", bairro: "", cidade: cidadePadrao, uf: ufPadrao }));
+      setPonto(null);
+      setAvisoMapa("");
+      return;
+    }
+    const p = imoveis.find((i) => i.id === id);
+    if (p) usarEndereco(p);
+  };
   const inteiro = (s: string) => (s.trim() === "" ? undefined : Math.min(50, Math.max(0, Number(s.replace(/\D/g, "")) || 0)));
 
   const mudarCep = async (v: string) => {
@@ -669,28 +707,52 @@ export function CaptacaoFormModal({ open, onClose }: { open: boolean; onClose: (
             />
           </div>
         )}
-        <Field label="Categoria" className="sm:col-span-6">
-          <SelectField value={f.categoria} onChange={(v) => setF({ ...f, categoria: v as CategoriaImovel })} options={OPCOES_TIPO} />
+        <Field label="Tipo de imóvel" className="sm:col-span-6">
+          <SelectField
+            value={f.categoria}
+            onChange={(v) => {
+              const prox = v as CategoriaImovel;
+              // Trocou entre "dentro de prédio" e "casa/galpão/terreno": recomeça a escolha do endereço
+              if (pedePredio(prox) !== pedePredio(f.categoria)) {
+                setF({ ...f, categoria: prox, predioId: "", nome: "", cep: "", logradouro: "", numero: "", bairro: "", cidade: cidadePadrao, uf: ufPadrao, unidade: "" });
+                setPonto(null);
+              } else setF({ ...f, categoria: prox });
+            }}
+            options={OPCOES_TIPO}
+          />
         </Field>
-        {predios.length > 0 && (
-          <Field label="Edifício ou condomínio já cadastrado (opcional)" className="sm:col-span-6" hint="Preenche o endereço, o CEP e o mapa com os dados do prédio.">
+        {comPredio && (
+          <Field label="Edifício ou condomínio" className="sm:col-span-6" hint="Escolha da lista de Endereços ou cadastre um novo (com o ponto exato no mapa).">
             <SelectField
-              value={existente && ehPredio(existente) ? existente.id : ""}
-              onChange={(id) => {
-                const p = imoveis.find((i) => i.id === id);
-                if (!p) return;
-                setF((x) => ({ ...x, ...camposDoPredio(p) }));
-                setPonto(p.lat !== undefined && p.lng !== undefined ? { lat: p.lat, lng: p.lng } : null);
-                setAvisoMapa("");
-              }}
-              placeholder="Escolha um prédio..."
-              options={predios.map((p) => ({ value: p.id, label: `${nomePredio(p)} · ${p.endereco.bairro}` }))}
+              value={f.predioId}
+              onChange={escolherPredio}
+              placeholder="Escolha o prédio..."
+              options={[{ value: "novo", label: "+ Cadastrar novo edifício ou condomínio" }, ...predios.map((p) => ({ value: p.id, label: `${nomePredio(p)} · ${p.endereco.bairro}` }))]}
             />
+          </Field>
+        )}
+        {comPredio && f.predioId && f.predioId !== "novo" && existente && (
+          <p className="flex items-start gap-1.5 rounded-xl bg-accent-soft/60 px-3 py-2.5 text-xs text-accent-deep sm:col-span-6">
+            <MapPin className="mt-0.5 size-3.5 shrink-0" />
+            {enderecoCompleto(existente.endereco)}
+            {(existente.condominioMedio || (existente.caracteristicas?.length ?? 0) > 0) && ". O condomínio e o lazer do prédio já entram no anúncio."}
+          </p>
+        )}
+        {!comPredio && (
+          <Field label="Título do imóvel" className="sm:col-span-6" hint="Ex.: Casa térrea na Pedreira; Galpão da BR-316. Ajuda a achar o imóvel nas listas.">
+            <input className={inputCls} value={existente?.nome ? existente.nome : f.nome} disabled={!!existente?.nome} onChange={(e) => setF({ ...f, nome: e.target.value })} />
           </Field>
         )}
 
         {/* Endereço */}
-        <p className="-mb-1 text-sm font-semibold sm:col-span-6">Endereço</p>
+        {mostrarEndereco && (
+          <>
+        <p className="-mb-1 text-sm font-semibold sm:col-span-6">{comPredio ? "Novo edifício ou condomínio" : "Endereço"}</p>
+        {comPredio && (
+          <Field label="Nome do edifício ou condomínio" className="sm:col-span-6" hint="Ex.: Edifício Montpellier">
+            <input className={inputCls} value={f.nome} onChange={(e) => setF({ ...f, nome: e.target.value })} />
+          </Field>
+        )}
         <Field label="CEP" className="sm:col-span-2" hint={buscando === "cep" ? "Buscando endereço..." : "Preenche o endereço sozinho."}>
           <input
             className={inputCls}
@@ -721,18 +783,14 @@ export function CaptacaoFormModal({ open, onClose }: { open: boolean; onClose: (
         <Field label="Estado" className="sm:col-span-2">
           <SelectField value={f.uf} onChange={(v) => setF({ ...f, uf: v })} options={UFS.map((u) => ({ value: u, label: u }))} />
         </Field>
-        {existente ? (
+        {existente && (
           <p className="flex items-start gap-1.5 rounded-xl bg-accent-soft/60 px-3 py-2.5 text-xs text-accent-deep sm:col-span-6">
             <Info className="mt-0.5 size-3.5 shrink-0" />
-            Este endereço já está cadastrado{existente.nome ? ` (${existente.nome})` : ""}. O imóvel será ligado a ele, como outra unidade do mesmo prédio.
+            Este endereço já está cadastrado{existente.nome ? ` (${existente.nome})` : ""}. O imóvel será ligado a ele.
             {(existente.condominioMedio || (existente.caracteristicas?.length ?? 0) > 0) && " O condomínio e o lazer do prédio já entram no anúncio."}
           </p>
-        ) : (
-          CATEGORIAS_COM_UNIDADE.includes(f.categoria) && (
-            <Field label="Nome do edifício" className="sm:col-span-6" hint="Ex.: Edifício Montpellier">
-              <input className={inputCls} value={f.nome} onChange={(e) => setF({ ...f, nome: e.target.value })} />
-            </Field>
-          )
+        )}
+          </>
         )}
         {comUnidade && (
           <Field
@@ -743,18 +801,32 @@ export function CaptacaoFormModal({ open, onClose }: { open: boolean; onClose: (
             <input className={inputCls} value={f.unidade} onChange={(e) => setF({ ...f, unidade: e.target.value })} />
           </Field>
         )}
-        <div className="space-y-2 sm:col-span-6">
+        <div className={`space-y-2 sm:col-span-6 ${!comPredio || f.predioId ? "" : "hidden"}`}>
           {ponto ? (
             <>
               <Mapa lat={ponto.lat} lng={ponto.lng} onMover={setPonto} className="h-48" />
               <p className="text-xs text-muted">Se o marcador não estiver no lugar certo, arraste-o até o imóvel.</p>
             </>
           ) : (
-            !existente?.lat && (
-              <button type="button" disabled={!enderecoOk || buscando === "mapa"} onClick={localizarNoMapa} className={`${btn.outline} w-full`}>
-                <MapPin className="size-4" /> {buscando === "mapa" ? "Localizando..." : "Localizar no mapa (opcional)"}
-              </button>
+            existente?.lat === undefined && (
+              <>
+                <button type="button" disabled={!enderecoOk || buscando === "mapa"} onClick={localizarNoMapa} className={`${btn.outline} w-full`}>
+                  <MapPin className="size-4" /> {buscando === "mapa" ? "Localizando..." : "Marcar no mapa"}
+                </button>
+                {enderecoOk && <p className="text-xs text-muted">Obrigatório: marque o ponto exato do imóvel no mapa (dá para arrastar o marcador).</p>}
+              </>
             )
+          )}
+          {perto && (
+            <div className="flex flex-wrap items-center gap-2 rounded-xl bg-amber-50 px-3 py-2.5 text-xs text-amber-900">
+              <Info className="size-3.5 shrink-0" />
+              <span className="min-w-0 flex-1">
+                Já existe <strong>{nomePredio(perto.im)}</strong> a {Math.round(perto.m)} m deste ponto. É o mesmo endereço?
+              </span>
+              <button type="button" onClick={() => usarEndereco(perto.im)} className="rounded-full bg-white px-3 py-1 font-semibold text-amber-800 shadow-sm">
+                Usar este
+              </button>
+            </div>
           )}
           {avisoMapa && <p className="text-xs font-medium text-amber-700">{avisoMapa}</p>}
         </div>

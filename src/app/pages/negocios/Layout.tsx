@@ -4,7 +4,7 @@ import { BadgeDollarSign, Building2, ClipboardList, Handshake, UserRound, Users 
 import { imoveis } from "@/data/demo";
 
 import { parceiros } from "@/data/demo";
-import { captacoesOf, ehPredio, fechamentosPendentes, leadsOf, proprietariosOf, transacoesOf } from "@/data/queries";
+import { captacoesOf, fechamentosPendentes, leadsOf, proprietariosOf, transacoesOf } from "@/data/queries";
 import { useStore } from "@/data/store";
 import { useScope } from "../../session";
 import { PageHeader, stagger } from "../../kit";
@@ -19,7 +19,7 @@ export default function NegociosLayout() {
     { to: "captacoes", label: "Captações", icon: ClipboardList, count: captacoesOf(scope).filter((c) => c.status === "ativa").length },
     { to: "proprietarios", label: "Proprietários", icon: UserRound, count: proprietariosOf(scope).length },
     { to: "transacoes", label: "Vendas e Locações", icon: BadgeDollarSign, count: transacoesOf(scope).length, alert: pendentes },
-    { to: "edificios", label: "Edifícios e Condomínios", icon: Building2, count: imoveis.filter(ehPredio).length },
+    { to: "enderecos", label: "Endereços", icon: Building2, count: imoveis.length },
     ...(isAdmin ? [{ to: "parceiros", label: "Parceiros", icon: Handshake, count: parceiros.length }] : []),
   ];
 

@@ -106,7 +106,8 @@ export default function App() {
                   <Route path="imoveis" element={<Navigate to="/app/negocios/captacoes" replace />} />
                   <Route path="proprietarios" element={<Proprietarios />} />
                   <Route path="transacoes" element={<Transacoes />} />
-                  <Route path="edificios" element={<Edificios />} />
+                  <Route path="enderecos" element={<Edificios />} />
+                  <Route path="edificios" element={<Navigate to="/app/negocios/enderecos" replace />} />
                   <Route
                     path="parceiros"
                     element={

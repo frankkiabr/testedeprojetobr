@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Building2, ChevronRight, LineChart, MapPin, PenLine, Phone, Plus } from "lucide-react";
+import { Building2, ChevronRight, LineChart, MapPin, MapPinOff, PenLine, Phone, Plus } from "lucide-react";
 import { captacoes, imoveis, transacoes } from "@/data/demo";
 import { captacaoTitulo, ehPredio, fotoDoImovel, nomePredio } from "@/data/queries";
 import { listarAvaliacoes, type Avaliacao } from "@/data/avaliacoes";
@@ -9,12 +9,23 @@ import { useStore } from "@/data/store";
 import type { Imovel } from "@/data/types";
 import { brl, dataHora } from "@/lib/format";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
-import { GRUPOS_CARACTERISTICAS, rotuloTipo } from "@/lib/imovel";
+import { GRUPOS_CARACTERISTICAS, rotuloTipo, TIPOS_IMOVEL } from "@/lib/imovel";
 import { useSession } from "../../session";
-import { Card } from "../../kit";
+import { Card, Select } from "../../kit";
 import { BotaoSalvar, btn, Drawer, EmptyState, Field, formatPhone, inputCls, mascaraMoeda, moeda, SearchInput, waLink } from "../../forms";
 import { chaveEndereco, ImovelCover, ImovelFormModal, StatusBadge, valorLabel } from "./shared";
 
+
+/** Filtro da aba Endereços: grupos de tipos. */
+const RURAIS = ["Terreno", "Terreno comercial", "Chácara", "Fazenda/Sítio"];
+const CASAS = ["Casa", "Sobrado"];
+const FILTROS: { value: string; label: string; ok: (im: Imovel) => boolean }[] = [
+  { value: "", label: "Todos os endereços", ok: () => true },
+  { value: "predios", label: "Edifícios e condomínios", ok: ehPredio },
+  { value: "casas", label: "Casas e sobrados", ok: (im) => CASAS.includes(im.categoria) },
+  { value: "comerciais", label: "Comerciais (galpões, lojas...)", ok: (im) => !ehPredio(im) && !RURAIS.includes(im.categoria) && TIPOS_IMOVEL.find((t) => t.valor === im.categoria)?.grupo === "Comercial" },
+  { value: "terrenos", label: "Terrenos e rurais", ok: (im) => RURAIS.includes(im.categoria) },
+];
 
 /** Lazer, áreas comuns e segurança: o que vale para o prédio todo. */
 const GRUPOS_DO_PREDIO = GRUPOS_CARACTERISTICAS.filter((g) => ["Lazer e esporte", "Condomínio", "Segurança"].includes(g.titulo));
@@ -53,6 +64,7 @@ function Ficha({ im, onClose, estudos }: { im: Imovel; onClose: () => void; estu
   const mudou = JSON.stringify(f) !== JSON.stringify(inicial());
 
   const { caps, vendas } = doPredio(im);
+  const predio = ehPredio(im);
   const daVenda = caps.filter((c) => c.finalidade === "venda" && c.areaM2 > 0);
   const m2Ofertas = media(daVenda.map((c) => m2(c.valor, c.areaM2)));
   const m2Vendas = media(
@@ -75,8 +87,9 @@ function Ficha({ im, onClose, estudos }: { im: Imovel; onClose: () => void; estu
         footer={
           <>
             <button onClick={() => navigate(`/app/negocios/captacoes?novo=1&predio=${im.id}`)} className={`${btn.outline} mr-auto`}>
-              <Plus className="size-4" /> Novo imóvel neste prédio
+              <Plus className="size-4" /> {predio ? "Novo imóvel neste prédio" : "Nova captação neste endereço"}
             </button>
+            {predio && (
             <BotaoSalvar
               disabled={!mudou}
               depois={onClose}
@@ -97,6 +110,7 @@ function Ficha({ im, onClose, estudos }: { im: Imovel; onClose: () => void; estu
             >
               Salvar ficha
             </BotaoSalvar>
+            )}
           </>
         }
       >
@@ -116,7 +130,17 @@ function Ficha({ im, onClose, estudos }: { im: Imovel; onClose: () => void; estu
             ))}
           </div>
 
+          {!predio && (
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-canvas p-4 text-sm">
+              <span className="text-muted">{im.lat === undefined ? "Este endereço ainda não tem o ponto no mapa." : "Endereço com localização no mapa."}</span>
+              <button onClick={() => setEditarEndereco(true)} className="inline-flex items-center gap-1.5 font-semibold text-accent">
+                <PenLine className="size-4" /> Editar título e endereço
+              </button>
+            </div>
+          )}
+
           {/* Ficha */}
+          {predio && (<>
           <div>
             <div className="mb-3 flex items-center justify-between gap-3">
               <p className="font-display text-lg font-semibold">Dados do prédio</p>
@@ -181,10 +205,11 @@ function Ficha({ im, onClose, estudos }: { im: Imovel; onClose: () => void; estu
             </div>
           ))}
           <p className="-mt-3 text-xs text-subtle">Ao cadastrar um imóvel neste prédio, o condomínio e estas características já entram no anúncio.</p>
+          </>)}
 
           {/* Cruzamento: captações, vendas e estudos do mesmo endereço */}
           <div>
-            <p className="mb-3 font-display text-lg font-semibold">Imóveis neste prédio ({caps.length})</p>
+            <p className="mb-3 font-display text-lg font-semibold">{predio ? "Imóveis neste prédio" : "Captações neste endereço"} ({caps.length})</p>
             {caps.length ? (
               <ul className="divide-y divide-line rounded-2xl border border-line">
                 {caps.map((c) => (
@@ -203,7 +228,7 @@ function Ficha({ im, onClose, estudos }: { im: Imovel; onClose: () => void; estu
                 ))}
               </ul>
             ) : (
-              <p className="rounded-2xl bg-canvas p-4 text-sm text-muted">Nenhuma captação sua neste prédio ainda.</p>
+              <p className="rounded-2xl bg-canvas p-4 text-sm text-muted">Nenhuma captação sua {predio ? "neste prédio" : "neste endereço"} ainda.</p>
             )}
           </div>
 
@@ -235,12 +260,13 @@ function Ficha({ im, onClose, estudos }: { im: Imovel; onClose: () => void; estu
   );
 }
 
-/** Negócios → Edifícios e Condomínios: cadastro dos prédios para preencher captações e cruzar dados. */
+/** Negócios → Endereços: todos os lugares físicos (prédios, casas, galpões, terrenos). É a base que cruza captações, vendas e estudos. */
 export default function Edificios() {
   useStore();
   const { modo } = useSession();
   const [params, setParams] = useSearchParams();
   const [busca, setBusca] = useState("");
+  const [tipo, setTipo] = useState("");
   const [novo, setNovo] = useState(false);
   const [estudos, setEstudos] = useState<Avaliacao[]>([]);
   useEffect(() => {
@@ -257,11 +283,12 @@ export default function Edificios() {
 
   const lista = useMemo(() => {
     const q = busca.trim().toLowerCase();
+    const filtro = FILTROS.find((x) => x.value === tipo) ?? FILTROS[0];
     return imoveis
-      .filter(ehPredio)
+      .filter(filtro.ok)
       .filter((im) => !q || `${nomePredio(im)} ${im.endereco.logradouro} ${im.endereco.bairro} ${im.endereco.cidade} ${im.construtora ?? ""}`.toLowerCase().includes(q))
       .sort((a, b) => nomePredio(a).localeCompare(nomePredio(b), "pt-BR"));
-  }, [busca, imoveis.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [busca, tipo, imoveis.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const estudosDe = (im: Imovel) =>
     estudos.filter((a) => a.logradouro && a.numero && a.cidade && chaveEndereco({ logradouro: a.logradouro, numero: a.numero, cidade: a.cidade }) === chaveEndereco(im.endereco));
@@ -269,9 +296,12 @@ export default function Edificios() {
   return (
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <SearchInput value={busca} onChange={setBusca} placeholder="Buscar por nome, rua, bairro ou construtora..." />
+        <div className="flex flex-wrap items-center gap-2">
+          <SearchInput value={busca} onChange={setBusca} placeholder="Buscar por nome, rua, bairro ou construtora..." />
+          <Select label="Tipo" value={tipo} onChange={setTipo} options={FILTROS.map((x) => ({ value: x.value, label: x.label }))} />
+        </div>
         <button onClick={() => setNovo(true)} className={btn.accent}>
-          <Plus className="size-4" /> Novo edifício ou condomínio
+          <Plus className="size-4" /> Novo endereço
         </button>
       </div>
 
@@ -279,15 +309,15 @@ export default function Edificios() {
         <Card>
           <EmptyState
             icon={<Building2 className="size-6" />}
-            title="Nenhum edifício ou condomínio"
-            text="Cadastre os prédios onde você trabalha. Ao captar um imóvel, os dados do prédio já vêm preenchidos."
+            title={tipo ? "Nenhum endereço deste tipo" : "Nenhum endereço cadastrado"}
+            text="Cadastre prédios, condomínios, casas e galpões com o ponto exato no mapa. Ao captar um imóvel, os dados do endereço já vêm preenchidos."
           />
         </Card>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {lista.map((im, i) => {
             const { caps, vendas } = doPredio(im);
-            const completa = im.construtora || im.andares || im.condominioMedio || (im.caracteristicas?.length ?? 0) > 0;
+            const completa = !ehPredio(im) || im.construtora || im.andares || im.condominioMedio || (im.caracteristicas?.length ?? 0) > 0;
             return (
               <motion.button
                 key={im.id}
@@ -301,13 +331,18 @@ export default function Edificios() {
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-semibold">{nomePredio(im)}</span>
                   <span className="mt-0.5 flex items-center gap-1 truncate text-xs text-muted">
-                    <MapPin className="size-3 shrink-0" /> {im.endereco.bairro}, {im.endereco.cidade} - {im.endereco.uf}
+                    <MapPin className="size-3 shrink-0" /> {rotuloTipo(im.categoria)} · {im.endereco.bairro}, {im.endereco.cidade} - {im.endereco.uf}
                   </span>
                   <span className="mt-2 flex flex-wrap gap-1.5 text-[11px] font-semibold">
                     <span className="rounded-full bg-canvas px-2 py-0.5">{caps.length} {caps.length === 1 ? "captação" : "captações"}</span>
                     {vendas.length > 0 && <span className="rounded-full bg-canvas px-2 py-0.5">{vendas.length} {vendas.length === 1 ? "venda/locação" : "vendas/locações"}</span>}
                     {im.andares && <span className="rounded-full bg-canvas px-2 py-0.5">{im.andares} andares</span>}
                     {!completa && <span className="rounded-full bg-amber-50 px-2 py-0.5 text-amber-800">Ficha a completar</span>}
+                    {im.lat === undefined && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-amber-800">
+                        <MapPinOff className="size-3" /> Sem localização
+                      </span>
+                    )}
                   </span>
                 </span>
                 <ChevronRight className="mt-1 size-4 shrink-0 text-subtle transition group-hover:translate-x-0.5" />
