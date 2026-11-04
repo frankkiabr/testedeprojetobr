@@ -1,6 +1,6 @@
 import { dataHora } from "@/lib/format";
 import { ImportarCarteiraModal } from "./ImportarCarteira";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ChevronRight, FileSpreadsheet, Plus, UserRound, Users } from "lucide-react";
@@ -9,8 +9,8 @@ import { fotoCapa, captacaoCategoria, captacaoTitulo, captacoesDoProprietario, c
 import { useStore } from "@/data/store";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { useScope } from "../../session";
-import { Avatar, Card, ProgressBar, Select } from "../../kit";
-import { btn, Drawer, EmptyState, formatPhone, SearchInput, waLink } from "../../forms";
+import { Avatar, AvatarNome, Card, ProgressBar, Select } from "../../kit";
+import { BotaoSalvar, btn, Drawer, EmptyState, formatPhone, SearchInput, waLink } from "../../forms";
 import { BotaoExcluir, ImovelCover, ListaEnderecos, ProprietarioFormModal, StatusBadge, valorLabel } from "./shared";
 import { CaptacaoDrawer } from "./Captacoes";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
@@ -22,6 +22,13 @@ function ProprietarioDrawer({ id, onClose }: { id: string | null; onClose: () =>
   const p = id ? proprietarios.find((x) => x.id === id) : undefined;
   const lista = p ? captacoesDoProprietario(p.id) : [];
   const [captacao, setCaptacao] = useState<string | null>(null);
+  // Imóveis do proprietário: só valem ao apertar "Salvar"
+  const [ligados, setLigados] = useState(p?.imoveis ?? []);
+  useEffect(() => setLigados(p?.imoveis ?? []), [id]); // eslint-disable-line react-hooks/exhaustive-deps
+  const alterado = !!p && JSON.stringify(ligados) !== JSON.stringify(p.imoveis ?? []);
+  const salvar = () => {
+    if (p && alterado) setImoveisProprietario(p.id, ligados);
+  };
 
   return (
     <>
@@ -29,9 +36,27 @@ function ProprietarioDrawer({ id, onClose }: { id: string | null; onClose: () =>
       centro
       open={!!p}
       onClose={onClose}
-      title={p?.nome}
+      alterado={alterado}
+      onSalvarAlteracoes={salvar}
+      title={
+        p && (
+          <span className="flex items-center gap-3">
+            <AvatarNome id={p.id} nome={p.nome} className="size-10 text-sm" />
+            {p.nome}
+          </span>
+        )
+      }
       subtitle={p && `${formatPhone(p.whatsapp)}${p.criadoEm ? ` · cadastrado em ${dataHora(p.criadoEm)}` : ""}`}
-      footer={p && isAdmin && <BotaoExcluir tipo="proprietario" id={p.id} nome={p.nome} onExcluido={onClose} />}
+      footer={
+        p && (
+          <>
+            {isAdmin && <BotaoExcluir tipo="proprietario" id={p.id} nome={p.nome} onExcluido={onClose} />}
+            <BotaoSalvar disabled={!alterado} onSalvar={salvar} depois={onClose}>
+              Salvar
+            </BotaoSalvar>
+          </>
+        )
+      }
     >
       {p && (
         <div className="space-y-6">
@@ -52,7 +77,7 @@ function ProprietarioDrawer({ id, onClose }: { id: string | null; onClose: () =>
           <div>
             <p className="mb-1 font-display text-lg font-semibold">Imóveis deste proprietário</p>
             <p className="mb-3 text-xs text-muted">Endereços que ele possui, mesmo sem captação. Aparecem também na ficha do endereço.</p>
-            <ListaEnderecos lista={p.imoveis ?? []} onChange={(l) => setImoveisProprietario(p.id, l)} />
+            <ListaEnderecos lista={ligados} onChange={setLigados} />
           </div>
           <div>
             <p className="mb-3 font-display text-lg font-semibold">Captações ({lista.length})</p>
@@ -164,7 +189,7 @@ export default function Proprietarios() {
                     >
                       <td className="px-5 py-3">
                         <span className="flex items-center gap-3">
-                          <Avatar user={{ id: p.id, iniciais: p.nome.split(" ").map((x) => x[0]).join("").slice(0, 2) }} className="size-9 text-xs" />
+                          <AvatarNome id={p.id} nome={p.nome} className="size-9 text-xs" />
                           <span className="font-semibold">{p.nome}</span>
                         </span>
                       </td>

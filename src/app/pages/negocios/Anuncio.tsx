@@ -6,6 +6,7 @@ import { PLANOS } from "@/data/platform";
 import { anuncioDe, useStore } from "@/data/store";
 import type { Captacao } from "@/data/types";
 import { brl } from "@/lib/format";
+import { createPortal } from "react-dom";
 import { BotaoSalvar, btn, Field, inputCls, mascaraMoeda, moeda } from "../../forms";
 import { PortaisAnuncio } from "../../Portais";
 import { valorLabel } from "./shared";
@@ -17,7 +18,19 @@ const dinheiro = (s: string) => {
 };
 
 /** Aba "Anúncio" da captação: fotos, textos e características; publicar no portal da Frankkia. */
-export function AnuncioEditor({ captacao, onPublicado }: { captacao: Captacao; onPublicado?: () => void }) {
+export function AnuncioEditor({
+  captacao,
+  onPublicado,
+  rodape,
+  onEstado,
+}: {
+  captacao: Captacao;
+  onPublicado?: () => void;
+  /** Onde ficam os botões Atualizar/Publicar/Retirar (o rodapé fixo da janela). null = não mostra agora. */
+  rodape?: HTMLElement | null;
+  /** Avisa a janela se há alterações não salvas no anúncio (para perguntar ao fechar). */
+  onEstado?: (e: { mudou: boolean; salvar: () => void }) => void;
+}) {
   const store = useStore();
   const a = anuncioDe(captacao.id);
   const input = useRef<HTMLInputElement>(null);
@@ -51,8 +64,12 @@ export function AnuncioEditor({ captacao, onPublicado }: { captacao: Captacao; o
   const noAr = a.publicado && !fechada;
   const mudou = JSON.stringify(f) !== JSON.stringify(inicial());
 
-  const salvar = () =>
-    store.salvarAnuncio(captacao.id, {
+  useEffect(() => {
+    onEstado?.({ mudou, salvar });
+  }, [mudou, JSON.stringify(f)]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function salvar() {
+    return store.salvarAnuncio(captacao.id, {
       titulo: f.titulo.trim(),
       descricao: f.descricao.trim(),
       quartos: numero(f.quartos),
@@ -64,6 +81,7 @@ export function AnuncioEditor({ captacao, onPublicado }: { captacao: Captacao; o
       caracteristicas: f.caracteristicas,
       lancamento: f.lancamento || undefined,
     });
+  }
 
   const enviarFotos = async (lista: FileList | null) => {
     if (!lista?.length) return;
@@ -83,6 +101,24 @@ export function AnuncioEditor({ captacao, onPublicado }: { captacao: Captacao; o
     if (r) setAviso(r);
     else if (sim) onPublicado?.(); // publicado: fecha a janela e o aviso de confirmação fica na tela
   };
+
+  // Botões do anúncio: ficam no rodapé fixo da janela (junto do Excluir)
+  const acoes = (
+        <div className="flex flex-wrap justify-end gap-2">
+          <BotaoSalvar disabled={!mudou} onSalvar={salvar} className={btn.outline}>
+            Atualizar
+          </BotaoSalvar>
+          {fechada ? null : noAr ? (
+            <button disabled={publicando} onClick={() => publicar(false)} className={`${btn.outline} text-rose-600`}>
+              Retirar do portal
+            </button>
+          ) : (
+            <button disabled={!autorizado || publicando} onClick={() => publicar(true)} className={btn.accent}>
+              <Globe className="size-4" /> {publicando ? "Publicando..." : "Publicar no portal"}
+            </button>
+          )}
+        </div>
+  );
 
   const campo = (k: "quartos" | "suites" | "banheiros" | "vagas", label: string) => (
     <Field label={label}>
@@ -247,21 +283,11 @@ export function AnuncioEditor({ captacao, onPublicado }: { captacao: Captacao; o
             Tenho autorização do proprietário para anunciar este imóvel, com fotos e endereço completo.
           </label>
         )}
-        <div className="flex flex-wrap justify-end gap-2">
-          <BotaoSalvar disabled={!mudou} onSalvar={salvar} className={btn.outline}>
-            Atualizar
-          </BotaoSalvar>
-          {fechada ? null : noAr ? (
-            <button disabled={publicando} onClick={() => publicar(false)} className={`${btn.outline} text-rose-600`}>
-              Retirar do portal
-            </button>
-          ) : (
-            <button disabled={!autorizado || publicando} onClick={() => publicar(true)} className={btn.accent}>
-              <Globe className="size-4" /> {publicando ? "Publicando..." : "Publicar no portal"}
-            </button>
-          )}
-        </div>
+        {rodape === undefined && acoes}
       </div>
+      {rodape && createPortal(acoes, rodape)}
     </div>
   );
 }
+
+

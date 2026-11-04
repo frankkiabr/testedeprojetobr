@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { AlarmClock, BadgeDollarSign, CalendarClock, Columns3, FileSpreadsheet, List, MessageCircleMore, Phone, Plus, Repeat, Users } from "lucide-react";
@@ -8,7 +8,7 @@ import { useStore } from "@/data/store";
 import type { EtapaLead, Lead } from "@/data/types";
 import { dateTime, relTime, dataHora } from "@/lib/format";
 import { useScope } from "../../session";
-import { Avatar, Badge, Card, ProgressBar, Segmented, Select } from "../../kit";
+import { Avatar, AvatarNome, Badge, Card, ProgressBar, Segmented, Select } from "../../kit";
 import { BotaoSalvar, btn, CheckItem, DateInput, Drawer, EmptyState, Field, formatPhone, inputCls, SearchInput, TimeInput, toLocalInput, waLink } from "../../forms";
 import { ETAPA_DOT, ETAPA_STYLE, LeadFormModal, BotaoExcluir, EnderecoPicker } from "./shared";
 import { ImportarLeadsModal } from "./ImportarLeads";
@@ -193,15 +193,35 @@ function ListView({ leads, showCorretor, onOpen }: { leads: Lead[]; showCorretor
 }
 
 function LeadDrawer({ id, onClose }: { id: string | null; onClose: () => void }) {
-  const { updateLead, toggleLeadStep, registrarContato } = useStore();
+  const { updateLead, registrarContato } = useStore();
   const { isAdmin, solo } = useScope();
   const navigate = useNavigate();
   const lead = id ? leadById(id) : undefined;
-  const passos = lead ? lead.checklist.filter(Boolean).length : 0;
-  // Etapa, visita e checklist já gravam no clique; o botão Salvar confirma e grava as observações
-  const obs = useRef<HTMLTextAreaElement>(null);
+  // Rascunho: etapa, visita, checklist, interesse e observações só valem ao apertar "Salvar".
+  // Fechar com alterações pergunta se quer salvar ou descartar.
+  const doLead = () => ({
+    etapa: lead?.etapa ?? "novo",
+    visitaEm: lead?.visitaEm,
+    checklist: [...(lead?.checklist ?? [])],
+    observacoes: lead?.observacoes ?? "",
+    interesseCaptacaoId: lead?.interesseCaptacaoId,
+    interesseImovelId: lead?.interesseImovelId,
+    interesseUnidade: lead?.interesseUnidade,
+  });
+  const [d, setD] = useState(doLead);
+  useEffect(() => setD(doLead()), [id]); // eslint-disable-line react-hooks/exhaustive-deps
+  const alterado = !!lead && JSON.stringify(d) !== JSON.stringify(doLead());
+  const passos = d.checklist.filter(Boolean).length;
   const salvar = () => {
-    if (lead && obs.current && obs.current.value !== (lead.observacoes ?? "")) updateLead(lead.id, { observacoes: obs.current.value });
+    if (!lead || !alterado) return;
+    const antes = doLead();
+    const patch: Partial<typeof antes> & { ultimoContato?: string } = {};
+    (Object.keys(d) as (keyof typeof d)[]).forEach((k) => {
+      if (JSON.stringify(d[k]) !== JSON.stringify(antes[k])) (patch as Record<string, unknown>)[k] = d[k];
+    });
+    // Marcar um passo novo do checklist conta como contato com o cliente
+    if (d.checklist.some((v, i) => v && !antes.checklist[i])) patch.ultimoContato = new Date().toISOString();
+    updateLead(lead.id, patch);
   };
 
   return (
@@ -209,7 +229,16 @@ function LeadDrawer({ id, onClose }: { id: string | null; onClose: () => void })
       centro
       open={!!lead}
       onClose={onClose}
-      title={lead?.nome}
+      alterado={alterado}
+      onSalvarAlteracoes={salvar}
+      title={
+        lead && (
+          <span className="flex items-center gap-3">
+            <AvatarNome id={lead.id} nome={lead.nome} className="size-10 text-sm" />
+            {lead.nome}
+          </span>
+        )
+      }
       subtitle={
         lead && (
           <span className="flex items-center gap-2">
@@ -226,7 +255,9 @@ function LeadDrawer({ id, onClose }: { id: string | null; onClose: () => void })
               <BadgeDollarSign className="size-4" /> {isAdmin ? "Registrar venda ou locação" : "Informar fechamento"}
             </button>
           )}
-          <BotaoSalvar onSalvar={salvar} depois={onClose}>Salvar</BotaoSalvar>
+          <BotaoSalvar disabled={!alterado} onSalvar={salvar} depois={onClose}>
+            Salvar
+          </BotaoSalvar>
         </>
       }
     >
@@ -237,19 +268,9 @@ function LeadDrawer({ id, onClose }: { id: string | null; onClose: () => void })
             <EnderecoPicker
               captacoes
               rotulo="Interessado em"
-              valor={{ captacaoId: lead.interesseCaptacaoId, imovelId: lead.interesseImovelId, unidade: lead.interesseUnidade }}
-              onChange={(v) => updateLead(lead.id, { interesseCaptacaoId: v.captacaoId, interesseImovelId: v.imovelId, interesseUnidade: v.unidade })}
+              valor={{ captacaoId: d.interesseCaptacaoId, imovelId: d.interesseImovelId, unidade: d.interesseUnidade }}
+              onChange={(v) => setD({ ...d, interesseCaptacaoId: v.captacaoId, interesseImovelId: v.imovelId, interesseUnidade: v.unidade })}
             />
-            {(lead.interesseCaptacaoId || lead.interesseImovelId) && (
-              <button
-                onClick={() =>
-                  navigate(lead.interesseCaptacaoId ? `/app/negocios/captacoes?captacao=${lead.interesseCaptacaoId}` : `/app/negocios/enderecos?predio=${lead.interesseImovelId}`)
-                }
-                className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-accent"
-              >
-                Abrir {lead.interesseCaptacaoId ? "o imóvel" : "o endereço"} →
-              </button>
-            )}
           </div>
           {/* Rodízio: prazo para o primeiro contato e por quem o lead já passou */}
           {(prazoRodizio(lead) || (isAdmin && lead.rodizio && ((lead.passouPor?.length ?? 0) > 0 || lead.voltouAoAdmin))) && (
@@ -289,9 +310,9 @@ function LeadDrawer({ id, onClose }: { id: string | null; onClose: () => void })
               {ETAPAS.map((e) => (
                 <button
                   key={e.id}
-                  onClick={() => updateLead(lead.id, { etapa: e.id })}
+                  onClick={() => setD({ ...d, etapa: e.id })}
                   className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
-                    lead.etapa === e.id ? "border-ink bg-ink text-bg" : "border-line-strong hover:border-ink/40"
+                    d.etapa === e.id ? "border-ink bg-ink text-bg" : "border-line-strong hover:border-ink/40"
                   }`}
                 >
                   <span className={`size-1.5 rounded-full ${ETAPA_DOT[e.id]}`} />
@@ -335,21 +356,21 @@ function LeadDrawer({ id, onClose }: { id: string | null; onClose: () => void })
             )}
           </dl>
 
-          {lead.etapa === "visita" && (
-            <Field label="Data da visita" hint={lead.visitaEm ? dateTime(lead.visitaEm) : "Defina quando será a visita."}>
+          {d.etapa === "visita" && (
+            <Field label="Data da visita" hint={d.visitaEm ? dateTime(d.visitaEm) : "Defina quando será a visita."}>
               <div className="grid grid-cols-[1fr_7rem] gap-2">
                 <DateInput
-                  value={toLocalInput(lead.visitaEm).slice(0, 10)}
-                  onChange={(d) => {
-                    const hora = toLocalInput(lead.visitaEm).slice(11, 16) || "10:00";
-                    updateLead(lead.id, { visitaEm: d ? new Date(`${d}T${hora}`).toISOString() : undefined });
+                  value={toLocalInput(d.visitaEm).slice(0, 10)}
+                  onChange={(dia) => {
+                    const hora = toLocalInput(d.visitaEm).slice(11, 16) || "10:00";
+                    setD({ ...d, visitaEm: dia ? new Date(`${dia}T${hora}`).toISOString() : undefined });
                   }}
                 />
                 <TimeInput
-                  value={toLocalInput(lead.visitaEm).slice(11, 16)}
+                  value={toLocalInput(d.visitaEm).slice(11, 16)}
                   onChange={(h) => {
-                    const dia = toLocalInput(lead.visitaEm).slice(0, 10);
-                    if (dia) updateLead(lead.id, { visitaEm: new Date(`${dia}T${h}`).toISOString() });
+                    const dia = toLocalInput(d.visitaEm).slice(0, 10);
+                    if (dia) setD({ ...d, visitaEm: new Date(`${dia}T${h}`).toISOString() });
                   }}
                 />
               </div>
@@ -370,17 +391,15 @@ function LeadDrawer({ id, onClose }: { id: string | null; onClose: () => void })
             <ProgressBar value={passos / CHECKLIST_LEAD.length} className="mb-3" />
             <div className="space-y-2">
               {CHECKLIST_LEAD.map((label, i) => (
-                <CheckItem key={label} index={i} label={label} checked={lead.checklist[i]} onToggle={() => toggleLeadStep(lead.id, i)} />
+                <CheckItem key={label} index={i} label={label} checked={!!d.checklist[i]} onToggle={() => setD({ ...d, checklist: d.checklist.map((v, k) => (k === i ? !v : v)) })} />
               ))}
             </div>
           </div>
 
           <Field label="Observações">
             <textarea
-              key={lead.id}
-              ref={obs}
-              defaultValue={lead.observacoes}
-              onBlur={(e) => updateLead(lead.id, { observacoes: e.target.value })}
+              value={d.observacoes}
+              onChange={(e) => setD({ ...d, observacoes: e.target.value })}
               rows={4}
               placeholder="Anotações sobre o cliente, preferências, próximos passos..."
               className={`${inputCls} h-auto resize-none py-3`}

@@ -207,6 +207,7 @@ export function LeadFormModal({ open, onClose }: { open: boolean; onClose: () =>
     <Modal
       open={open}
       onClose={onClose}
+      banner
       title="Novo lead"
       subtitle="O lead entra na etapa “Novo”, aguardando atendimento."
       footer={
@@ -290,6 +291,7 @@ export function ProprietarioFormModal({ open, onClose }: { open: boolean; onClos
     <Modal
       open={open}
       onClose={onClose}
+      banner
       title="Novo proprietário"
       subtitle="O WhatsApp é usado para enviar os relatórios de divulgação."
       footer={
@@ -403,6 +405,7 @@ export function ImovelFormModal({
     <Modal
       open={open}
       onClose={onClose}
+      banner={!imovel}
       title={imovel ? "Editar endereço" : "Novo endereço"}
       subtitle={
         imovel
@@ -682,6 +685,7 @@ export function CaptacaoFormModal({ open, onClose }: { open: boolean; onClose: (
     <Modal
       open={open}
       onClose={onClose}
+      banner
       title="Novo imóvel"
       subtitle="Cadastre o imóvel captado de uma vez: endereço, dados e proprietário. Publicar no portal é opcional."
       footer={
@@ -912,6 +916,7 @@ export function ParceiroFormModal({ open, onClose, onCreated }: { open: boolean;
     <Modal
       open={open}
       onClose={onClose}
+      banner
       title="Novo parceiro externo"
       subtitle="Corretor de fora da imobiliária. Ele não recebe acesso; serve só para registrar parcerias."
       footer={
@@ -1015,6 +1020,7 @@ export function TransacaoFormModal({
       <Modal
         open={open}
         onClose={onClose}
+        banner
         title={tipo === "venda" ? "Registrar venda" : "Registrar locação"}
         subtitle="Somente o administrador registra. Defina os honorários e quem recebe cada parte."
         footer={

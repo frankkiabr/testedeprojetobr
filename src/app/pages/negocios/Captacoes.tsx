@@ -8,7 +8,7 @@ import { anuncios } from "@/data/demo";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { FileSpreadsheet, PartyPopper, BadgeDollarSign, Calculator, FileText, Handshake, MapPin, Plus, Ruler, UserRound, Users } from "lucide-react";
+import { FileSpreadsheet, PartyPopper, BadgeDollarSign, Calculator, FileText, Handshake, MapPin, Plus, Ruler, Users } from "lucide-react";
 import { Simulador } from "@/components/Simulador";
 import { CHECKLIST_CAPTACAO, CHECKLIST_MARKETING } from "@/data/demo";
 import {
@@ -36,7 +36,7 @@ import type { Captacao } from "@/data/types";
 import { brl, dataHora } from "@/lib/format";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { useScope } from "../../session";
-import { Avatar, Card, ProgressBar, Segmented, Select } from "../../kit";
+import { Avatar, AvatarNome, Card, ProgressBar, Segmented, Select } from "../../kit";
 import { BotaoSalvar, btn, CheckItem, Drawer, EmptyState, Field, formatPhone, inputCls, mascaraMoeda, Modal, moeda, SearchInput, waLink } from "../../forms";
 import {
   CaptacaoFormModal,
@@ -254,11 +254,29 @@ export function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: ()
   const c = id ? captacaoById(id) : undefined;
   const im = c ? imovelById(c.imovelId) : undefined;
   const prop = c ? proprietarioById(c.proprietarioId) : undefined;
-  const feitos = c ? done(c) : 0;
   const t = c && c.status !== "ativa" ? transacoes.find((x) => x.captacaoId === c.id) : undefined;
   const an = c ? anuncios.find((x) => x.captacaoId === c.id) : undefined;
   const fotos = an?.fotos.map((x) => x.url) ?? [];
   const fechada = c ? c.status !== "ativa" : false;
+  // Rascunho dos checklists e do anúncio: só valem ao apertar "Salvar" (fechar com alterações pergunta)
+  const [dc, setDc] = useState<boolean[]>([]);
+  const [dm, setDm] = useState<boolean[]>([]);
+  useEffect(() => {
+    setDc([...(c?.checklistCaptacao ?? [])]);
+    setDm([...(c?.checklistMarketing ?? [])]);
+  }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
+  const [anuncio, setAnuncio] = useState<{ mudou: boolean; salvar: () => void }>({ mudou: false, salvar: () => undefined });
+  const [rodape, setRodape] = useState<HTMLDivElement | null>(null);
+  const checkMudou = !!c && (JSON.stringify(dc) !== JSON.stringify(c.checklistCaptacao) || JSON.stringify(dm) !== JSON.stringify(c.checklistMarketing));
+  const alterado = checkMudou || anuncio.mudou;
+  const salvarTudo = () => {
+    if (!c) return;
+    dc.forEach((v, i) => v !== c.checklistCaptacao[i] && toggleCaptacao(c.id, i));
+    dm.forEach((v, i) => v !== c.checklistMarketing[i] && toggleMarketing(c.id, i, v));
+    if (anuncio.mudou) anuncio.salvar();
+  };
+  const feitosD = dm.filter(Boolean).length;
+  const captD = dc.filter(Boolean).length;
 
   // Venda ou locação concluída: mensagem de parabéns para o proprietário (não para o cliente)
   const parabens =
@@ -273,16 +291,27 @@ export function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: ()
         centro
         open={!!c}
         onClose={onClose}
+        alterado={alterado}
+        onSalvarAlteracoes={salvarTudo}
         title={c && captacaoTitulo(c)}
         subtitle={c && `${c.codigo ? `Cód. ${c.codigo} · ` : ""}${c.finalidade === "venda" ? "Venda" : "Locação"} · cadastrada em ${dataHora(c.captadoEm)}`}
         footer={
-          c &&
-          isAdmin &&
-          (t ? (
-            <BotaoExcluir tipo="transacao" id={t.id} nome={`${t.tipo === "venda" ? "Venda" : "Locação"} de ${captacaoTitulo(c)}`} />
-          ) : (
-            <BotaoExcluir tipo="captacao" id={c.id} nome={captacaoTitulo(c)} onExcluido={onClose} />
-          ))
+          c && (
+            <>
+              {isAdmin &&
+                (t ? (
+                  <BotaoExcluir tipo="transacao" id={t.id} nome={`${t.tipo === "venda" ? "Venda" : "Locação"} de ${captacaoTitulo(c)}`} />
+                ) : (
+                  <BotaoExcluir tipo="captacao" id={c.id} nome={captacaoTitulo(c)} onExcluido={onClose} />
+                ))}
+              {aba === "anuncio" && <div ref={setRodape} className="contents" />}
+              {checkMudou && (
+                <BotaoSalvar onSalvar={salvarTudo} depois={onClose}>
+                  Salvar
+                </BotaoSalvar>
+              )}
+            </>
+          )
         }
       >
         {c && im && (
@@ -295,8 +324,8 @@ export function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: ()
                 onChange={setAba}
                 options={[
                   { value: "imovel", label: "Imóvel" },
-                  { value: "captacao", label: `Captação · ${doneCaptacao(c)}/${CHECKLIST_CAPTACAO.length}` },
-                  { value: "marketing", label: `Marketing · ${feitos}/${CHECKLIST_MARKETING.length}` },
+                  { value: "captacao", label: `Captação · ${captD}/${CHECKLIST_CAPTACAO.length}` },
+                  { value: "marketing", label: `Marketing · ${feitosD}/${CHECKLIST_MARKETING.length}` },
                   { value: "anuncio", label: an?.publicado && !fechada ? "Anúncio · no ar" : "Anúncio" },
                 ]}
               />
@@ -415,9 +444,7 @@ export function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: ()
 
                 {prop && (
                   <div className="flex items-center gap-3 rounded-2xl border border-line p-4">
-                    <span className="grid size-10 place-items-center rounded-full bg-accent-soft text-accent">
-                      <UserRound className="size-4" />
-                    </span>
+                    <AvatarNome id={prop.id} nome={prop.nome} className="size-10 text-sm" />
                     <div className="min-w-0 flex-1">
                       <p className="text-xs text-muted">Proprietário</p>
                       <p className="truncate font-semibold">{prop.nome}</p>
@@ -454,10 +481,10 @@ export function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: ()
               <div>
                 <p className="font-display text-lg font-semibold">Checklist de captação</p>
                 <p className="mb-3 text-xs text-muted">Controle interno: o que falta para o imóvel estar documentado e pronto para negociar.</p>
-                <ProgressBar value={doneCaptacao(c) / CHECKLIST_CAPTACAO.length} className="mb-3" tone={doneCaptacao(c) === CHECKLIST_CAPTACAO.length ? "verified" : "accent"} />
+                <ProgressBar value={captD / CHECKLIST_CAPTACAO.length} className="mb-3" tone={captD === CHECKLIST_CAPTACAO.length ? "verified" : "accent"} />
                 <div className="space-y-2">
                   {CHECKLIST_CAPTACAO.map((label, i) => (
-                    <CheckItem key={label} index={i} label={label} checked={c.checklistCaptacao[i]} onToggle={() => toggleCaptacao(c.id, i)} />
+                    <CheckItem key={label} index={i} label={label} checked={!!dc[i]} onToggle={() => setDc(dc.map((v, k) => (k === i ? !v : v)))} />
                   ))}
                 </div>
               </div>
@@ -467,10 +494,10 @@ export function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: ()
               <div>
                 <p className="font-display text-lg font-semibold">Checklist de marketing</p>
                 <p className="mb-3 text-xs text-muted">Ações de divulgação. São elas que aparecem no relatório enviado ao proprietário.</p>
-                <ProgressBar value={feitos / CHECKLIST_MARKETING.length} className="mb-3" tone={feitos === CHECKLIST_MARKETING.length ? "verified" : "accent"} />
+                <ProgressBar value={feitosD / CHECKLIST_MARKETING.length} className="mb-3" tone={feitosD === CHECKLIST_MARKETING.length ? "verified" : "accent"} />
                 <div className="space-y-2">
                   {CHECKLIST_MARKETING.map((label, i) => (
-                    <CheckItem key={label} index={i} label={label} checked={c.checklistMarketing[i]} onToggle={() => toggleMarketing(c.id, i)} />
+                    <CheckItem key={label} index={i} label={label} checked={!!dm[i]} onToggle={() => setDm(dm.map((v, k) => (k === i ? !v : v)))} />
                   ))}
                 </div>
                 {!fechada && (
@@ -481,7 +508,10 @@ export function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: ()
               </div>
             )}
 
-            {aba === "anuncio" && <AnuncioEditor captacao={c} onPublicado={onClose} />}
+            {/* Fica montado (escondido) nas outras abas para não perder o que foi digitado */}
+            <div className={aba === "anuncio" ? "" : "hidden"}>
+              <AnuncioEditor captacao={c} onPublicado={onClose} rodape={aba === "anuncio" ? rodape : null} onEstado={setAnuncio} />
+            </div>
           </div>
         )}
       </Drawer>

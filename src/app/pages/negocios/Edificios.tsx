@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Building2, ChevronRight, UserRound, Users, LineChart, MapPin, MapPinOff, PenLine, Phone, Plus } from "lucide-react";
+import { Building2, ChevronRight, LineChart, MapPin, MapPinOff, PenLine, Phone, Plus } from "lucide-react";
 import { captacoes, imoveis, leads, proprietarios, transacoes } from "@/data/demo";
 import { captacaoTitulo, ehPredio, fotoDoImovel, nomePredio } from "@/data/queries";
 import { listarAvaliacoes, type Avaliacao } from "@/data/avaliacoes";
@@ -11,7 +11,7 @@ import { brl, dataHora } from "@/lib/format";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { GRUPOS_CARACTERISTICAS, rotuloTipo, TIPOS_IMOVEL } from "@/lib/imovel";
 import { useSession } from "../../session";
-import { Card, Select } from "../../kit";
+import { AvatarNome, Card, Select } from "../../kit";
 import { BotaoSalvar, btn, Drawer, EmptyState, Field, formatPhone, inputCls, mascaraMoeda, moeda, SearchInput, waLink } from "../../forms";
 import { chaveEndereco, ImovelCover, ImovelFormModal, StatusBadge, valorLabel } from "./shared";
 
@@ -62,6 +62,19 @@ function Ficha({ im, onClose, estudos }: { im: Imovel; onClose: () => void; estu
   const [f, setF] = useState(inicial);
   useEffect(() => setF(inicial()), [im.id]); // eslint-disable-line react-hooks/exhaustive-deps
   const mudou = JSON.stringify(f) !== JSON.stringify(inicial());
+  const salvarFicha = () =>
+                salvarPredio(im.id, {
+                  construtora: f.construtora.trim() || undefined,
+                  anoConstrucao: inteiro(f.ano),
+                  andares: inteiro(f.andares),
+                  unidadesAndar: inteiro(f.unidades),
+                  elevadores: f.elevadores.trim() === "" ? undefined : Number(f.elevadores),
+                  condominioMedio: f.condominio.trim() ? num(f.condominio) : undefined,
+                  caracteristicas: f.caracteristicas,
+                  administradora: f.administradora.trim() || undefined,
+                  administradoraTel: f.tel.replace(/\D/g, "") || undefined,
+                  obsPredio: f.obs.trim() || undefined,
+                });
 
   const { caps, vendas } = doPredio(im);
   const predio = ehPredio(im);
@@ -93,6 +106,8 @@ function Ficha({ im, onClose, estudos }: { im: Imovel; onClose: () => void; estu
         centro
         open
         onClose={onClose}
+        alterado={mudou}
+        onSalvarAlteracoes={salvarFicha}
         title={nomePredio(im)}
         subtitle={`${rotuloTipo(im.categoria)} · ${im.endereco.logradouro}, ${im.endereco.numero} - ${im.endereco.bairro}, ${im.endereco.cidade} - ${im.endereco.uf} · cadastrado em ${dataHora(im.criadoEm)}`}
         footer={
@@ -104,20 +119,7 @@ function Ficha({ im, onClose, estudos }: { im: Imovel; onClose: () => void; estu
             <BotaoSalvar
               disabled={!mudou}
               depois={onClose}
-              onSalvar={() =>
-                salvarPredio(im.id, {
-                  construtora: f.construtora.trim() || undefined,
-                  anoConstrucao: inteiro(f.ano),
-                  andares: inteiro(f.andares),
-                  unidadesAndar: inteiro(f.unidades),
-                  elevadores: f.elevadores.trim() === "" ? undefined : Number(f.elevadores),
-                  condominioMedio: f.condominio.trim() ? num(f.condominio) : undefined,
-                  caracteristicas: f.caracteristicas,
-                  administradora: f.administradora.trim() || undefined,
-                  administradoraTel: f.tel.replace(/\D/g, "") || undefined,
-                  obsPredio: f.obs.trim() || undefined,
-                })
-              }
+              onSalvar={salvarFicha}
             >
               Salvar ficha
             </BotaoSalvar>
@@ -251,7 +253,7 @@ function Ficha({ im, onClose, estudos }: { im: Imovel; onClose: () => void; estu
                   {donos.map(({ p, unidades }) => (
                     <li key={p.id}>
                       <Link to={`/app/negocios/proprietarios?proprietario=${p.id}`} className="flex items-center gap-3 px-4 py-3 text-sm transition hover:bg-canvas">
-                        <UserRound className="size-4 shrink-0 text-accent" />
+                        <AvatarNome id={p.id} nome={p.nome} className="size-8 text-[0.625rem]" />
                         <span className="min-w-0 flex-1">
                           <span className="block truncate font-semibold">{p.nome}</span>
                           {unidades.length > 0 && <span className="text-xs text-muted">{unidades.join(", ")}</span>}
@@ -272,7 +274,7 @@ function Ficha({ im, onClose, estudos }: { im: Imovel; onClose: () => void; estu
                   {interessados.map((l) => (
                     <li key={l.id}>
                       <Link to={`/app/negocios/leads?lead=${l.id}`} className="flex items-center gap-3 px-4 py-3 text-sm transition hover:bg-canvas">
-                        <Users className="size-4 shrink-0 text-accent" />
+                        <AvatarNome id={l.id} nome={l.nome} className="size-8 text-[0.625rem]" />
                         <span className="min-w-0 flex-1">
                           <span className="block truncate font-semibold">{l.nome}</span>
                           <span className="text-xs text-muted">{l.interesseUnidade ?? (l.interesseCaptacaoId ? captacaoTitulo(captacoes.find((c) => c.id === l.interesseCaptacaoId)!) : "")}</span>

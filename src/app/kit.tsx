@@ -80,6 +80,23 @@ const AVATAR_COLORS = [
 ];
 
 /** Foto da pessoa; sem foto, as iniciais num círculo colorido. */
+/** Iniciais de um nome (ex.: "Maria Souza" → "MS"; "Ed. Solar" → "ES"), para quem não tem foto. */
+export const iniciaisDoNome = (nome: string) =>
+  nome
+    .replace(/[^\p{L}\s]/gu, " ")
+    .trim()
+    .split(/\s+/)
+    .filter((x) => x.length > 2 || /^\p{Lu}/u.test(x))
+    .map((x) => x[0])
+    .filter((_, i, l) => i === 0 || i === l.length - 1)
+    .join("")
+    .toUpperCase() || "?";
+
+/** Bolinha com a foto (se houver) ou as iniciais do nome: leads, proprietários, corretores, prédios. */
+export function AvatarNome({ id, nome, fotoUrl, className = "size-9 text-xs" }: { id: string; nome: string; fotoUrl?: string; className?: string }) {
+  return <Avatar user={{ id, nome, fotoUrl, iniciais: iniciaisDoNome(nome) }} className={className} />;
+}
+
 export function Avatar({ user, className = "size-9 text-xs" }: { user: Pick<Usuario, "id" | "iniciais"> & { fotoUrl?: string; nome?: string }; className?: string }) {
   const n = [...user.id].reduce((s, ch) => s + ch.charCodeAt(0), 0);
   if (user.fotoUrl)

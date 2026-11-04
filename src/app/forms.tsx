@@ -1,5 +1,5 @@
 /** Janelas (modal e painel lateral), campos de formulário, checklist e avisos. */
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, ChevronDown, Search, X } from "lucide-react";
@@ -45,6 +45,7 @@ export function BotaoSalvar({
   }, [salvo]); // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <button
+      data-salvar=""
       className={`${className} min-w-28 ${salvo ? "!border-verified !bg-verified !text-white !opacity-100" : ""}`}
       disabled={disabled || salvando || (salvo && !!depois)}
       onClick={async () => {
@@ -95,6 +96,9 @@ export function Modal({
   children,
   footer,
   largo,
+  banner,
+  alterado,
+  onSalvarAlteracoes,
 }: {
   open: boolean;
   onClose: () => void;
@@ -104,10 +108,50 @@ export function Modal({
   footer?: ReactNode;
   /** Janela mais larga (ex.: conferir uma tabela); "extra" para formulários com muitos campos por linha. */
   largo?: boolean | "extra";
+  /** Topo em faixa escura com leve degradê azul (como o "Plano atual" em Configurações). */
+  banner?: boolean;
+  /** Há alterações não salvas: ao fechar pelo X, pergunta se quer salvar ou descartar. */
+  alterado?: boolean;
+  /** Salva as alterações (usado pela pergunta ao fechar). Devolve false se não deu para salvar. */
+  onSalvarAlteracoes?: () => unknown;
 }) {
+  const [perguntar, setPerguntar] = useState(false);
+  // Sem `alterado` explícito, a janela percebe sozinha quando algo foi digitado ou escolhido nos campos
+  const [mexeu, setMexeu] = useState(false);
+  const [semSalvar, setSemSalvar] = useState(false);
+  const rodape = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) {
+      setPerguntar(false);
+      setMexeu(false);
+      setSemSalvar(false);
+    }
+  }, [open]);
+  const sujo = !!alterado || mexeu;
+  // Botão de salvar da própria janela (BotaoSalvar), usado quando a janela não passa onSalvarAlteracoes
+  const botaoSalvar = () => rodape.current?.querySelector<HTMLButtonElement>("button[data-salvar]") ?? null;
+  const podeSalvar = !!onSalvarAlteracoes || !!botaoSalvar();
   // Clicar fora ou apertar Esc não fecha: assim ninguém perde o que preencheu. Fecha pelo X, por Cancelar ou ao salvar.
   // Sem animação de saída: ao fechar, a camada que cobre a tela some na hora (antes podia ficar presa e travar os cliques).
   if (!open) return null;
+  const fechar = () => (sujo ? setPerguntar(true) : onClose());
+  const salvarEFechar = async () => {
+    if (onSalvarAlteracoes) {
+      let r: unknown;
+      try {
+        r = await onSalvarAlteracoes();
+      } catch {
+        r = false;
+      }
+      setPerguntar(false);
+      if (r !== false) onClose();
+      return;
+    }
+    const b = botaoSalvar();
+    if (!b || b.disabled) return setSemSalvar(true);
+    setPerguntar(false);
+    b.click(); // o próprio botão salva, mostra "Salvo" e fecha a janela
+  };
   // Vai direto para o fim da página: uma janela aberta de dentro de outra (ex.: confirmar exclusão) fica por cima dela, e não presa dentro.
   return createPortal(
     <>
@@ -123,17 +167,97 @@ export function Modal({
             initial={{ y: 40, opacity: 0, scale: 0.98 }}
             animate={{ y: 0, opacity: 1, scale: 1 }}
             transition={{ duration: 0.4, ease: EASE_OUT_EXPO }}
-            className={`flex max-h-[92vh] w-full ${largo === "extra" ? "max-w-5xl" : largo ? "max-w-3xl" : "max-w-lg"} flex-col overflow-hidden rounded-t-3xl bg-bg shadow-float sm:rounded-3xl`}
+            className={`relative flex max-h-[92vh] w-full ${largo === "extra" ? "max-w-5xl" : largo ? "max-w-3xl" : "max-w-lg"} flex-col overflow-hidden rounded-t-3xl bg-bg shadow-float sm:rounded-3xl`}
           >
-            <div className="flex items-start justify-between gap-4 border-b border-line px-6 py-5">
-              <div className="min-w-0">
-                <h2 className="font-display text-xl font-semibold tracking-tight">{title}</h2>
-                {subtitle && <div className="mt-0.5 text-sm text-muted">{subtitle}</div>}
+            {banner ? (
+              <div className="relative overflow-hidden bg-ink px-6 pb-8 pt-7 text-bg">
+                <div className="absolute inset-0 bg-[radial-gradient(70%_80%_at_100%_0%,rgb(47_91_234/0.5),transparent_70%)]" />
+                <div className="relative flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <h2 className="font-display text-2xl font-semibold tracking-tight">{title}</h2>
+                    {subtitle && <div className="mt-1.5 max-w-xl text-sm leading-relaxed text-bg/70">{subtitle}</div>}
+                  </div>
+                  <button
+                    onClick={fechar}
+                    aria-label="Fechar"
+                    className="grid size-9 shrink-0 place-items-center rounded-full text-bg/70 transition hover:bg-white/10 hover:text-bg"
+                  >
+                    <X className="size-5" />
+                  </button>
+                </div>
               </div>
-              <CloseButton onClose={onClose} />
+            ) : (
+              <div className="flex items-start justify-between gap-4 border-b border-line px-6 py-5">
+                <div className="min-w-0">
+                  <h2 className="font-display text-xl font-semibold tracking-tight">{title}</h2>
+                  {subtitle && <div className="mt-0.5 text-sm text-muted">{subtitle}</div>}
+                </div>
+                <CloseButton onClose={fechar} />
+              </div>
+            )}
+            <div
+              className="flex-1 overflow-y-auto px-6 py-5"
+              onChangeCapture={(e) => {
+                // Envio de arquivo grava na hora; não conta como alteração pendente
+                if ((e.target as HTMLInputElement).type !== "file") setMexeu(true);
+              }}
+              // Salvou por um botão dentro da janela (ex.: editar valor na aba Imóvel): nada mais pendente
+              onClickCapture={(e) => {
+                if ((e.target as HTMLElement).closest("button[data-salvar]")) setTimeout(() => setMexeu(false), 0);
+              }}
+            >
+              {children}
             </div>
-            <div className="flex-1 overflow-y-auto px-6 py-5">{children}</div>
-            {footer && <div className="flex flex-wrap justify-end gap-2 border-t border-line bg-canvas/50 px-6 py-4">{footer}</div>}
+            {footer && (
+              <div
+                ref={rodape}
+                // "Cancelar" com alterações também pergunta antes de fechar
+                onClickCapture={(e) => {
+                  const b = (e.target as HTMLElement).closest("button");
+                  if (sujo && b?.textContent?.trim() === "Cancelar") {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setPerguntar(true);
+                  }
+                }}
+                className="flex flex-wrap justify-end gap-2 border-t border-line bg-canvas/50 px-6 py-4"
+              >
+                {footer}
+              </div>
+            )}
+            {/* Fechou com alterações não salvas: salvar ou descartar */}
+            {perguntar && (
+              <div className="absolute inset-0 z-10 grid place-items-center bg-ink/30 p-4 backdrop-blur-[2px]">
+                <div className="w-full max-w-md rounded-3xl bg-bg p-6 shadow-float">
+                  <p className="font-display text-lg font-semibold">Salvar as alterações?</p>
+                  <p className="mt-1 text-sm text-muted">Você mexeu em informações desta janela e ainda não salvou.</p>
+                  {semSalvar && (
+                    <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800">
+                      Faltam campos obrigatórios para salvar. Continue editando para completar, ou descarte.
+                    </p>
+                  )}
+                  <div className="mt-5 flex flex-wrap items-center justify-end gap-2">
+                    <button onClick={() => (setPerguntar(false), setSemSalvar(false))} className="h-11 rounded-full px-4 text-sm font-semibold text-muted transition hover:bg-canvas hover:text-ink">
+                      Continuar editando
+                    </button>
+                    <button
+                      onClick={() => {
+                        setPerguntar(false);
+                        onClose();
+                      }}
+                      className={btn.outline}
+                    >
+                      Descartar
+                    </button>
+                    {podeSalvar && (
+                      <button onClick={salvarEFechar} className={btn.primary}>
+                        Salvar
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
           </motion.div>
         </motion.div>
       )}
@@ -150,6 +274,8 @@ export function Drawer({
   children,
   footer,
   centro,
+  alterado,
+  onSalvarAlteracoes,
 }: {
   open: boolean;
   onClose: () => void;
@@ -159,10 +285,12 @@ export function Drawer({
   footer?: ReactNode;
   /** Janela larga no meio da tela (como os itens de Negócios), em vez da gaveta lateral. */
   centro?: boolean;
+  alterado?: boolean;
+  onSalvarAlteracoes?: () => unknown;
 }) {
   if (centro)
     return (
-      <Modal open={open} onClose={onClose} title={title} subtitle={subtitle} footer={footer} largo="extra">
+      <Modal open={open} onClose={onClose} title={title} subtitle={subtitle} footer={footer} largo="extra" alterado={alterado} onSalvarAlteracoes={onSalvarAlteracoes}>
         {children}
       </Modal>
     );

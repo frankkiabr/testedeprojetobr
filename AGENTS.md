@@ -131,6 +131,9 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
 - Janelas (`Modal`, `Drawer centro` em `src/app/forms.tsx`): abrem no meio da tela (itens de Negócios no tamanho do "Editar" do estudo,
   `largo="extra"`), por cima de tudo (portal no `body`) e NÃO fecham ao clicar fora nem com Esc; fecham pelo X, Cancelar ou ao salvar.
   Botões de salvar usam `BotaoSalvar` com `depois={onClose}` (mostra "Salvo" e fecha).
+  Alterações só valem ao salvar: fechar (X ou Cancelar) com algo mexido pergunta "Salvar as alterações?" (Continuar editando · Descartar ·
+  Salvar). O `Modal` percebe sozinho mudanças nos campos; janelas com rascunho próprio passam `alterado` + `onSalvarAlteracoes`
+  (lead, proprietário, imóvel, endereço). `banner` = topo escuro com degradê (janelas de cadastro). Sem foto, use `AvatarNome` (iniciais, `kit.tsx`).
 - **Endereços** (Negócios → aba `enderecos`, antiga `edificios`, que redireciona): TODOS os `imoveis` (prédios, casas, galpões, terrenos),
   filtro por tipo e selo "Sem localização". É a base que cruza tudo. Endereço novo exige o ponto no mapa e avisa se já existe outro a até
   30 m (`enderecoPerto` em `queries.ts`). "Novo imóvel" começa pelo tipo: `pedePredio()` → escolher/cadastrar o prédio; senão título + endereço + mapa.
