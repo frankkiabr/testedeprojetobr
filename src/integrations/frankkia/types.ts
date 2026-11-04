@@ -1415,6 +1415,9 @@ export type Database = {
           id: string
           imobiliaria_id: string
           interesse: string
+          interesse_captacao_id: string | null
+          interesse_imovel_id: string | null
+          interesse_unidade: string | null
           nome: string
           observacoes: string | null
           origem: string
@@ -1435,6 +1438,9 @@ export type Database = {
           id?: string
           imobiliaria_id: string
           interesse?: string
+          interesse_captacao_id?: string | null
+          interesse_imovel_id?: string | null
+          interesse_unidade?: string | null
           nome: string
           observacoes?: string | null
           origem?: string
@@ -1455,6 +1461,9 @@ export type Database = {
           id?: string
           imobiliaria_id?: string
           interesse?: string
+          interesse_captacao_id?: string | null
+          interesse_imovel_id?: string | null
+          interesse_unidade?: string | null
           nome?: string
           observacoes?: string | null
           origem?: string
@@ -1471,6 +1480,20 @@ export type Database = {
             columns: ["imobiliaria_id"]
             isOneToOne: false
             referencedRelation: "imobiliarias"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_interesse_captacao_id_fkey"
+            columns: ["interesse_captacao_id"]
+            isOneToOne: false
+            referencedRelation: "captacoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_interesse_imovel_id_fkey"
+            columns: ["interesse_imovel_id"]
+            isOneToOne: false
+            referencedRelation: "imoveis"
             referencedColumns: ["id"]
           },
         ]
@@ -1800,6 +1823,7 @@ export type Database = {
           criado_em: string
           id: string
           imobiliaria_id: string
+          imoveis_ligados: Json
           nome: string
           whatsapp: string
         }
@@ -1808,6 +1832,7 @@ export type Database = {
           criado_em?: string
           id?: string
           imobiliaria_id: string
+          imoveis_ligados?: Json
           nome: string
           whatsapp: string
         }
@@ -1816,6 +1841,7 @@ export type Database = {
           criado_em?: string
           id?: string
           imobiliaria_id?: string
+          imoveis_ligados?: Json
           nome?: string
           whatsapp?: string
         }

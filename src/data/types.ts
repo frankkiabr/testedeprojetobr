@@ -247,6 +247,11 @@ export type Lead = {
   telefone: string;
   origem: string;
   interesse: string;
+  /** Interessado num imóvel captado (apto 302 à venda, casa para alugar...). */
+  interesseCaptacaoId?: string;
+  /** Ou interessado num endereço (prédio + unidade, ou casa/galpão). */
+  interesseImovelId?: string;
+  interesseUnidade?: string;
   etapa: EtapaLead;
   criadoEm: string; // data ISO
   /** Um item por passo de CHECKLIST_LEAD. Lead "atendido" = pelo menos um passo marcado. */
@@ -265,11 +270,16 @@ export type Lead = {
 };
 
 /** Proprietário pertence ao corretor que o cadastrou (o administrador vê todos). */
+/** Endereço ligado a um lead ou proprietário (unidade só quando é prédio: "Apto 302", "Sala 1204"). */
+export type EnderecoLigado = { imovelId: string; unidade?: string };
+
 export type Proprietario = {
   id: string;
   corretorId: string;
   nome: string;
   whatsapp: string; // só números, com DDI + DDD (ex.: 5511999998888)
+  /** Endereços que ele possui (além dos que aparecem pelas captações). */
+  imoveis?: EnderecoLigado[];
   /** Quando foi cadastrado (data e hora). */
   criadoEm?: string;
 };

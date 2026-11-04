@@ -40,7 +40,7 @@ import {
   pedePredio,
 } from "@/data/queries";
 import { useStore } from "@/data/store";
-import type { Captacao, CategoriaImovel, EtapaLead, FechamentoInformado, Finalidade, Participante, Imovel } from "@/data/types";
+import type { Captacao, CategoriaImovel, EnderecoLigado, EtapaLead, FechamentoInformado, Finalidade, Participante, Imovel } from "@/data/types";
 import { brl } from "@/lib/format";
 import { useScope } from "../../session";
 import { BotaoSalvar, btn, DateInput, Field, inputCls, mascaraMoeda, Modal, moeda, normalizePhone, SelectField, waLink } from "../../forms";
@@ -193,9 +193,11 @@ export function LeadFormModal({ open, onClose }: { open: boolean; onClose: () =>
   const { addLead, filaRodizio, toast } = useStore();
   const { isAdmin, corretorId, setCorretorId } = useTargetCorretor(open);
   const [f, setF] = useState({ nome: "", telefone: "", interesse: "", origem: ORIGENS[0] });
+  const [liga, setLiga] = useState<{ captacaoId?: string; imovelId?: string; unidade?: string }>({});
   const [salvando, setSalvando] = useState(false);
   useEffect(() => {
     if (open) setF({ nome: "", telefone: "", interesse: "", origem: ORIGENS[0] });
+    if (open) setLiga({});
     // Rodízio ligado: o administrador já começa com "Rodízio" escolhido
     if (open && isAdmin && rodizioLigado()) setCorretorId(RODIZIO);
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -230,7 +232,10 @@ export function LeadFormModal({ open, onClose }: { open: boolean; onClose: () =>
                 corretorId: dono,
                 nome: f.nome.trim(),
                 telefone: normalizePhone(f.telefone),
-                interesse: f.interesse.trim() || "Não informado",
+                interesse: f.interesse.trim() || rotuloInteresse(liga) || "Não informado",
+                interesseCaptacaoId: liga.captacaoId,
+                interesseImovelId: liga.imovelId,
+                interesseUnidade: liga.unidade,
                 origem: f.origem,
                 ...(corretorId === RODIZIO ? { rodizio: true, atribuidoEm: new Date().toISOString() } : {}),
               });
@@ -255,6 +260,9 @@ export function LeadFormModal({ open, onClose }: { open: boolean; onClose: () =>
         <Field label="Interesse" className="sm:col-span-2">
           <input className={inputCls} value={f.interesse} onChange={(e) => setF({ ...f, interesse: e.target.value })} placeholder="Ex.: apartamento 2 dorms perto do metrô" />
         </Field>
+        <div className="sm:col-span-2">
+          <EnderecoPicker captacoes rotulo="Interessado em (opcional)" valor={liga} onChange={setLiga} />
+        </div>
         {isAdmin && (
           <div className="sm:col-span-2">
             <CorretorField value={corretorId} onChange={setCorretorId} comRodizio />
@@ -271,8 +279,10 @@ export function ProprietarioFormModal({ open, onClose }: { open: boolean; onClos
   const { addProprietario } = useStore();
   const { isAdmin, corretorId, setCorretorId } = useTargetCorretor(open);
   const [f, setF] = useState({ nome: "", whatsapp: "" });
+  const [ligados, setLigados] = useState<EnderecoLigado[]>([]);
   useEffect(() => {
     if (open) setF({ nome: "", whatsapp: "" });
+    if (open) setLigados([]);
   }, [open]);
   const ok = f.nome.trim() && normalizePhone(f.whatsapp).length >= 12 && corretorId;
 
@@ -291,7 +301,7 @@ export function ProprietarioFormModal({ open, onClose }: { open: boolean; onClos
             disabled={!ok}
             depois={onClose}
             onSalvar={() => {
-              addProprietario({ corretorId, nome: f.nome.trim(), whatsapp: normalizePhone(f.whatsapp) });
+              addProprietario({ corretorId, nome: f.nome.trim(), whatsapp: normalizePhone(f.whatsapp), imoveis: ligados });
             }}
           >
             Cadastrar proprietário
@@ -307,6 +317,10 @@ export function ProprietarioFormModal({ open, onClose }: { open: boolean; onClos
           <input className={inputCls} inputMode="tel" value={f.whatsapp} onChange={(e) => setF({ ...f, whatsapp: e.target.value })} placeholder="(11) 98765-4321" />
         </Field>
         {isAdmin && <CorretorField value={corretorId} onChange={setCorretorId} />}
+        <div>
+          <p className="mb-2 text-sm font-semibold">Imóveis deste proprietário (opcional)</p>
+          <ListaEnderecos lista={ligados} onChange={setLigados} />
+        </div>
       </div>
     </Modal>
   );
@@ -1375,5 +1389,118 @@ export function BotaoExcluir({ tipo, id, nome, onExcluido, icone }: { tipo: Tipo
         </p>
       </Modal>
     </>
+  );
+}
+
+// ---------- Seletor de endereço (lead "interessado em" e imóveis do proprietário) ----------
+
+/** Texto do interesse ligado: o imóvel captado ou o endereço (+ unidade). */
+export function rotuloInteresse(v: { captacaoId?: string; imovelId?: string; unidade?: string }) {
+  if (v.captacaoId) {
+    const c = captacaoById(v.captacaoId);
+    return c ? captacaoTitulo(c) : "";
+  }
+  return rotuloLigado(v.imovelId, v.unidade);
+}
+
+/** Texto curto de um endereço ligado: "Ed. Solar · Apto 302" ou "Casa térrea na Pedreira". */
+export function rotuloLigado(imovelId?: string, unidade?: string) {
+  const im = imovelId ? imoveis.find((i) => i.id === imovelId) : undefined;
+  if (!im) return "";
+  return `${nomePredio(im)}${unidade ? ` · ${unidade}` : ""}`;
+}
+
+/**
+ * Escolhe um endereço da aba Endereços (ou cadastra um novo na hora, com o mapa).
+ * Prédio pede a unidade (apto/sala); casa, galpão e terreno já são o próprio endereço.
+ * Com `captacoes`, também lista os imóveis captados (o lead pode estar interessado num imóvel à venda/aluguel).
+ */
+export function EnderecoPicker({
+  valor,
+  onChange,
+  captacoes: comCaptacoes = false,
+  rotulo = "Imóvel ou endereço",
+}: {
+  valor: { captacaoId?: string; imovelId?: string; unidade?: string };
+  onChange: (v: { captacaoId?: string; imovelId?: string; unidade?: string }) => void;
+  captacoes?: boolean;
+  rotulo?: string;
+}) {
+  const { scope } = useScope();
+  const [novo, setNovo] = useState(false);
+  const caps = comCaptacoes ? captacoesOf(scope).filter((c) => c.status === "ativa") : [];
+  const lista = [...imoveis].sort((a, b) => nomePredio(a).localeCompare(nomePredio(b), "pt-BR"));
+  const atual = valor.captacaoId ? `c:${valor.captacaoId}` : valor.imovelId ? `i:${valor.imovelId}` : "";
+  const im = valor.imovelId ? imoveis.find((i) => i.id === valor.imovelId) : undefined;
+  return (
+    <div className="space-y-2">
+      <Field label={rotulo}>
+        <SelectField
+          value={atual}
+          onChange={(v) => {
+            if (v === "novo") return setNovo(true);
+            if (v.startsWith("c:")) return onChange({ captacaoId: v.slice(2) });
+            if (v.startsWith("i:")) return onChange({ imovelId: v.slice(2) });
+            onChange({});
+          }}
+          options={[
+            { value: "", label: "Nenhum" },
+            ...caps.map((c) => ({ value: `c:${c.id}`, label: `Captado: ${captacaoTitulo(c)} · ${valorLabel(c.finalidade, c.valor)}` })),
+            ...lista.map((i) => ({ value: `i:${i.id}`, label: `Endereço: ${nomePredio(i)} · ${i.endereco.bairro}` })),
+            { value: "novo", label: "+ Cadastrar novo endereço" },
+          ]}
+        />
+      </Field>
+      {im && ehPredio(im) && (
+        <Field label={unidadeEhSala(im.categoria) ? "Número da sala" : "Número do apartamento"} hint="Ex.: 302">
+          <input
+            className={inputCls}
+            value={(valor.unidade ?? "").replace(/^(Apto|Sala)\s*/i, "")}
+            onChange={(e) => {
+              const n = e.target.value.slice(0, 20);
+              onChange({ imovelId: im.id, unidade: n.trim() ? `${unidadeEhSala(im.categoria) ? "Sala" : "Apto"} ${n.trim()}` : undefined });
+            }}
+          />
+        </Field>
+      )}
+      <ImovelFormModal open={novo} onClose={() => setNovo(false)} categoriaInicial="Apartamento" onCreated={(id) => onChange({ imovelId: id })} />
+    </div>
+  );
+}
+
+/** Lista de endereços de um proprietário: mostra, tira e acrescenta (com o mesmo seletor). */
+export function ListaEnderecos({ lista, onChange }: { lista: EnderecoLigado[]; onChange: (l: EnderecoLigado[]) => void }) {
+  const [novo, setNovo] = useState<{ imovelId?: string; unidade?: string }>({});
+  const im = novo.imovelId ? imoveis.find((i) => i.id === novo.imovelId) : undefined;
+  const pronto = !!im && (!ehPredio(im) || !!novo.unidade);
+  return (
+    <div className="space-y-3">
+      {lista.length > 0 && (
+        <ul className="flex flex-wrap gap-2">
+          {lista.map((l, i) => (
+            <li key={`${l.imovelId}-${l.unidade ?? ""}`} className="inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-3 py-1.5 text-xs font-semibold text-accent-deep">
+              <MapPin className="size-3.5" /> {rotuloLigado(l.imovelId, l.unidade) || "Endereço excluído"}
+              <button type="button" aria-label="Tirar" onClick={() => onChange(lista.filter((_, k) => k !== i))} className="ml-0.5 rounded-full px-1 hover:bg-white/60">
+                ×
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="rounded-2xl bg-canvas p-3">
+        <EnderecoPicker rotulo="Acrescentar imóvel" valor={novo} onChange={setNovo} />
+        <button
+          type="button"
+          disabled={!pronto}
+          onClick={() => {
+            if (!lista.some((l) => l.imovelId === novo.imovelId && (l.unidade ?? "") === (novo.unidade ?? ""))) onChange([...lista, { imovelId: novo.imovelId!, unidade: novo.unidade }]);
+            setNovo({});
+          }}
+          className={`${btn.outline} mt-2 h-9 px-3 text-xs`}
+        >
+          <Plus className="size-3.5" /> Acrescentar
+        </button>
+      </div>
+    </div>
   );
 }

@@ -32,7 +32,7 @@ import { aplicarReducaoNaStripe, enviarConvitePorEmail, excluirImobiliariaNaStri
 import { comprimirFoto } from "@/lib/files";
 import { soLeitura, useSession } from "@/app/session";
 import { excluirDocumento, listarDocumentos } from "./documentos";
-import { aoMudar, compromissoParaBanco, configurarGravacao, contexto as ctxDados, ehReal, enfileirar, falhou, gravar, leadParaBanco, novoId, supabase } from "./sync";
+import { aoMudar, paraBancoLigados, compromissoParaBanco, configurarGravacao, contexto as ctxDados, ehReal, enfileirar, falhou, gravar, leadParaBanco, novoId, supabase } from "./sync";
 import { acessosDemo, clientes, errosSistema, frankkiaUser, interessados, linkDemo, nomeDaTela, novaReferencia, pedidoAberto, pedidoById, pedidosUpgrade, PLANOS, todosChamados } from "./platform";
 import type {
   AcessoDemo,
@@ -61,6 +61,7 @@ import type {
   FichaPredio,
   CategoriaImovel,
   Finalidade,
+  EnderecoLigado,
 } from "./types";
 
 type Toast = { id: number; text: string };
@@ -190,7 +191,7 @@ const BLOQUEADAS_SO_LEITURA = [
   "updateCaptacao", "toggleCaptacao", "toggleMarketing", "salvarAnuncio", "salvarPortais", "linkPortais", "publicarAnuncio",
   "adicionarFotos", "removerFoto", "definirCapa", "addTransacao", "excluir", "addParceiro", "informarFechamento", "descartarFechamento",
   "addTrilha", "updateTrilha", "removeTrilha", "addAula", "removeAula", "toggleAula", "setLogo", "invite", "cancelInvite", "resendInvite",
-  "setCorretorAtivo", "updateImobiliaria", "salvarPredio", "updateImovel", "setLocalImovel", "setFotoParceiro",
+  "setCorretorAtivo", "updateImobiliaria", "salvarPredio", "setImoveisProprietario", "updateImovel", "setLocalImovel", "setFotoParceiro",
 ];
 
 function createActions(bump: () => void, toast: (text: string) => void) {
@@ -360,7 +361,10 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       toast(cfg.ativo ? "Rodízio de leads salvo." : "Rodízio de leads desligado.");
     },
 
-    addLead(input: Pick<Lead, "corretorId" | "nome" | "telefone" | "origem" | "interesse"> & Partial<Pick<Lead, "rodizio" | "atribuidoEm">>) {
+    addLead(
+      input: Pick<Lead, "corretorId" | "nome" | "telefone" | "origem" | "interesse"> &
+        Partial<Pick<Lead, "rodizio" | "atribuidoEm" | "interesseCaptacaoId" | "interesseImovelId" | "interesseUnidade">>,
+    ) {
       const lead: Lead = {
         ...input,
         id: uid("l"),
@@ -476,11 +480,27 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       const p: Proprietario = { ...input, id: uid("p"), criadoEm: new Date().toISOString() };
       proprietarios.unshift(p);
       gravar(() =>
-        supabase.from("proprietarios").insert({ id: p.id, imobiliaria_id: ctxDados.imobId, corretor_id: p.corretorId, nome: p.nome, whatsapp: p.whatsapp }),
+        supabase.from("proprietarios").insert({
+          id: p.id,
+          imobiliaria_id: ctxDados.imobId,
+          corretor_id: p.corretorId,
+          nome: p.nome,
+          whatsapp: p.whatsapp,
+          imoveis_ligados: paraBancoLigados(p.imoveis),
+        }),
       );
       bump();
       toast("Proprietário cadastrado.");
       return p;
+    },
+
+    /** Endereços que o proprietário possui (lista completa). */
+    setImoveisProprietario(id: string, lista: EnderecoLigado[]) {
+      const p = proprietarios.find((x) => x.id === id);
+      if (!p) return;
+      p.imoveis = lista;
+      gravar(() => supabase.from("proprietarios").update({ imoveis_ligados: paraBancoLigados(lista) }).eq("id", id));
+      bump();
     },
 
     /** Imóvel = lugar físico (edifício, casa, galpão...). */

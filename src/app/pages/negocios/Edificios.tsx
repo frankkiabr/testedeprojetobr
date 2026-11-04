@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Building2, ChevronRight, LineChart, MapPin, MapPinOff, PenLine, Phone, Plus } from "lucide-react";
-import { captacoes, imoveis, transacoes } from "@/data/demo";
+import { Building2, ChevronRight, UserRound, Users, LineChart, MapPin, MapPinOff, PenLine, Phone, Plus } from "lucide-react";
+import { captacoes, imoveis, leads, proprietarios, transacoes } from "@/data/demo";
 import { captacaoTitulo, ehPredio, fotoDoImovel, nomePredio } from "@/data/queries";
 import { listarAvaliacoes, type Avaliacao } from "@/data/avaliacoes";
 import { useStore } from "@/data/store";
@@ -65,6 +65,17 @@ function Ficha({ im, onClose, estudos }: { im: Imovel; onClose: () => void; estu
 
   const { caps, vendas } = doPredio(im);
   const predio = ehPredio(im);
+  // Cruzamentos: quem é dono (pelas captações ou ligado à mão) e quem tem interesse neste endereço
+  const capIds = new Set(caps.map((c) => c.id));
+  const donos = proprietarios
+    .map((p) => {
+      const ligados = (p.imoveis ?? []).filter((l) => l.imovelId === im.id).map((l) => l.unidade).filter(Boolean) as string[];
+      const pelasCaps = caps.filter((c) => c.proprietarioId === p.id).map((c) => c.unidade).filter(Boolean) as string[];
+      const tem = (p.imoveis ?? []).some((l) => l.imovelId === im.id) || caps.some((c) => c.proprietarioId === p.id);
+      return tem ? { p, unidades: [...new Set([...ligados, ...pelasCaps])] } : null;
+    })
+    .filter(Boolean) as { p: (typeof proprietarios)[number]; unidades: string[] }[];
+  const interessados = leads.filter((l) => l.interesseImovelId === im.id || (l.interesseCaptacaoId && capIds.has(l.interesseCaptacaoId)));
   const daVenda = caps.filter((c) => c.finalidade === "venda" && c.areaM2 > 0);
   const m2Ofertas = media(daVenda.map((c) => m2(c.valor, c.areaM2)));
   const m2Vendas = media(
@@ -230,6 +241,51 @@ function Ficha({ im, onClose, estudos }: { im: Imovel; onClose: () => void; estu
             ) : (
               <p className="rounded-2xl bg-canvas p-4 text-sm text-muted">Nenhuma captação sua {predio ? "neste prédio" : "neste endereço"} ainda.</p>
             )}
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div>
+              <p className="mb-3 font-display text-lg font-semibold">Proprietários ({donos.length})</p>
+              {donos.length ? (
+                <ul className="divide-y divide-line rounded-2xl border border-line">
+                  {donos.map(({ p, unidades }) => (
+                    <li key={p.id}>
+                      <Link to={`/app/negocios/proprietarios?proprietario=${p.id}`} className="flex items-center gap-3 px-4 py-3 text-sm transition hover:bg-canvas">
+                        <UserRound className="size-4 shrink-0 text-accent" />
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate font-semibold">{p.nome}</span>
+                          {unidades.length > 0 && <span className="text-xs text-muted">{unidades.join(", ")}</span>}
+                        </span>
+                        <ChevronRight className="size-4 text-muted" />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="rounded-2xl bg-canvas p-4 text-sm text-muted">Nenhum proprietário ligado a este endereço.</p>
+              )}
+            </div>
+            <div>
+              <p className="mb-3 font-display text-lg font-semibold">Leads interessados ({interessados.length})</p>
+              {interessados.length ? (
+                <ul className="divide-y divide-line rounded-2xl border border-line">
+                  {interessados.map((l) => (
+                    <li key={l.id}>
+                      <Link to={`/app/negocios/leads?lead=${l.id}`} className="flex items-center gap-3 px-4 py-3 text-sm transition hover:bg-canvas">
+                        <Users className="size-4 shrink-0 text-accent" />
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate font-semibold">{l.nome}</span>
+                          <span className="text-xs text-muted">{l.interesseUnidade ?? (l.interesseCaptacaoId ? captacaoTitulo(captacoes.find((c) => c.id === l.interesseCaptacaoId)!) : "")}</span>
+                        </span>
+                        <ChevronRight className="size-4 text-muted" />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="rounded-2xl bg-canvas p-4 text-sm text-muted">Nenhum lead interessado neste endereço.</p>
+              )}
+            </div>
           </div>
 
           {estudos.length > 0 && (

@@ -10,7 +10,7 @@ import { dateTime, relTime, dataHora } from "@/lib/format";
 import { useScope } from "../../session";
 import { Avatar, Badge, Card, ProgressBar, Segmented, Select } from "../../kit";
 import { BotaoSalvar, btn, CheckItem, DateInput, Drawer, EmptyState, Field, formatPhone, inputCls, SearchInput, TimeInput, toLocalInput, waLink } from "../../forms";
-import { ETAPA_DOT, ETAPA_STYLE, LeadFormModal, BotaoExcluir } from "./shared";
+import { ETAPA_DOT, ETAPA_STYLE, LeadFormModal, BotaoExcluir, EnderecoPicker } from "./shared";
 import { ImportarLeadsModal } from "./ImportarLeads";
 import { Documentos } from "../../Documentos";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
@@ -232,6 +232,25 @@ function LeadDrawer({ id, onClose }: { id: string | null; onClose: () => void })
     >
       {lead && (
         <div className="space-y-7">
+          {/* Interessado em: imóvel captado ou endereço (cruza com Captações e Endereços) */}
+          <div className="rounded-2xl border border-line p-4">
+            <EnderecoPicker
+              captacoes
+              rotulo="Interessado em"
+              valor={{ captacaoId: lead.interesseCaptacaoId, imovelId: lead.interesseImovelId, unidade: lead.interesseUnidade }}
+              onChange={(v) => updateLead(lead.id, { interesseCaptacaoId: v.captacaoId, interesseImovelId: v.imovelId, interesseUnidade: v.unidade })}
+            />
+            {(lead.interesseCaptacaoId || lead.interesseImovelId) && (
+              <button
+                onClick={() =>
+                  navigate(lead.interesseCaptacaoId ? `/app/negocios/captacoes?captacao=${lead.interesseCaptacaoId}` : `/app/negocios/enderecos?predio=${lead.interesseImovelId}`)
+                }
+                className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-accent"
+              >
+                Abrir {lead.interesseCaptacaoId ? "o imóvel" : "o endereço"} →
+              </button>
+            )}
+          </div>
           {/* Rodízio: prazo para o primeiro contato e por quem o lead já passou */}
           {(prazoRodizio(lead) || (isAdmin && lead.rodizio && ((lead.passouPor?.length ?? 0) > 0 || lead.voltouAoAdmin))) && (
             <div className="flex gap-3 rounded-2xl bg-amber-50 p-3.5 text-sm text-amber-900">

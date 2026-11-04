@@ -32,6 +32,7 @@ import type {
   Transacao,
   Trilha,
   Usuario,
+  EnderecoLigado,
 } from "./types";
 import { mensagemErro, supabase } from "@/integrations/frankkia/client";
 import type { Database } from "@/integrations/frankkia/types";
@@ -159,6 +160,11 @@ const iniciaisDe = (nome: string, email: string) => {
   return email.slice(0, 2).toUpperCase();
 };
 
+/** imoveis_ligados do banco ([{ imovel_id, unidade }]) → app. */
+export const deBancoLigados = (v: unknown): EnderecoLigado[] =>
+  Array.isArray(v) ? v.filter((x) => x && typeof x.imovel_id === "string").map((x) => ({ imovelId: x.imovel_id, unidade: x.unidade || undefined })) : [];
+export const paraBancoLigados = (l: EnderecoLigado[] = []) => l.map((x) => ({ imovel_id: x.imovelId, unidade: x.unidade ?? null }));
+
 const paraLead = (r: Row<"leads">): Lead => ({
   id: r.id,
   corretorId: r.corretor_id,
@@ -166,6 +172,9 @@ const paraLead = (r: Row<"leads">): Lead => ({
   telefone: r.telefone,
   origem: r.origem,
   interesse: r.interesse,
+  interesseCaptacaoId: u(r.interesse_captacao_id),
+  interesseImovelId: u(r.interesse_imovel_id),
+  interesseUnidade: u(r.interesse_unidade),
   etapa: r.etapa as Lead["etapa"],
   criadoEm: r.criado_em,
   checklist: r.checklist,
@@ -538,7 +547,7 @@ export async function carregarReal(conta: ContaDados) {
   trocarLista(D.leads, leads.map(paraLead));
   trocarLista(
     D.proprietarios,
-    proprietarios.map((p): Proprietario => ({ id: p.id, corretorId: p.corretor_id, nome: p.nome, whatsapp: p.whatsapp, criadoEm: p.criado_em })),
+    proprietarios.map((p): Proprietario => ({ id: p.id, corretorId: p.corretor_id, nome: p.nome, whatsapp: p.whatsapp, criadoEm: p.criado_em, imoveis: deBancoLigados(p.imoveis_ligados) })),
   );
   trocarLista(D.imoveis, imoveis.map(paraImovel));
   trocarLista(D.captacoes, captacoes.map(paraCaptacao));
@@ -770,6 +779,9 @@ export const leadParaBanco = (l: Lead) => ({
   telefone: l.telefone,
   origem: l.origem,
   interesse: l.interesse,
+  interesse_captacao_id: l.interesseCaptacaoId ?? null,
+  interesse_imovel_id: l.interesseImovelId ?? null,
+  interesse_unidade: l.interesseUnidade ?? null,
   etapa: l.etapa,
   checklist: l.checklist,
   visita_em: l.visitaEm ?? null,

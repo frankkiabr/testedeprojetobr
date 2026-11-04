@@ -133,7 +133,9 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
 - **Endereços** (Negócios → aba `enderecos`, antiga `edificios`, que redireciona): TODOS os `imoveis` (prédios, casas, galpões, terrenos),
   filtro por tipo e selo "Sem localização". É a base que cruza tudo. Endereço novo exige o ponto no mapa e avisa se já existe outro a até
   30 m (`enderecoPerto` em `queries.ts`). "Novo imóvel" começa pelo tipo: `pedePredio()` → escolher/cadastrar o prédio; senão título + endereço + mapa.
-  `ehPredio` agora depende só do tipo. Próxima etapa: proprietário ligado a endereços e lead "interessado em" imóvel/endereço.
+  `ehPredio` agora depende só do tipo. Lead "Interessado em" (`leads.interesse_captacao_id` ou `interesse_imovel_id` + `interesse_unidade`)
+  e "Imóveis deste proprietário" (`proprietarios.imoveis_ligados`, jsonb) usam `EnderecoPicker`/`ListaEnderecos` (`negocios/shared.tsx`),
+  que também cadastra endereço novo na hora. A ficha do endereço mostra proprietários e leads interessados.
 - Edifícios e Condomínios (Negócios → aba `edificios`, `src/app/pages/negocios/Edificios.tsx`): é o mesmo `imoveis` (lugar físico) com a
   ficha do prédio (construtora, ano, andares, unidades, elevadores, condomínio médio, lazer/segurança, administradora). Qualquer
   membro completa a ficha por `salvar_predio`. No "Novo imóvel", escolher o prédio (ou `?predio=<id>`) preenche endereço/CEP/mapa e,

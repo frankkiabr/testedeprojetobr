@@ -11,13 +11,14 @@ import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { useScope } from "../../session";
 import { Avatar, Card, ProgressBar, Select } from "../../kit";
 import { btn, Drawer, EmptyState, formatPhone, SearchInput, waLink } from "../../forms";
-import { BotaoExcluir, ImovelCover, ProprietarioFormModal, StatusBadge, valorLabel } from "./shared";
+import { BotaoExcluir, ImovelCover, ListaEnderecos, ProprietarioFormModal, StatusBadge, valorLabel } from "./shared";
 import { CaptacaoDrawer } from "./Captacoes";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 import { Documentos } from "../../Documentos";
 
 function ProprietarioDrawer({ id, onClose }: { id: string | null; onClose: () => void }) {
   const { isAdmin, solo } = useScope();
+  const { setImoveisProprietario } = useStore();
   const p = id ? proprietarios.find((x) => x.id === id) : undefined;
   const lista = p ? captacoesDoProprietario(p.id) : [];
   const [captacao, setCaptacao] = useState<string | null>(null);
@@ -48,6 +49,11 @@ function ProprietarioDrawer({ id, onClose }: { id: string | null; onClose: () =>
               </div>
             </div>
           )}
+          <div>
+            <p className="mb-1 font-display text-lg font-semibold">Imóveis deste proprietário</p>
+            <p className="mb-3 text-xs text-muted">Endereços que ele possui, mesmo sem captação. Aparecem também na ficha do endereço.</p>
+            <ListaEnderecos lista={p.imoveis ?? []} onChange={(l) => setImoveisProprietario(p.id, l)} />
+          </div>
           <div>
             <p className="mb-3 font-display text-lg font-semibold">Captações ({lista.length})</p>
             {lista.length ? (
