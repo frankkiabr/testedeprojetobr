@@ -45,7 +45,7 @@ export function emailFrankkia(o: {
 <tr><td align="center" style="padding:32px 16px">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px">
     <tr><td style="background:#0f1a33;background-image:linear-gradient(135deg,#0f1a33 55%,#2f5bea 140%);border-radius:24px 24px 0 0;padding:28px 32px">
-      <span style="font-family:${TITULO};font-size:26px;font-weight:600;letter-spacing:-0.5px;color:#ffffff">Frankkia</span>
+      <img src="https://frankkia.com/marca/nova/simbolo-branco-email.png" width="30" height="30" alt="" style="vertical-align:-5px;margin-right:10px;border:0"><span style="font-family:${TITULO};font-size:26px;font-weight:600;letter-spacing:-0.5px;color:#ffffff">Frankkia</span>
     </td></tr>
     <tr><td style="background:#ffffff;border:1px solid #e8ebf1;border-top:0;border-radius:0 0 24px 24px;padding:32px">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0">

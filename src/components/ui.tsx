@@ -1,4 +1,4 @@
-import { useEffect, useId, useLayoutEffect, useRef, useState, type AnchorHTMLAttributes, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type AnchorHTMLAttributes, type ReactNode } from "react";
 import { animate } from "framer-motion";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 
@@ -41,39 +41,47 @@ export function Button({
  * Marca escrita: "Frankkia" (F maiúsculo, sem ponto). Com `icone`, a casa com brilho vem logo à esquerda do nome,
  * na mesma proporção do menu da home (casa 18 px, espaço 6 px, nome 16 px). Menus superiores usam `text-base`.
  */
+/** Logotipo: símbolo (balão com "Fr") + nome "Frankkia" no desenho oficial (public/marca/nova). O nome segue a cor do texto. */
 export function Logo({ className = "", icone, animado }: { className?: string; icone?: CorIcone; animado?: AnimacaoIcone }) {
   return (
-    <span className={`inline-flex items-center gap-[0.375em] font-display font-semibold tracking-tight ${className}`}>
-      {icone && <IconeMarca cor={icone} animado={animado} className="size-[1.125em]" />}
-      Frankkia
+    <span className={`inline-flex items-center gap-[0.4em] font-display font-semibold tracking-tight ${className}`}>
+      {icone && <IconeMarca cor={icone} animado={animado} className="size-[1.2em]" />}
+      <span
+        role="img"
+        aria-label="Frankkia"
+        className="inline-block h-[0.8em] w-[3.875em] bg-current"
+        style={{ WebkitMask: NOME_MASCARA, mask: NOME_MASCARA }}
+      />
     </span>
   );
 }
+const NOME_MASCARA = "url(/marca/nova/nome-escuro.webp) center / contain no-repeat";
 
-const CASA = "512,268 770,480 770,780 254,780 254,480";
-const BRILHO = "M512 400 Q524 528 648 548 Q524 568 512 696 Q500 568 376 548 Q500 528 512 400 Z";
+/** Balão com o "Fr" vazado (mesmo desenho de public/marca/nova). */
+const BALAO =
+  "M259 10H1741Q1961 10 1961 230V1489Q1961 1709 1741 1709H1339L1150 1862Q1000 1975 850 1862L658 1709H259Q39 1709 39 1489V230Q39 10 259 10Z";
+const LETRAS_FR =
+  "M475 466H1123V662H700V801H1082V986H700V1275H475Z M1160 650H1378V775C1420 690 1490 640 1577 640V870C1460 870 1378 920 1378 1081V1275H1160Z";
 
 type CorIcone = "azul" | "escuro" | "branco";
-/** true = o brilho pisca e gira a cada 4 s (animação padrão); "carregando" = sem parar, para telas de espera. */
+/** true = sem animação contínua (mantido por compatibilidade); "carregando" = pulsa, para telas de espera. */
 type AnimacaoIcone = boolean | "carregando";
 const COR_ICONE: Record<CorIcone, string> = { azul: "text-accent", escuro: "text-ink", branco: "text-white" };
 
-/** Ícone da marca: casa com o brilho vazado (mesmo desenho de public/marca, versões "brilho-vazado"). */
+/** Ícone da marca: balão de fala com "Fr" vazado. Toma a cor do texto (azul, escuro ou branco). */
 export function IconeMarca({ cor = "azul", animado = false, className = "" }: { cor?: CorIcone; animado?: AnimacaoIcone; className?: string }) {
-  const mascara = `brilho-${useId().replace(/:/g, "")}`;
-  const animacao = animado === "carregando" ? "marca-brilho-carregando" : animado ? "marca-brilho" : undefined;
   return (
-    <svg viewBox="174 186 676 676" className={`shrink-0 ${COR_ICONE[cor]} ${className}`} aria-hidden="true" strokeLinejoin="round">
-      <mask id={mascara} maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
-        <rect width="1024" height="1024" fill="#fff" />
-        <path d={BRILHO} fill="#000" stroke="#000" strokeWidth="22" className={animacao} />
-      </mask>
-      <polygon points={CASA} fill="currentColor" stroke="currentColor" strokeWidth="160" mask={`url(#${mascara})`} />
+    <svg
+      viewBox="0 0 2000 1936"
+      className={`shrink-0 ${COR_ICONE[cor]} ${animado === "carregando" ? "animate-pulse" : ""} ${className}`}
+      aria-hidden="true"
+    >
+      <path fill="currentColor" fillRule="evenodd" d={`${BALAO} ${LETRAS_FR}`} />
     </svg>
   );
 }
 
-/** Marca d'água das fotos do anúncio: casa branca com brilho vazado, no centro e meio transparente. Vai dentro de um pai `relative`. */
+/** Marca d'água das fotos do anúncio: balão branco com "Fr" vazado, no centro e meio transparente. Vai dentro de um pai `relative`. */
 export function MarcaDagua({ className = "w-[16%]" }: { className?: string }) {
   return (
     <span className="pointer-events-none absolute inset-0 grid place-items-center" aria-hidden="true">
@@ -82,18 +90,9 @@ export function MarcaDagua({ className = "w-[16%]" }: { className?: string }) {
   );
 }
 
-/** Símbolo redondo com a casa e o brilho (mesmo desenho de public/marca). */
+/** Símbolo da marca em azul (balão com "Fr"). */
 export function LogoMark({ className = "" }: { className?: string }) {
-  return (
-    <span
-      className={`flex shrink-0 items-center justify-center rounded-full bg-accent font-display font-bold leading-none text-white ${className}`}
-    >
-      <svg viewBox="174 186 676 676" className="size-[60%] text-accent" aria-hidden="true" strokeLinejoin="round">
-        <polygon points={CASA} fill="#fff" stroke="#fff" strokeWidth="160" />
-        <path d={BRILHO} fill="currentColor" stroke="currentColor" strokeWidth="22" />
-      </svg>
-    </span>
-  );
+  return <IconeMarca cor="azul" className={className} />;
 }
 
 /**
