@@ -1,8 +1,7 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform, type MotionValue } from "framer-motion";
 import { ArrowRight, TrendingUp } from "lucide-react";
-import { ecosystem, type Module, type Pill, type Segment } from "@/content";
-import { EASE_OUT_EXPO } from "@/lib/scroll";
+import { ecosystem, type Pill, type Segment } from "@/content";
 import { LogoMark } from "./ui";
 
 type Token = { word: string } | Pill;
@@ -55,48 +54,6 @@ function PillIcon({ kind, progress, range }: { kind: Pill["pill"]; progress: Mot
   );
 }
 
-function ModuleList({ modules }: { modules: Module[] }) {
-  return (
-    <div className="relative isolate">
-      <ul>
-        {modules.map((m, i) => {
-          const Icon = m.icon;
-          return (
-            <motion.li
-              key={m.name}
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-5%" }}
-              transition={{ duration: 0.7, delay: i * 0.05, ease: EASE_OUT_EXPO }}
-              className="border-t border-line last:border-b"
-            >
-              <div
-                className="group relative isolate grid w-full grid-cols-[auto_1fr_auto] items-center gap-4 py-5 sm:gap-8 sm:py-7"
-              >
-                <span className="absolute inset-0 -z-10 origin-bottom scale-y-0 rounded-2xl bg-canvas transition-transform duration-500 ease-out-expo group-hover:scale-y-100" />
-                <span className="flex items-center">
-                  <span className="grid size-12 place-items-center rounded-xl bg-accent-soft text-accent sm:hidden">
-                    <Icon className="size-5" />
-                  </span>
-                  <span className="hidden w-10 pl-3 font-mono text-xs text-muted sm:block">{String(i + 1).padStart(2, "0")}</span>
-                </span>
-                <span className="type-index block truncate transition-transform duration-500 ease-out-expo group-hover:translate-x-2">
-                  {m.name}
-                </span>
-                <span className="flex items-center gap-6 pr-1 sm:pr-3">
-                  <span className="hidden font-mono text-xs text-muted sm:block">Frankkia {m.name}</span>
-                  <span className="grid size-10 shrink-0 place-items-center rounded-full border border-line-strong transition-[background-color,color,border-color] duration-500 ease-out-expo group-hover:border-accent group-hover:bg-accent group-hover:text-white">
-                    <Icon className="size-[1.1rem]" />
-                  </span>
-                </span>
-              </div>
-            </motion.li>
-          );
-        })}
-      </ul>
-    </div>
-  );
-}
 
 export function Ecosystem() {
   const ref = useRef<HTMLParagraphElement>(null);
@@ -126,10 +83,6 @@ export function Ecosystem() {
         </p>
       </div>
 
-      <div className="mx-auto mt-20 w-full max-w-[70rem] px-5 sm:mt-28 sm:px-8">
-        <h3 className="type-eyebrow mb-6 text-accent sm:mb-8">{ecosystem.listTitle}</h3>
-        <ModuleList modules={ecosystem.modules} />
-      </div>
     </section>
   );
 }

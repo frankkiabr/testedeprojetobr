@@ -6,6 +6,7 @@ import { site } from "@/content";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { enviarInteressado } from "@/integrations/frankkia/client";
 import { PaginaSimples } from "@/components/PaginaSimples";
+import { ListaSuspensa } from "@/app/kit";
 
 const campo =
   "h-11 w-full rounded-xl border border-line-strong bg-bg px-3.5 text-sm outline-hidden transition placeholder:text-subtle focus:border-accent focus:ring-4 focus:ring-accent/10";
@@ -74,11 +75,13 @@ export default function ExclusaoDados() {
           <form onSubmit={enviar} className="grid gap-4 sm:grid-cols-2">
             <label className="block sm:col-span-2">
               <span className="mb-1.5 block text-xs font-semibold text-muted">O que você quer pedir?</span>
-              <select className={campo} value={f.pedido} onChange={(e) => setF({ ...f, pedido: e.target.value })}>
-                {PEDIDOS.map((p) => (
-                  <option key={p}>{p}</option>
-                ))}
-              </select>
+              <ListaSuspensa
+                variante="campo"
+                label="O que você quer pedir?"
+                value={f.pedido}
+                onChange={(v) => setF({ ...f, pedido: v })}
+                options={PEDIDOS.map((p) => ({ value: p, label: p }))}
+              />
             </label>
             <label className="block sm:col-span-2">
               <span className="mb-1.5 block text-xs font-semibold text-muted">Nome completo</span>

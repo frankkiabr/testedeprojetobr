@@ -47,7 +47,7 @@ export default function Mercado() {
   return (
     <div className="space-y-6">
       <motion.div {...stagger(0)}>
-        <PageHeader title="Estudo de mercado" subtitle="Preços reais de fechamento para embasar avaliações e conversas com proprietários." />
+        <PageHeader title="Estudo de Mercado" subtitle="Preços reais de fechamento para embasar avaliações e conversas com proprietários." />
       </motion.div>
 
       <motion.div {...stagger(1)}>

@@ -1,7 +1,8 @@
 /** Peças visuais reutilizadas em todas as telas internas. */
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import { animate, motion } from "framer-motion";
-import { ArrowDownRight, ArrowUpRight, ChevronDown } from "lucide-react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
+import { animate, AnimatePresence, motion } from "framer-motion";
+import { ArrowDownRight, ArrowUpRight, Check, ChevronDown } from "lucide-react";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import type { Usuario } from "@/data/types";
 
@@ -55,8 +56,8 @@ export function AnimatedNumber({ value, format }: { value: number; format: (n: n
 }
 
 /** Variação percentual vs. período anterior. */
-export function Delta({ current, previous }: { current: number; previous: number }) {
-  if (!previous) return <span className="text-xs text-subtle">sem base no mês anterior</span>;
+export function Delta({ current, previous, base = "mês anterior" }: { current: number; previous: number; base?: string }) {
+  if (!previous) return <span className="text-xs text-subtle">sem base no {base}</span>;
   const d = ((current - previous) / previous) * 100;
   const up = d >= 0;
   return (
@@ -65,7 +66,7 @@ export function Delta({ current, previous }: { current: number; previous: number
         {up ? <ArrowUpRight className="size-3.5" /> : <ArrowDownRight className="size-3.5" />}
         {Math.abs(d).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%
       </span>{" "}
-      vs. mês anterior
+      vs. {base}
     </span>
   );
 }
@@ -108,6 +109,190 @@ export function Avatar({ user, className = "size-9 text-xs" }: { user: Pick<Usua
   );
 }
 
+/** Avisa a janela (Modal) que algo foi alterado: a lista suspensa não dispara o "change" de um campo comum. */
+export const AvisoAlteracao = createContext<() => void>(() => undefined);
+
+export type OpcaoLista = { value: string; label: string; grupo?: string; disabled?: boolean };
+
+/**
+ * Lista suspensa da Frankkia (substitui o <select> do navegador em todo o app).
+ * - variante "pilula": botão arredondado (filtros de topo de página);
+ * - variante "campo": do tamanho de um campo de formulário.
+ * A lista abre por cima de tudo (fora das janelas, para não ser cortada), sobe quando falta espaço embaixo,
+ * tem título por grupo, ✓ no item escolhido e funciona pelo teclado (setas, Enter, Esc).
+ */
+export function ListaSuspensa({
+  value,
+  onChange,
+  options,
+  icon,
+  label,
+  placeholder,
+  variante = "pilula",
+  className = "",
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: OpcaoLista[];
+  icon?: ReactNode;
+  label: string;
+  placeholder?: string;
+  variante?: "pilula" | "campo";
+  className?: string;
+}) {
+  const avisar = useContext(AvisoAlteracao);
+  const [aberta, setAberta] = useState(false);
+  const [pos, setPos] = useState<{ left: number; top?: number; bottom?: number; minWidth: number; maxHeight: number } | null>(null);
+  const [foco, setFoco] = useState(-1);
+  const botao = useRef<HTMLButtonElement>(null);
+  const lista = useRef<HTMLUListElement>(null);
+  const itens = options.filter((o) => !o.disabled);
+  const atual = options.find((o) => o.value === value && !o.disabled) ?? options.find((o) => o.value === value);
+
+  const posicionar = () => {
+    const r = botao.current?.getBoundingClientRect();
+    if (!r) return;
+    const embaixo = window.innerHeight - r.bottom - 12;
+    const emCima = r.top - 12;
+    const sobe = embaixo < 240 && emCima > embaixo;
+    setPos({
+      left: Math.min(r.left, window.innerWidth - Math.max(r.width, 200) - 8),
+      minWidth: r.width,
+      maxHeight: Math.max(160, Math.min(320, sobe ? emCima : embaixo)),
+      ...(sobe ? { bottom: window.innerHeight - r.top + 6 } : { top: r.bottom + 6 }),
+    });
+  };
+  const abrir = () => {
+    posicionar();
+    setFoco(Math.max(0, itens.findIndex((o) => o.value === value)));
+    setAberta(true);
+  };
+  const escolher = (v: string) => {
+    if (v !== value) {
+      onChange(v);
+      avisar();
+    }
+    setAberta(false);
+    botao.current?.focus();
+  };
+
+  useEffect(() => {
+    if (!aberta) return;
+    const fora = (e: MouseEvent) => {
+      const alvo = e.target as Node;
+      if (!botao.current?.contains(alvo) && !lista.current?.contains(alvo)) setAberta(false);
+    };
+    // Rolou a tela (fora da lista) ou mudou o tamanho: reposiciona
+    const rolou = (e: Event) => !lista.current?.contains(e.target as Node) && posicionar();
+    document.addEventListener("mousedown", fora);
+    window.addEventListener("scroll", rolou, true);
+    window.addEventListener("resize", posicionar);
+    return () => {
+      document.removeEventListener("mousedown", fora);
+      window.removeEventListener("scroll", rolou, true);
+      window.removeEventListener("resize", posicionar);
+    };
+  }, [aberta]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Mantém o item com foco visível ao navegar pelo teclado
+  useEffect(() => {
+    if (aberta && foco >= 0) lista.current?.querySelector(`[data-i="${foco}"]`)?.scrollIntoView({ block: "nearest" });
+  }, [aberta, foco]);
+
+  const teclado = (e: React.KeyboardEvent) => {
+    if (!aberta) {
+      if (["ArrowDown", "ArrowUp", "Enter", " "].includes(e.key)) {
+        e.preventDefault();
+        abrir();
+      }
+      return;
+    }
+    if (e.key === "Escape") {
+      e.preventDefault();
+      e.stopPropagation();
+      setAberta(false);
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setFoco((f) => Math.min(itens.length - 1, f + 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setFoco((f) => Math.max(0, f - 1));
+    } else if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      if (itens[foco]) escolher(itens[foco].value);
+    } else if (e.key === "Tab") setAberta(false);
+  };
+
+  const campo = variante === "campo";
+  const texto = atual && !atual.disabled ? atual.label : (placeholder ?? atual?.label ?? label);
+  const vazio = !atual || atual.disabled;
+  return (
+    <>
+      <button
+        ref={botao}
+        type="button"
+        aria-label={label}
+        aria-haspopup="listbox"
+        aria-expanded={aberta}
+        onClick={() => (aberta ? setAberta(false) : abrir())}
+        onKeyDown={teclado}
+        className={
+          campo
+            ? `flex h-11 w-full items-center gap-2 rounded-xl border bg-bg px-3.5 text-left text-sm transition ${aberta ? "border-accent ring-4 ring-accent/10" : "border-line-strong hover:border-ink/30"} ${className}`
+            : `inline-flex h-10 items-center gap-2 rounded-full border bg-bg pl-3.5 pr-3 text-sm font-semibold transition-colors ${aberta ? "border-accent ring-4 ring-accent/10" : "border-line-strong hover:border-ink/30"} ${className}`
+        }
+      >
+        {icon && <span className="shrink-0 text-muted">{icon}</span>}
+        <span className={`min-w-0 truncate ${campo ? "flex-1" : ""} ${vazio && campo ? "text-subtle" : ""}`}>{texto}</span>
+        <ChevronDown className={`size-4 shrink-0 text-muted transition-transform duration-300 ${aberta ? "rotate-180" : ""}`} />
+      </button>
+      {typeof document !== "undefined" &&
+        createPortal(
+          <AnimatePresence>
+            {aberta && pos && (
+              <motion.ul
+                ref={lista}
+                role="listbox"
+                aria-label={label}
+                initial={{ opacity: 0, y: pos.top !== undefined ? -6 : 6, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+                transition={{ duration: 0.18, ease: EASE_OUT_EXPO }}
+                style={{ position: "fixed", left: pos.left, top: pos.top, bottom: pos.bottom, minWidth: pos.minWidth, maxHeight: pos.maxHeight }}
+                className="z-[90] w-max max-w-[min(32rem,calc(100vw-1rem))] overflow-y-auto rounded-2xl border border-line bg-bg p-1.5 text-ink shadow-float"
+              >
+                {itens.length === 0 && <li className="px-3 py-2 text-sm text-subtle">Nenhuma opção</li>}
+                {itens.map((o, i) => (
+                  <li key={o.value || "_vazio"}>
+                    {o.grupo && o.grupo !== itens[i - 1]?.grupo && (
+                      <p className={`px-3 pb-1 text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-subtle ${i ? "mt-1.5 border-t border-line pt-2.5" : "pt-1.5"}`}>{o.grupo}</p>
+                    )}
+                    <button
+                      type="button"
+                      role="option"
+                      data-i={i}
+                      aria-selected={o.value === value}
+                      onMouseEnter={() => setFoco(i)}
+                      onClick={() => escolher(o.value)}
+                      className={`flex w-full items-center justify-between gap-6 rounded-xl px-3 py-2 text-left text-sm transition-colors ${
+                        o.value === value ? "bg-accent-soft font-semibold text-accent-deep" : foco === i ? "bg-canvas" : ""
+                      }`}
+                    >
+                      <span className="min-w-0 truncate">{o.label}</span>
+                      {o.value === value && <Check className="size-4 shrink-0" />}
+                    </button>
+                  </li>
+                ))}
+              </motion.ul>
+            )}
+          </AnimatePresence>,
+          document.body,
+        )}
+    </>
+  );
+}
+
+/** Filtro de topo de página (mesma lista suspensa, em formato de pílula). */
 export function Select({
   value,
   onChange,
@@ -121,24 +306,7 @@ export function Select({
   icon?: ReactNode;
   label: string;
 }) {
-  return (
-    <label className="relative inline-flex h-10 items-center gap-2 rounded-xl border border-line-strong bg-bg pl-3 text-sm font-medium transition-colors hover:border-ink/30">
-      {icon && <span className="text-muted">{icon}</span>}
-      <span className="sr-only">{label}</span>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="h-full cursor-pointer appearance-none bg-transparent pr-9 outline-hidden"
-      >
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-      <ChevronDown className="pointer-events-none absolute right-3 size-4 text-muted" />
-    </label>
-  );
+  return <ListaSuspensa value={value} onChange={onChange} options={options} icon={icon} label={label} />;
 }
 
 export function Segmented<T extends string>({

@@ -2,6 +2,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import { Info } from "lucide-react";
 import { simular, TAXA_REFERENCIA } from "@/lib/financiamento";
 import { lerMoeda, lerPct, mascaraMoeda, moeda, reaisCentavos, reaisInteiros } from "@/lib/moeda";
+import { ListaSuspensa } from "@/app/kit";
 
 const campo =
   "h-11 w-full rounded-xl border border-line-strong bg-bg px-3.5 text-sm outline-hidden transition placeholder:text-subtle focus:border-accent focus:ring-4 focus:ring-accent/10";
@@ -95,13 +96,13 @@ export function Simulador({ valorInicial, fixo, acao }: { valorInicial?: number;
           </span>
         </Rotulo>
         <Rotulo texto="Prazo">
-          <select className={campo} value={anos} onChange={(e) => setAnos(Number(e.target.value))}>
-            {PRAZOS.map((a) => (
-              <option key={a} value={a}>
-                {a} anos ({a * 12} meses)
-              </option>
-            ))}
-          </select>
+          <ListaSuspensa
+            variante="campo"
+            label="Prazo"
+            value={String(anos)}
+            onChange={(v) => setAnos(Number(v))}
+            options={PRAZOS.map((a) => ({ value: String(a), label: `${a} anos (${a * 12} meses)` }))}
+          />
         </Rotulo>
         <Rotulo texto="Juros ao ano (%)" dica="Use a taxa do banco escolhido. A sugestão é só uma referência.">
           <input className={campo} inputMode="decimal" value={taxa} onChange={(e) => setTaxa(e.target.value.replace(/[^\d,]/g, ""))} />

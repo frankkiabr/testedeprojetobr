@@ -6,7 +6,7 @@ import { ehSolo } from "@/data/platform";
 import {
   lastMonths,
   metrics,
-  previousMonth,
+  periodoAnterior,
   ranking,
   RANKING_LABELS,
   series,
@@ -18,7 +18,7 @@ import { useStore } from "@/data/store";
 import { brlCompact, int, pct } from "@/lib/format";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { useSession } from "../session";
-import { AnimatedNumber, Avatar, Card, CardHeader, Delta, PageHeader, Segmented, Select, stagger } from "../kit";
+import { AnimatedNumber, Avatar, Card, CardHeader, Delta, ListaSuspensa, PageHeader, Segmented, stagger } from "../kit";
 import { GroupedBars, LineArea, Ring } from "../charts";
 
 function Kpi({
@@ -29,6 +29,8 @@ function Kpi({
   format,
   hint,
   private: priv,
+  base,
+  destaque,
 }: {
   label: string;
   icon: typeof Home;
@@ -37,10 +39,14 @@ function Kpi({
   format: (n: number) => string;
   hint?: string;
   private?: boolean;
+  base?: string;
+  /** Card em azul-escuro com degradê (o VGV). */
+  destaque?: boolean;
 }) {
   return (
-    <Card className="p-5">
-      <div className="flex items-center justify-between text-sm text-muted">
+    <Card className={`relative overflow-hidden p-5 ${destaque ? "!border-transparent bg-ink text-bg" : ""}`}>
+      {destaque && <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(70%_80%_at_100%_0%,rgb(47_91_234/0.5),transparent_70%)]" />}
+      <div className={`relative flex items-center justify-between text-sm ${destaque ? "text-bg/70" : "text-muted"}`}>
         <span className="flex items-center gap-1.5">
           {label}
           {priv && (
@@ -49,14 +55,16 @@ function Kpi({
             </span>
           )}
         </span>
-        <span className="grid size-8 place-items-center rounded-full bg-accent-soft text-accent">
+        <span className={`grid size-8 place-items-center rounded-full ${destaque ? "bg-white/10 text-white" : "bg-accent-soft text-accent"}`}>
           <Icon className="size-4" />
         </span>
       </div>
-      <p className="mt-3 font-display text-[2rem] font-semibold leading-none tracking-tight">
+      <p className="relative mt-3 font-display text-[2rem] font-semibold leading-none tracking-tight">
         <AnimatedNumber value={value} format={format} />
       </p>
-      <div className="mt-3">{hint ? <span className="text-xs text-muted">{hint}</span> : <Delta current={value} previous={previous} />}</div>
+      <div className={`relative mt-3 ${destaque ? "[&_.text-muted]:text-bg/70 [&_.text-subtle]:text-bg/60" : ""}`}>
+        {hint ? <span className={`text-xs ${destaque ? "text-bg/70" : "text-muted"}`}>{hint}</span> : <Delta current={value} previous={previous} base={base} />}
+      </div>
     </Card>
   );
 }
@@ -74,7 +82,7 @@ function Rankings({ month, highlight, kinds }: { month: string; highlight?: stri
     <Card>
       <CardHeader
         title="Ranking da equipe"
-        subtitle={kind === "vgc" ? "Comissões: visível apenas para o administrador." : "Quem mais se destacou no mês."}
+        subtitle={kind === "vgc" ? "Comissões: visível apenas para o administrador." : "Quem mais se destacou no período."}
       />
       <div className="mt-4 overflow-x-auto px-5 sm:px-6">
         <Segmented id="ranking" size="sm" value={kind} onChange={setKind} options={kinds.map((k) => ({ value: k, label: RANKING_LABELS[k] }))} />
@@ -125,15 +133,23 @@ export default function Performance() {
   const { role, user } = useSession();
   const isAdmin = role === "admin";
   const months = lastMonths(6);
+  // Período: mês, ano inteiro ou desde o início
+  const meses12 = lastMonths(12);
+  const anos = [...new Set(meses12.map((x) => x.key.slice(0, 4)))].sort().reverse();
   const [month, setMonth] = useState(months[months.length - 1].key);
+  const ehMes = month.length === 7;
+  const base = month.length === 4 ? "ano anterior" : "mês anterior";
+  const todos = month === "todos";
   const [filter, setFilter] = useState(""); // "" = toda a equipe
 
   const scope: Scope = isAdmin ? (filter ? { corretorId: filter } : {}) : { corretorId: user.id };
   const m = metrics(scope, month);
-  const p = metrics(scope, previousMonth(month));
+  const p = metrics(scope, periodoAnterior(month));
   const s = series(scope);
   const who = scope.corretorId ? pessoa(scope.corretorId) : null;
-  const monthLabel = months.find((x) => x.key === month)!.long;
+  const monthLabel = todos ? "Todo o período" : month.length === 4 ? `O ano de ${month}` : meses12.find((x) => x.key === month)!.long;
+  const noPeriodoTxt = todos ? "desde o início" : month.length === 4 ? `em ${month}` : `em ${monthLabel.toLowerCase()}`;
+  const semComparar = todos ? "Desde o início" : undefined;
 
   return (
     <div className="space-y-6">
@@ -143,14 +159,14 @@ export default function Performance() {
           subtitle={
             isAdmin && !ehSolo(imobiliaria.plano)
               ? who
-                ? `Resultados de ${who.nome} em ${monthLabel.toLowerCase()}.`
-                : `Resultados de toda a equipe em ${monthLabel.toLowerCase()}.`
-              : `Seus resultados em ${monthLabel.toLowerCase()}.`
+                ? `Resultados de ${who.nome} ${noPeriodoTxt}.`
+                : `Resultados de toda a equipe ${noPeriodoTxt}.`
+              : `Seus resultados ${noPeriodoTxt}.`
           }
           actions={
             <>
               {isAdmin && !ehSolo(imobiliaria.plano) && (
-                <Select
+                <ListaSuspensa
                   label="Corretor"
                   icon={filter ? <UserRound className="size-4" /> : <Users className="size-4" />}
                   value={filter}
@@ -158,12 +174,16 @@ export default function Performance() {
                   options={[{ value: "", label: "Toda a equipe" }, ...corretores.map((c) => ({ value: c.id, label: c.nome }))]}
                 />
               )}
-              <Select
-                label="Mês"
+              <ListaSuspensa
+                label="Período"
                 icon={<Calendar className="size-4" />}
                 value={month}
                 onChange={setMonth}
-                options={[...months].reverse().map((x) => ({ value: x.key, label: x.long }))}
+                options={[
+                  { value: "todos", label: "Todos os meses", grupo: "Período" },
+                  ...anos.map((a) => ({ value: a, label: `Ano de ${a}`, grupo: "Período" })),
+                  ...[...meses12].reverse().map((x) => ({ value: x.key, label: x.long, grupo: "Mês" })),
+                ]}
               />
             </>
           }
@@ -172,13 +192,13 @@ export default function Performance() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
-          <Kpi key="vgv" label="VGV (vendas)" icon={BadgeDollarSign} value={m.vgv} previous={p.vgv} format={brlCompact} />,
-          <Kpi key="loc" label="Volume de locação" icon={KeyRound} value={m.volLocacao} previous={p.volLocacao} format={(n) => `${brlCompact(n)}/mês`} />,
-          <Kpi key="vgc" label="VGC (comissão)" icon={Coins} value={m.vgc} previous={p.vgc} format={brlCompact} private />,
-          <Kpi key="cap" label="Captações" icon={Home} value={m.captados} previous={p.captados} format={int} />,
-          <Kpi key="vend" label="Imóveis vendidos" icon={BadgeDollarSign} value={m.vendidos} previous={p.vendidos} format={int} />,
-          <Kpi key="alug" label="Imóveis alugados" icon={KeyRound} value={m.alugados} previous={p.alugados} format={int} />,
-          <Kpi key="leads" label="Leads cadastrados" icon={Users} value={m.leads} previous={p.leads} format={int} />,
+          <Kpi key="vgv" destaque label="VGV (vendas)" icon={BadgeDollarSign} value={m.vgv} previous={p.vgv} format={brlCompact} base={base} hint={semComparar} />,
+          <Kpi key="loc" label="Volume de locação" icon={KeyRound} value={m.volLocacao} previous={p.volLocacao} format={(n) => `${brlCompact(n)}/mês`} base={base} hint={semComparar} />,
+          <Kpi key="vgc" label="VGC (comissão)" icon={Coins} value={m.vgc} previous={p.vgc} format={brlCompact} private base={base} hint={semComparar} />,
+          <Kpi key="cap" label="Captações" icon={Home} value={m.captados} previous={p.captados} format={int} base={base} hint={semComparar} />,
+          <Kpi key="vend" label="Imóveis vendidos" icon={BadgeDollarSign} value={m.vendidos} previous={p.vendidos} format={int} base={base} hint={semComparar} />,
+          <Kpi key="alug" label="Imóveis alugados" icon={KeyRound} value={m.alugados} previous={p.alugados} format={int} base={base} hint={semComparar} />,
+          <Kpi key="leads" label="Leads cadastrados" icon={Users} value={m.leads} previous={p.leads} format={int} base={base} hint={semComparar} />,
           <Kpi
             key="taxa"
             label="Leads atendidos"
@@ -207,7 +227,7 @@ export default function Performance() {
 
         <motion.div {...stagger(8)}>
           <Card className="flex h-full flex-col">
-            <CardHeader title="Meta do mês" subtitle={who ? `Meta individual de ${who.nome.split(" ")[0]}.` : isAdmin && !ehSolo(imobiliaria.plano) ? "Meta da imobiliária." : "Sua meta do mês."} />
+            <CardHeader title={ehMes ? "Meta do mês" : todos ? "Meta" : "Meta do ano"} subtitle={todos ? "A meta vale por mês ou por ano: escolha um deles no período." : who ? `Meta individual de ${who.nome.split(" ")[0]}.` : isAdmin && !ehSolo(imobiliaria.plano) ? "Meta da imobiliária." : "Sua meta do mês."} />
             <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 pb-6 pt-4">
               <div className="relative">
                 <Ring value={m.metaPct / 100} size={160} />

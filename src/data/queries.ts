@@ -46,6 +46,13 @@ export function lastMonths(n = 6) {
   return out;
 }
 
+/** Período da Performance: "AAAA-MM" (mês), "AAAA" (ano) ou "todos". */
+export const noPeriodo = (iso: string | Date, periodo: string) =>
+  periodo === "todos" ? true : periodo.length === 4 ? String(new Date(iso).getFullYear()) === periodo : monthKey(iso) === periodo;
+/** Período anterior (para comparar): mês anterior, ano anterior; "todos" não tem anterior. */
+export const periodoAnterior = (periodo: string) =>
+  periodo === "todos" ? "" : periodo.length === 4 ? String(Number(periodo) - 1) : previousMonth(periodo);
+
 export const previousMonth = (key: string) => {
   const [y, m] = key.split("-").map(Number);
   return monthKey(new Date(y, m - 2, 1));
@@ -167,7 +174,7 @@ export function creditoDe(t: Transacao, corretorId: string) {
 }
 
 export const transacoesOf = (s: Scope, month?: string) =>
-  transacoes.filter((t) => (!s.corretorId || participa(t, s.corretorId)) && (!month || monthKey(t.data) === month));
+  transacoes.filter((t) => (!s.corretorId || participa(t, s.corretorId)) && (!month || noPeriodo(t.data, month)));
 
 export const fechamentosPendentes = (s: Scope) => fechamentos.filter((f) => f.status === "pendente" && inScope(f.corretorId, s));
 
@@ -178,10 +185,12 @@ export function metrics(scope: Scope, month: string) {
     scope.corretorId ? creditoDe(t, scope.corretorId).comissao : t.participantes.filter((p) => p.tipo === "corretor").reduce((s, p) => s + parteDe(t, p), 0);
   const vendas = txs.filter((t) => t.tipo === "venda");
   const locs = txs.filter((t) => t.tipo === "locacao");
-  const l = leads.filter((x) => inScope(x.corretorId, scope) && monthKey(x.criadoEm) === month);
+  const l = month ? leads.filter((x) => inScope(x.corretorId, scope) && noPeriodo(x.criadoEm, month)) : [];
   const atendidos = l.filter(atendido).length;
   const vgv = vendas.reduce((s, t) => s + val(t), 0);
-  const meta = scope.corretorId ? (userById(scope.corretorId)?.metaMensalVGV ?? 0) : imobiliaria.metaMensalVGV;
+  const metaMes = scope.corretorId ? (userById(scope.corretorId)?.metaMensalVGV ?? 0) : imobiliaria.metaMensalVGV;
+  // Ano: meta de 12 meses; período todo: sem meta
+  const meta = month === "todos" ? 0 : month.length === 4 ? metaMes * 12 : metaMes;
   return {
     vgv,
     volLocacao: locs.reduce((s, t) => s + val(t), 0),
@@ -189,7 +198,7 @@ export function metrics(scope: Scope, month: string) {
     receitaImob: scope.corretorId ? 0 : txs.reduce((s, t) => s + parteImobiliaria(t), 0),
     vendidos: vendas.length,
     alugados: locs.length,
-    captados: captacoes.filter((x) => inScope(x.corretorId, scope) && monthKey(x.captadoEm) === month).length,
+    captados: month ? captacoes.filter((x) => inScope(x.corretorId, scope) && noPeriodo(x.captadoEm, month)).length : 0,
     leads: l.length,
     atendidos,
     taxa: l.length ? (atendidos / l.length) * 100 : 0,
@@ -212,10 +221,18 @@ export const RANKING_LABELS: Record<RankingKind, string> = {
 
 export function ranking(kind: RankingKind, month: string) {
   // Login real do corretor: os números da equipe vêm do banco (ranking_mes), sem expor dados dos colegas.
-  const doBanco = ctx.ranking?.[month];
+  // Ano ou período todo: soma os meses que vieram do banco
+  const meses = ctx.ranking ? Object.keys(ctx.ranking).filter((k) => month === "todos" || k === month || (month.length === 4 && k.startsWith(month))) : [];
+  const doBanco = ctx.ranking && meses.length
+    ? meses.flatMap((k) => ctx.ranking![k]).reduce<Record<string, Record<RankingKind, number> & { corretorId: string }>>((acc, r) => {
+        const a = (acc[r.corretorId] ??= { corretorId: r.corretorId, vgv: 0, alugados: 0, captados: 0, atendidos: 0, vgc: 0 });
+        (["vgv", "alugados", "captados", "atendidos", "vgc"] as RankingKind[]).forEach((k) => (a[k] += Number(r[k] ?? 0)));
+        return acc;
+      }, {})
+    : null;
   if (doBanco)
     return corretoresAtivos()
-      .map((c) => ({ user: c, value: doBanco.find((r) => r.corretorId === c.id)?.[kind] ?? 0 }))
+      .map((c) => ({ user: c, value: doBanco[c.id]?.[kind] ?? 0 }))
       .sort((a, b) => b.value - a.value);
   return corretoresAtivos()
     .map((c) => ({ user: c, value: metrics({ corretorId: c.id }, month)[kind] }))

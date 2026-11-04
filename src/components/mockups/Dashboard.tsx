@@ -17,6 +17,9 @@ import {
   LayoutGrid,
   LineChart,
   Megaphone,
+  ExternalLink,
+  LogOut,
+  PanelLeftClose,
   Settings2,
   Users,
 } from "lucide-react";
@@ -31,13 +34,13 @@ import { CountUp, Logo } from "../ui";
 export const DASHBOARD_SIZE = { width: 1100, height: 700 };
 
 const menu = [
-  { label: "Visão geral", icon: LayoutGrid },
-  { label: "Agenda", icon: CalendarDays },
+  { label: "Início", icon: LayoutGrid },
   { label: "Performance", icon: BarChart3, active: true },
   { label: "Negócios", icon: Briefcase },
-  { label: "Estudo de mercado", icon: LineChart },
-  { label: "Academy", icon: BookOpen },
+  { label: "Agenda", icon: CalendarDays },
+  { label: "Estudo de Mercado", icon: LineChart },
   { label: "Marketing", icon: Megaphone },
+  { label: "Academy", icon: BookOpen },
   { label: "Equipe", icon: Users },
 ];
 
@@ -72,24 +75,13 @@ const MONTHS = ["Mai", "Jun", "Jul", "Ago", "Set", "Out"];
 export function Dashboard({ active }: { active: boolean }) {
   const last = pts[pts.length - 1];
   return (
-    <div className="flex size-full flex-col overflow-hidden rounded-[28px] bg-white text-ink">
-      {/* Topo */}
-      <div className="flex h-[64px] shrink-0 items-center justify-between border-b border-line px-7">
-        <Logo icone="escuro" className="text-[18px]" />
-        <div className="flex items-center gap-5 text-[13px] text-muted">
-          <span>Imobiliária Exemplo</span>
-          <span className="relative">
-            <Bell className="size-[18px]" />
-            <span className="absolute -right-0.5 -top-0.5 size-2 rounded-full bg-accent ring-2 ring-white" />
-          </span>
-          <span className="grid size-9 place-items-center rounded-full bg-accent-soft text-[12px] font-semibold text-accent-deep">GC</span>
+    <div className="flex size-full overflow-hidden rounded-[28px] bg-white text-ink">
+      {/* Menu lateral (com a marca no topo, como no painel) */}
+      <aside className="flex w-[190px] shrink-0 flex-col border-r border-line px-3.5 pb-4">
+        <div className="flex h-[60px] shrink-0 items-center px-2">
+          <Logo icone="escuro" className="text-[15px]" />
         </div>
-      </div>
-
-      <div className="flex min-h-0 flex-1">
-        {/* Menu lateral */}
-        <aside className="flex w-[190px] shrink-0 flex-col border-r border-line px-3.5 py-5">
-          <p className="px-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-subtle">Seu universo</p>
+        <p className="mt-2 px-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-subtle">Seu universo</p>
           <ul className="mt-3 space-y-0.5">
             {menu.map(({ label, icon: Icon, active: on }) => (
               <li
@@ -113,19 +105,35 @@ export function Dashboard({ active }: { active: boolean }) {
               <span className="mt-2.5 flex h-7 items-center justify-center rounded-full bg-accent text-[10.5px] font-semibold text-white">Fazer upgrade</span>
             </div>
             {[
-              { label: "Configurações", icon: Settings2 },
-              { label: "Ajuda", icon: HelpCircle },
-            ].map(({ label, icon: Icon }) => (
-              <div key={label} className="flex items-center gap-2.5 rounded-xl px-2.5 py-[7px] text-[12.5px] text-muted">
-                <Icon className="size-[16px]" />
+              { label: "Configurações", icon: Settings2, cor: "" },
+              { label: "Ajuda", icon: HelpCircle, cor: "" },
+              { label: "Sair", icon: LogOut, cor: "text-rose-600" },
+            ].map(({ label, icon: Icon, cor }) => (
+              <div key={label} className="flex items-center gap-2.5 rounded-xl px-2.5 py-[6px] text-[12.5px] text-muted">
+                <Icon className={`size-[16px] ${cor}`} />
                 {label}
               </div>
             ))}
           </div>
         </aside>
 
+      <div className="flex min-w-0 flex-1 flex-col">
+        {/* Topo: recolher menu, página pública e avisos */}
+        <div className="flex h-[60px] shrink-0 items-center justify-between border-b border-line px-6">
+          <PanelLeftClose className="size-[18px] text-muted" />
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-[11.5px] font-semibold text-muted">
+              <ExternalLink className="size-3.5" /> Página da imobiliária
+            </span>
+            <span className="relative grid size-8 place-items-center rounded-full bg-accent-soft text-accent">
+              <Bell className="size-[15px]" />
+              <span className="absolute -right-0.5 -top-0.5 grid size-3.5 place-items-center rounded-full bg-accent text-[8px] font-bold text-white">3</span>
+            </span>
+          </div>
+        </div>
+
         {/* Conteúdo */}
-        <div className="flex min-w-0 flex-1 flex-col gap-4 bg-canvas/40 p-6">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 bg-canvas/40 p-6">
           <div className="flex items-end justify-between">
             <div>
               <h4 className="font-display text-[24px] font-semibold tracking-tight">Performance</h4>
@@ -136,7 +144,7 @@ export function Dashboard({ active }: { active: boolean }) {
                 { icon: Users, label: "Toda a equipe" },
                 { icon: Calendar, label: "Outubro de 2026" },
               ].map(({ icon: Icon, label }) => (
-                <span key={label} className="flex items-center gap-2 rounded-xl border border-line-strong bg-white px-3 py-2 text-[12px] font-medium">
+                <span key={label} className="flex items-center gap-2 rounded-full border border-line-strong bg-white px-3 py-2 text-[12px] font-semibold">
                   <Icon className="size-3.5 text-muted" />
                   {label}
                   <ChevronDown className="size-3.5 text-muted" />
@@ -152,20 +160,21 @@ export function Dashboard({ active }: { active: boolean }) {
                 initial={{ opacity: 0, y: 16 }}
                 animate={active ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.7, delay: 0.2 + i * 0.08, ease: EASE_OUT_EXPO }}
-                className="rounded-2xl border border-line bg-white p-4"
+                className={`relative overflow-hidden rounded-2xl border p-4 ${i === 0 ? "border-transparent bg-ink text-white" : "border-line bg-white"}`}
               >
-                <div className="flex items-center justify-between text-[11.5px] text-muted">
+                {i === 0 && <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(70%_80%_at_100%_0%,rgb(47_91_234/0.5),transparent_70%)]" />}
+                <div className={`relative flex items-center justify-between text-[11.5px] ${i === 0 ? "text-white/70" : "text-muted"}`}>
                   {k.label}
-                  <span className="grid size-6 place-items-center rounded-full bg-accent-soft text-accent">
+                  <span className={`grid size-6 place-items-center rounded-full ${i === 0 ? "bg-white/10 text-white" : "bg-accent-soft text-accent"}`}>
                     <k.icon className="size-3.5" />
                   </span>
                 </div>
-                <p className="mt-2.5 whitespace-nowrap font-display text-[26px] font-semibold leading-none tracking-tight">
+                <p className="relative mt-2.5 whitespace-nowrap font-display text-[26px] font-semibold leading-none tracking-tight">
                   <CountUp to={k.to} start={active} decimals={k.decimals} prefix={k.prefix} />
-                  <span className="text-[13px] font-medium text-muted">{k.suffix}</span>
+                  <span className={`text-[13px] font-medium ${i === 0 ? "text-white/70" : "text-muted"}`}>{k.suffix}</span>
                 </p>
-                <p className="mt-2.5 text-[10.5px] text-muted">
-                  <span className="font-semibold text-verified">↗ {k.delta}</span> vs. mês anterior
+                <p className={`relative mt-2.5 text-[10.5px] ${i === 0 ? "text-white/70" : "text-muted"}`}>
+                  <span className={`font-semibold ${i === 0 ? "text-emerald-300" : "text-verified"}`}>↗ {k.delta}</span> vs. mês anterior
                 </p>
               </motion.div>
             ))}

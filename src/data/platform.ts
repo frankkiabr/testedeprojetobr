@@ -265,7 +265,7 @@ export function nomeDaTela(path: string) {
     ["/app/negocios/captacoes", "Negócios › Captações"],
     ["/app/negocios/proprietarios", "Negócios › Proprietários"],
     ["/app/negocios/vendas", "Negócios › Vendas"],
-    ["/app/visao-geral", "Visão geral"],
+    ["/app/visao-geral", "Início"],
     ["/app/performance", "Performance"],
     ["/app/academy", "Academy"],
     ["/app/marketing", "Marketing"],

@@ -2,8 +2,9 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, ChevronDown, Search, X } from "lucide-react";
+import { Check, Search, X } from "lucide-react";
 import { useStore } from "@/data/store";
+import { AvisoAlteracao, ListaSuspensa, type OpcaoLista } from "./kit";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 
 export const inputCls =
@@ -128,6 +129,7 @@ export function Modal({
     }
   }, [open]);
   const sujo = !!alterado || mexeu;
+  const marcarAlterado = () => setMexeu(true);
   // Botão de salvar da própria janela (BotaoSalvar), usado quando a janela não passa onSalvarAlteracoes
   const botaoSalvar = () => rodape.current?.querySelector<HTMLButtonElement>("button[data-salvar]") ?? null;
   const podeSalvar = !!onSalvarAlteracoes || !!botaoSalvar();
@@ -195,6 +197,7 @@ export function Modal({
                 <CloseButton onClose={fechar} />
               </div>
             )}
+            <AvisoAlteracao.Provider value={marcarAlterado}>
             <div
               className="flex-1 overflow-y-auto px-6 py-5"
               onChangeCapture={(e) => {
@@ -208,6 +211,7 @@ export function Modal({
             >
               {children}
             </div>
+            </AvisoAlteracao.Provider>
             {footer && (
               <div
                 ref={rodape}
@@ -339,33 +343,32 @@ export function Field({ label, children, hint, className = "" }: { label: string
   );
 }
 
+/** Campo de escolha dos formulários: a lista suspensa da Frankkia no tamanho de um campo. */
 export function SelectField({
   value,
   onChange,
   options,
   placeholder,
+  label,
+  className,
 }: {
   value: string;
   onChange: (v: string) => void;
-  options: { value: string; label: string }[];
+  options: OpcaoLista[];
   placeholder?: string;
+  label?: string;
+  className?: string;
 }) {
   return (
-    <span className="relative block">
-      <select value={value} onChange={(e) => onChange(e.target.value)} className={`${inputCls} cursor-pointer appearance-none pr-10`}>
-        {placeholder && (
-          <option value="" disabled>
-            {placeholder}
-          </option>
-        )}
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-      <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2 text-muted" />
-    </span>
+    <ListaSuspensa
+      variante="campo"
+      value={value}
+      onChange={onChange}
+      options={options}
+      placeholder={placeholder}
+      label={label ?? placeholder ?? "Escolher"}
+      className={className}
+    />
   );
 }
 
@@ -528,13 +531,14 @@ const HORARIOS = Array.from({ length: 96 }, (_, k) => `${String(Math.floor(k / 4
 export function TimeInput({ value, onChange, className = "" }: { value: string; onChange: (hhmm: string) => void; className?: string }) {
   const opcoes = value && !HORARIOS.includes(value) ? [value, ...HORARIOS].sort() : HORARIOS;
   return (
-    <select className={`${inputCls} ${className}`} value={value} onChange={(e) => onChange(e.target.value)}>
-      {!value && <option value="">--:--</option>}
-      {opcoes.map((h) => (
-        <option key={h} value={h}>
-          {h}
-        </option>
-      ))}
-    </select>
+    <ListaSuspensa
+      variante="campo"
+      label="Horário"
+      placeholder="--:--"
+      value={value}
+      onChange={onChange}
+      className={className}
+      options={opcoes.map((h) => ({ value: h, label: h }))}
+    />
   );
 }

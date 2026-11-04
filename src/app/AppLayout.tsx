@@ -36,13 +36,13 @@ import { Notificacoes } from "./Notificacoes";
 import { acaoAssinatura, mensagemErro } from "@/integrations/frankkia/client";
 
 const MENU = [
-  { to: "visao-geral", label: "Visão geral", icon: LayoutGrid },
-  { to: "agenda", label: "Agenda", icon: CalendarDays },
+  { to: "visao-geral", label: "Início", icon: LayoutGrid },
   { to: "performance", label: "Performance", icon: BarChart3 },
   { to: "negocios", label: "Negócios", icon: Briefcase },
-  { to: "mercado", label: "Estudo de mercado", icon: LineChart },
-  { to: "academy", label: "Academy", icon: BookOpen },
+  { to: "agenda", label: "Agenda", icon: CalendarDays },
+  { to: "mercado", label: "Estudo de Mercado", icon: LineChart },
   { to: "marketing", label: "Marketing", icon: Megaphone },
+  { to: "academy", label: "Academy", icon: BookOpen },
   { to: "equipe", label: "Equipe", icon: Users, adminOnly: true },
 ];
 const BOTTOM = [
@@ -131,7 +131,7 @@ function Sidebar({ onNavigate, recolhido }: { onNavigate?: () => void; recolhido
             title={recolhido ? "Sair" : undefined}
             className={`flex w-full items-center gap-3 rounded-xl py-2.5 text-sm text-muted transition-colors hover:bg-canvas hover:text-ink ${recolhido ? "justify-center" : "px-3"}`}
           >
-            <LogOut className="size-[18px] shrink-0" /> {!recolhido && "Sair"}
+            <LogOut className="size-[18px] shrink-0 text-rose-600" /> {!recolhido && "Sair"}
           </button>
         </nav>
       </div>
@@ -292,7 +292,8 @@ export function AppLayout() {
           </div>
         </header>
 
-        {diasDeTeste !== null && (
+        {/* Contagem do teste grátis: só na tela Início */}
+        {diasDeTeste !== null && loc.pathname.startsWith("/app/visao-geral") && (
           <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 bg-accent px-4 py-2.5 text-center text-sm font-medium text-white">
             <Sparkles className="size-4 shrink-0" />
             Teste grátis: {diasDeTeste <= 1 ? "termina hoje" : `faltam ${diasDeTeste} dias`}.

@@ -1119,31 +1119,31 @@ export function TransacaoFormModal({
             <div className="space-y-2">
               {parts.map((p, i) => (
                 <div key={i} className="grid grid-cols-[7.5rem_1fr_4.5rem_auto] items-center gap-2 rounded-xl bg-canvas p-2">
-                  <select
+                  <SelectField
+                    label="Tipo de participante"
                     value={p.tipo}
-                    onChange={(e) => setPart(i, { tipo: e.target.value as Participante["tipo"], refId: "" })}
-                    className="h-10 rounded-lg border border-line-strong bg-bg px-2 text-xs font-semibold outline-hidden"
-                  >
-                    <option value="corretor">{ehSolo(imobiliaria.plano) ? "Você" : "Da equipe"}</option>
-                    <option value="parceiro">Parceiro externo</option>
-                  </select>
+                    onChange={(v) => setPart(i, { tipo: v as Participante["tipo"], refId: "" })}
+                    className="!h-10 !px-2.5 text-xs font-semibold"
+                    options={[
+                      { value: "corretor", label: ehSolo(imobiliaria.plano) ? "Você" : "Da equipe" },
+                      { value: "parceiro", label: "Parceiro externo" },
+                    ]}
+                  />
                   <div className="flex min-w-0 items-center gap-2">
                   {p.refId && <Avatar user={participanteAvatar(p)} className="size-8 text-[0.5625rem]" />}
-                  <select
-                    value={p.refId}
-                    onChange={(e) => (e.target.value === "__novo" ? setNovoParceiro(i) : setPart(i, { refId: e.target.value }))}
-                    className="h-10 min-w-0 flex-1 rounded-lg border border-line-strong bg-bg px-2 text-sm outline-hidden"
-                  >
-                    <option value="" disabled>
-                      Selecione
-                    </option>
-                    {(p.tipo === "corretor" ? corretoresParaVenda() : parceiros).map((x) => (
-                      <option key={x.id} value={x.id}>
-                        {x.nome}
-                      </option>
-                    ))}
-                    {p.tipo === "parceiro" && <option value="__novo">+ Cadastrar parceiro…</option>}
-                  </select>
+                  <div className="min-w-0 flex-1">
+                    <SelectField
+                      label="Quem recebe"
+                      value={p.refId}
+                      onChange={(v) => (v === "__novo" ? setNovoParceiro(i) : setPart(i, { refId: v }))}
+                      placeholder="Selecione"
+                      className="!h-10 !px-2.5"
+                      options={[
+                        ...(p.tipo === "corretor" ? corretoresParaVenda() : parceiros).map((x) => ({ value: x.id, label: x.nome })),
+                        ...(p.tipo === "parceiro" ? [{ value: "__novo", label: "+ Cadastrar parceiro…" }] : []),
+                      ]}
+                    />
+                  </div>
                   </div>
                   <label className="relative">
                     <input

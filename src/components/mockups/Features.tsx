@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { motion } from "framer-motion";
-import { CalendarDays, Check, ClipboardList, LineChart, MessageCircle, Users } from "lucide-react";
+import { CalendarDays, Check, ClipboardList, LineChart, MessageCircle, Users, X } from "lucide-react";
 import type { FeatureKey } from "@/content";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
@@ -25,14 +25,12 @@ function Stage({ k, icon, title, children }: { k: FeatureKey; icon: ReactNode; t
       }}
     >
       <div className="absolute inset-x-12 bottom-0 top-12 overflow-hidden rounded-t-[22px] border border-white/70 bg-white text-ink shadow-[0_30px_60px_-20px_rgb(15_26_51/0.35)]">
-        <div className="flex h-12 items-center gap-2.5 border-b border-line px-5">
-          <span className="grid size-7 place-items-center rounded-lg bg-accent-soft text-accent">{icon}</span>
-          <span className="text-[14px] font-semibold">{title}</span>
-          <span className="ml-auto flex gap-1.5">
-            <span className="size-2 rounded-full bg-line-strong" />
-            <span className="size-2 rounded-full bg-line-strong" />
-            <span className="size-2 rounded-full bg-line-strong" />
-          </span>
+        {/* Topo escuro com degradê, igual às janelas do painel */}
+        <div className="relative flex h-14 items-center gap-2.5 overflow-hidden bg-ink px-5 text-white">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(70%_120%_at_100%_0%,rgb(47_91_234/0.55),transparent_70%)]" />
+          <span className="relative grid size-7 place-items-center rounded-lg bg-white/10">{icon}</span>
+          <span className="relative font-display text-[15px] font-semibold">{title}</span>
+          <X className="relative ml-auto size-4 text-white/70" />
         </div>
         <div className="p-6">{children}</div>
       </div>
@@ -253,7 +251,7 @@ function MercadoMock({ active }: { active: boolean }) {
     ["Urgência", "R$ 804 mil", "bg-verified-soft text-verified"],
   ];
   return (
-    <Stage k="mercado" icon={<LineChart className="size-4" />} title="Estudo de mercado">
+    <Stage k="mercado" icon={<LineChart className="size-4" />} title="Estudo de Mercado">
       <div className="flex items-end justify-between">
         <div>
           <p className="text-[12px] text-muted">Imóvel avaliado</p>

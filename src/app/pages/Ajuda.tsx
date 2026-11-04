@@ -13,7 +13,7 @@ import { Badge, Card, CardHeader, PageHeader, stagger } from "../kit";
 import { btn, Field, inputCls, SelectField } from "../forms";
 
 const FAQ = [
-  { q: "Como cadastro um lead?", a: "Em Negócios › Leads, clique em “Novo lead”, preencha nome, WhatsApp, origem e interesse. O lead entra na coluna “Novo” e aparece na sua Visão geral até ser atendido." },
+  { q: "Como cadastro um lead?", a: "Em Negócios › Leads, clique em “Novo lead”, preencha nome, WhatsApp, origem e interesse. O lead entra na coluna “Novo” e aparece na sua tela Início até ser atendido." },
   { q: "Quando um lead conta como atendido?", a: "Assim que o primeiro passo do checklist de atendimento é marcado. É esse dado que alimenta o ranking de leads atendidos em Performance." },
   { q: "Como mudo a etapa de um lead?", a: "No quadro, arraste o cartão para outra coluna. Você também pode abrir o lead e escolher a etapa no topo do painel." },
   { q: "Como envio o relatório ao proprietário?", a: "Abra o imóvel em Negócios › Imóveis e clique em “Gerar relatório”. A mensagem é montada com as ações do checklist de marketing e enviada pelo WhatsApp cadastrado do proprietário." },

@@ -123,6 +123,7 @@ export function CompromissoForm({
     <Modal
       open={open}
       onClose={onClose}
+      banner={!editar}
       title={editar ? "Editar compromisso" : "Novo compromisso"}
       subtitle={f.tipo === "visita" && f.leadId ? "A data desta visita também fica registrada no lead." : undefined}
       footer={
