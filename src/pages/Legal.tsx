@@ -132,7 +132,7 @@ export function Termos() {
             <ul>
               <li>Os planos, preços e limites (vagas de corretores e anúncios no portal) são os informados no site no momento da contratação.</li>
               <li>
-                Quem cria a conta pelo site tem <strong>7 dias de teste grátis</strong>, sem cartão (contas criadas pela equipe Frankkia podem ter
+                Quem cria a conta pelo site tem <strong>15 dias de teste grátis</strong>, sem cartão (contas criadas pela equipe Frankkia podem ter
                 outro prazo, informado no convite). Ao fim do teste, nada é cobrado automaticamente: o acesso aos dados fica suspenso até a
                 contratação de um plano, e os dados continuam guardados.
               </li>

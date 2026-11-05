@@ -5,9 +5,9 @@ export const Route = createFileRoute("/cadastro")({
   head: () => ({
     meta: [
       { title: "Teste grátis · Frankkia" },
-      { name: "description", content: "Crie sua conta na Frankkia e teste grátis por 7 dias, sem cartão. Planos para corretor autônomo e para imobiliárias de 5 a 60 corretores." },
+      { name: "description", content: "Crie sua conta na Frankkia e teste grátis por 15 dias, sem cartão. Planos para corretor autônomo e para imobiliárias de 5 a 60 corretores." },
       { property: "og:title", content: "Teste grátis · Frankkia" },
-      { property: "og:description", content: "Crie sua conta na Frankkia e teste grátis por 7 dias, sem cartão. Planos para corretor autônomo e para imobiliárias de 5 a 60 corretores." },
+      { property: "og:description", content: "Crie sua conta na Frankkia e teste grátis por 15 dias, sem cartão. Planos para corretor autônomo e para imobiliárias de 5 a 60 corretores." },
     ],
   }),
   component: () => null,

@@ -33,9 +33,11 @@ import type {
   Trilha,
   Usuario,
   EnderecoLigado,
+  TipoCliente,
+  DadosContrato,
 } from "./types";
 import { mensagemErro, supabase } from "@/integrations/frankkia/client";
-import type { Database } from "@/integrations/frankkia/types";
+import type { Database, Json } from "@/integrations/frankkia/types";
 
 type Row<T extends keyof Database["public"]["Tables"]> = Database["public"]["Tables"][T]["Row"];
 
@@ -167,6 +169,9 @@ export const paraBancoLigados = (l: EnderecoLigado[] = []) => l.map((x) => ({ im
 
 const paraLead = (r: Row<"leads">): Lead => ({
   id: r.id,
+  codigo: r.codigo,
+  tipos: (r.tipos ?? []) as TipoCliente[],
+  contrato: (r.dados_contrato ?? {}) as DadosContrato,
   corretorId: r.corretor_id,
   nome: r.nome,
   telefone: r.telefone,
@@ -220,6 +225,7 @@ const paraCaptacao = (r: Row<"captacoes">): Captacao => ({
   finalidade: r.finalidade as Captacao["finalidade"],
   valor: Number(r.valor),
   areaM2: Number(r.area_m2),
+  comissaoPct: r.comissao_pct === null ? undefined : Number(r.comissao_pct),
   status: r.status as Captacao["status"],
   captadoEm: r.captado_em,
   checklistCaptacao: r.checklist_captacao,
@@ -547,7 +553,19 @@ export async function carregarReal(conta: ContaDados) {
   trocarLista(D.leads, leads.map(paraLead));
   trocarLista(
     D.proprietarios,
-    proprietarios.map((p): Proprietario => ({ id: p.id, corretorId: p.corretor_id, nome: p.nome, whatsapp: p.whatsapp, criadoEm: p.criado_em, imoveis: deBancoLigados(p.imoveis_ligados) })),
+    proprietarios.map(
+      (p): Proprietario => ({
+        id: p.id,
+        codigo: p.codigo,
+        tipos: (p.tipos ?? []) as TipoCliente[],
+        contrato: (p.dados_contrato ?? {}) as DadosContrato,
+        corretorId: p.corretor_id,
+        nome: p.nome,
+        whatsapp: p.whatsapp,
+        criadoEm: p.criado_em,
+        imoveis: deBancoLigados(p.imoveis_ligados),
+      }),
+    ),
   );
   trocarLista(D.imoveis, imoveis.map(paraImovel));
   trocarLista(D.captacoes, captacoes.map(paraCaptacao));
@@ -773,6 +791,9 @@ export const contexto = ctx;
 
 export const leadParaBanco = (l: Lead) => ({
   id: l.id,
+  ...(l.codigo ? { codigo: l.codigo } : {}),
+  tipos: l.tipos ?? [],
+  dados_contrato: (l.contrato ?? {}) as Json,
   imobiliaria_id: ctx.imobId,
   corretor_id: l.corretorId,
   nome: l.nome,

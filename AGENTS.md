@@ -67,8 +67,7 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
   NÃO existe exportação no app: cópia dos dados só por pedido no e-mail. Importar leads/imóveis/proprietários: `ImportarCarteira.tsx`.
 - Teste grátis: `imobiliarias.teste_dias` (definido pela Frankkia) vira `teste_ate` no 1º acesso do administrador;
   vencido, o banco bloqueia os dados (`imob_liberada`) e o app mostra a tela de contratar plano.
-- Teste grátis pelo site (`/cadastro`) só em Solo, Equipe 5 e Equipe 10; Equipe 30/60 é combinado com a Frankkia pelo WhatsApp (o gatilho
-  `teste_so_planos_menores` recusa no banco). `?plano=Solo` mostra só o Solo; `?plano=Equipe…` só os de equipe; sem plano, os três.
+- Teste grátis pelo site (`/cadastro`): 15 dias em TODOS os planos (`config_cadastro.teste_dias`; a trava de Equipe 30/60 saiu em 05/11/2026). `?plano=Solo` mostra só o Solo; `?plano=Equipe…` só os de equipe; sem plano, os três.
 - Pagamento: Stripe em modo de teste (funções `criar-checkout` e `stripe-webhook` em `supabase/functions/`). O webhook marca
   o pedido como pago; a Frankkia libera o plano. Sem Stripe configurada, a Frankkia pode confirmar o pagamento à mão.
 - E-mail: função `enviar-convite` (Resend). Segredos ficam no Supabase (Edge Functions → Secrets), nunca no código.
@@ -145,6 +144,10 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
   ficha do prédio (construtora, ano, andares, unidades, elevadores, condomínio médio, lazer/segurança, administradora). Qualquer
   membro completa a ficha por `salvar_predio`. No "Novo imóvel", escolher o prédio (ou `?predio=<id>`) preenche endereço/CEP/mapa e,
   ao salvar, o condomínio e as características do prédio vão para o anúncio. A ficha cruza captações, vendas e estudos do endereço.
+- Clientes (leads e proprietários): `codigo` CL-XXXXXX, `tipos` (comprador/locatario/proprietario/investidor/fiador) e `dados_contrato`
+  (jsonb: CPF, RG, estado civil, cônjuge, renda, PJ...) em `negocios/DadosContrato.tsx` (só valem ao Salvar; no lead abre na etapa Proposta).
+  Novo imóvel em 3 etapas (`Etapas` em `negocios/shared.tsx`) com `captacoes.comissao_pct` (preenche os honorários ao registrar).
+  Autorização de venda/locação: `negocios/Autorizacao.tsx` (aba Captação → "Gerar autorização"; página para imprimir/PDF, modelo de referência).
 - Datas: cadastros mostram data e hora (`dataHora` em `src/lib/format.ts`). Agenda: tipo "Outro" com etiqueta livre (`compromissos.etiqueta`).
 - Excluir em Negócios: `BotaoExcluir` (`negocios/shared.tsx`) + `excluir()` do store (confere o que depende antes; venda/locação
   pela função `excluir_transacao`, que devolve o imóvel a "ativa"). Lead: o corretor dono ou o administrador; o resto só o administrador.

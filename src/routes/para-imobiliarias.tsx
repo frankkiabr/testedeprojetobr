@@ -5,9 +5,9 @@ export const Route = createFileRoute("/para-imobiliarias")({
   head: () => ({
     meta: [
       { title: "Frankkia para imobiliárias · Equipe, metas e comissões num só lugar" },
-      { name: "description", content: "Leads, captações, vendas, ranking e comissões de toda a equipe na mesma tela, com cada corretor vendo só o que é dele. Teste grátis por 7 dias." },
+      { name: "description", content: "Leads, captações, vendas, ranking e comissões de toda a equipe na mesma tela, com cada corretor vendo só o que é dele. Teste grátis por 15 dias." },
       { property: "og:title", content: "Frankkia para imobiliárias · Equipe, metas e comissões num só lugar" },
-      { property: "og:description", content: "Leads, captações, vendas, ranking e comissões de toda a equipe na mesma tela, com cada corretor vendo só o que é dele. Teste grátis por 7 dias." },
+      { property: "og:description", content: "Leads, captações, vendas, ranking e comissões de toda a equipe na mesma tela, com cada corretor vendo só o que é dele. Teste grátis por 15 dias." },
     ],
   }),
   component: () => null,

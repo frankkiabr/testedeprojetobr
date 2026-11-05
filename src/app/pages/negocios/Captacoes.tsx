@@ -2,13 +2,14 @@ import { TIPOS_COM_UNIDADE, unidadeEhSala } from "@/lib/imovel";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 import { AnuncioEditor } from "./Anuncio";
 import { ImportarCarteiraModal } from "./ImportarCarteira";
+import { AutorizacaoModal } from "./Autorizacao";
 import { Carrossel } from "@/components/Carrossel";
 import { LocalImovel } from "./LocalImovel";
 import { anuncios } from "@/data/demo";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { FileSpreadsheet, PartyPopper, BadgeDollarSign, Calculator, FileText, Handshake, MapPin, Plus, Ruler, Users } from "lucide-react";
+import { FileSignature, FileSpreadsheet, PartyPopper, BadgeDollarSign, Calculator, FileText, Handshake, MapPin, Plus, Ruler, Users } from "lucide-react";
 import { Simulador } from "@/components/Simulador";
 import { CHECKLIST_CAPTACAO, CHECKLIST_MARKETING } from "@/data/demo";
 import {
@@ -246,6 +247,7 @@ export function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: ()
   const [informar, setInformar] = useState(false);
   const [editando, setEditando] = useState(false);
   const [editarEndereco, setEditarEndereco] = useState(false);
+  const [autorizacao, setAutorizacao] = useState(false);
   const navigate = useNavigate();
   useEffect(() => {
     setAba("imovel");
@@ -479,6 +481,17 @@ export function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: ()
 
             {aba === "captacao" && (
               <div>
+                {!fechada && (
+                  <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line p-4">
+                    <div>
+                      <p className="font-semibold">Autorização de {c.finalidade === "venda" ? "venda" : "locação"}</p>
+                      <p className="text-xs text-muted">Documento pronto com os dados do imóvel e do proprietário, para imprimir ou salvar em PDF.</p>
+                    </div>
+                    <button onClick={() => setAutorizacao(true)} className={btn.outline}>
+                      <FileSignature className="size-4" /> Gerar autorização
+                    </button>
+                  </div>
+                )}
                 <p className="font-display text-lg font-semibold">Checklist de captação</p>
                 <p className="mb-3 text-xs text-muted">Controle interno: o que falta para o imóvel estar documentado e pronto para negociar.</p>
                 <ProgressBar value={captD / CHECKLIST_CAPTACAO.length} className="mb-3" tone={captD === CHECKLIST_CAPTACAO.length ? "verified" : "accent"} />
@@ -516,6 +529,7 @@ export function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: ()
         )}
       </Drawer>
       {c && <ReportModal captacao={c} open={report} onClose={() => setReport(false)} />}
+      {c && <AutorizacaoModal captacao={c} open={autorizacao} onClose={() => setAutorizacao(false)} />}
       {c && (
         <Modal open={simular} onClose={() => setSimular(false)} title="Simular financiamento" subtitle={`${captacaoTitulo(c)} · para enviar ao cliente`}>
           <Simulador

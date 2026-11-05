@@ -1,5 +1,6 @@
 import { dataHora } from "@/lib/format";
 import { ImportarCarteiraModal } from "./ImportarCarteira";
+import { DadosContratoCampos, TiposCliente } from "./DadosContrato";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -18,16 +19,17 @@ import { Documentos } from "../../Documentos";
 
 function ProprietarioDrawer({ id, onClose }: { id: string | null; onClose: () => void }) {
   const { isAdmin, solo } = useScope();
-  const { setImoveisProprietario } = useStore();
+  const { updateProprietario } = useStore();
   const p = id ? proprietarios.find((x) => x.id === id) : undefined;
   const lista = p ? captacoesDoProprietario(p.id) : [];
   const [captacao, setCaptacao] = useState<string | null>(null);
-  // Imóveis do proprietário: só valem ao apertar "Salvar"
-  const [ligados, setLigados] = useState(p?.imoveis ?? []);
-  useEffect(() => setLigados(p?.imoveis ?? []), [id]); // eslint-disable-line react-hooks/exhaustive-deps
-  const alterado = !!p && JSON.stringify(ligados) !== JSON.stringify(p.imoveis ?? []);
+  // Imóveis, tipo do cliente e dados para contrato: só valem ao apertar "Salvar"
+  const doProp = () => ({ imoveis: [...(p?.imoveis ?? [])], tipos: [...(p?.tipos ?? [])], contrato: { ...(p?.contrato ?? {}) } });
+  const [rasc, setRasc] = useState(doProp);
+  useEffect(() => setRasc(doProp()), [id]); // eslint-disable-line react-hooks/exhaustive-deps
+  const alterado = !!p && JSON.stringify(rasc) !== JSON.stringify(doProp());
   const salvar = () => {
-    if (p && alterado) setImoveisProprietario(p.id, ligados);
+    if (p && alterado) updateProprietario(p.id, rasc);
   };
 
   return (
@@ -46,7 +48,7 @@ function ProprietarioDrawer({ id, onClose }: { id: string | null; onClose: () =>
           </span>
         )
       }
-      subtitle={p && `${formatPhone(p.whatsapp)}${p.criadoEm ? ` · cadastrado em ${dataHora(p.criadoEm)}` : ""}`}
+      subtitle={p && `${p.codigo ? `${p.codigo} · ` : ""}${formatPhone(p.whatsapp)}${p.criadoEm ? ` · cadastrado em ${dataHora(p.criadoEm)}` : ""}`}
       footer={
         p && (
           <>
@@ -74,10 +76,12 @@ function ProprietarioDrawer({ id, onClose }: { id: string | null; onClose: () =>
               </div>
             </div>
           )}
+          <TiposCliente valor={rasc.tipos} onChange={(tipos) => setRasc({ ...rasc, tipos })} />
+          <DadosContratoCampos key={p.id} valor={rasc.contrato} onChange={(contrato) => setRasc({ ...rasc, contrato })} />
           <div>
             <p className="mb-1 font-display text-lg font-semibold">Imóveis deste proprietário</p>
             <p className="mb-3 text-xs text-muted">Endereços que ele possui, mesmo sem captação. Aparecem também na ficha do endereço.</p>
-            <ListaEnderecos lista={ligados} onChange={setLigados} />
+            <ListaEnderecos lista={rasc.imoveis} onChange={(imoveis) => setRasc({ ...rasc, imoveis })} />
           </div>
           <div>
             <p className="mb-3 font-display text-lg font-semibold">Captações ({lista.length})</p>
@@ -131,7 +135,7 @@ export default function Proprietarios() {
   const all = proprietariosOf(isAdmin && corretor ? { corretorId: corretor } : scope);
   const list = useMemo(() => {
     const q = busca.trim().toLowerCase();
-    return all.filter((p) => !q || `${p.nome} ${p.whatsapp}`.toLowerCase().includes(q));
+    return all.filter((p) => !q || `${p.codigo ?? ""} ${p.nome} ${p.whatsapp}`.toLowerCase().includes(q));
   }, [all, busca]);
 
   return (

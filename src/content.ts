@@ -142,8 +142,8 @@ export const pricing = {
   cta: "Solicitar demonstração",
   ctaTeste: "Começar teste grátis",
   ctaConversa: "Falar com a Frankkia",
-  /** Planos grandes começam por uma conversa; os menores (Solo, Equipe 5 e 10), pelo teste grátis imediato de 7 dias. */
-  conversa: ["Equipe 30", "Equipe 60"] as string[],
+  /** Planos que começam por uma conversa em vez do teste grátis (hoje nenhum: todos têm 15 dias grátis). */
+  conversa: [] as string[],
   plans: [
     { name: "Equipe 5", seats: "1 administrador + até 5 corretores", equipe: "Até 5 corretores", price: "315", anuncios: "100 anúncios no portal, compartilhados pela equipe" },
     { name: "Equipe 10", seats: "1 administrador + até 10 corretores", equipe: "Até 10 corretores", price: "525", anuncios: "150 anúncios no portal, compartilhados pela equipe", highlight: true },
@@ -206,7 +206,7 @@ export const faq = {
     },
     {
       q: "Como começo a usar?",
-      a: "Nos planos Solo, Equipe 5 e Equipe 10, crie a conta e teste grátis por 7 dias, sem cartão. Nos planos maiores, ou se preferir uma apresentação antes, fale com a gente pelo WhatsApp.",
+      a: "Em qualquer plano, crie a conta e teste grátis por 15 dias, sem cartão. Se preferir uma apresentação antes, fale com a gente pelo WhatsApp.",
     },
   ],
 };
@@ -322,7 +322,7 @@ export const publicos = {
     /** Palavra do título com o sublinhado animado. */
     destaque: 1,
     text: "Leads, captações, vendas e metas de todos os corretores na mesma tela. Você acompanha a operação sem precisar perguntar a ninguém.",
-    cta: { label: "Testar grátis por 7 dias", plano: "Equipe 10" },
+    cta: { label: "Testar grátis por 15 dias", plano: "Equipe 10" },
     dores: [
       { t: "Cada corretor guarda os clientes do seu jeito", d: "WhatsApp, caderno, planilha. Quando alguém sai, a carteira vai junto." },
       { t: "Os números só aparecem no fim do mês", d: "Sem saber quem está atendendo, captando e vendendo, fica difícil cobrar e reconhecer." },
@@ -347,7 +347,7 @@ export const publicos = {
       { q: "E se um corretor sair da imobiliária?", a: "Você desativa o acesso e tudo o que ele fez continua com a imobiliária: clientes, captações, vendas e o histórico no ranking." },
       { q: "O administrador ocupa vaga?", a: "Não. O plano Equipe 10, por exemplo, tem o administrador mais 10 corretores." },
       { q: "Como os leads são distribuídos?", a: "Você escolhe o corretor ou usa o rodízio: cada lead vai para o próximo da fila e, se ninguém fizer contato no prazo, passa para o seguinte. Leads do portal vão para o corretor do anúncio." },
-      { q: "Posso testar antes?", a: "Sim: 7 dias grátis, sem cartão. Ao fim do teste, nada é cobrado automaticamente." },
+      { q: "Posso testar antes?", a: "Sim: 15 dias grátis, sem cartão. Ao fim do teste, nada é cobrado automaticamente." },
     ],
   },
   corretores: {
@@ -356,7 +356,7 @@ export const publicos = {
     title: "Tudo de uma imobiliária, só para você.",
     destaque: 6,
     text: "Organize clientes e captações, anuncie no portal com a sua página e mostre ao proprietário quanto vale o imóvel, sem planilha e sem caderno.",
-    cta: { label: "Testar grátis por 7 dias", plano: "Solo" },
+    cta: { label: "Testar grátis por 15 dias", plano: "Solo" },
     dores: [
       { t: "Retornos esquecidos", d: "O cliente pediu para ligar semana que vem e a conversa se perdeu no WhatsApp." },
       { t: "Clientes espalhados", d: "Contatos, imóveis e proprietários em conversas, fotos e anotações soltas." },
@@ -381,7 +381,7 @@ export const publicos = {
       { q: "Meus clientes ficam visíveis para outras pessoas?", a: "Não. Leads, proprietários, documentos e negócios são só seus. No portal aparecem apenas os imóveis que você decidir anunciar." },
       { q: "Consigo trazer meus clientes de outro sistema?", a: "Sim. Exporte uma planilha (Excel ou CSV) e use “Importar” em Leads. Quem já está cadastrado com o mesmo WhatsApp fica de fora." },
       { q: "E se eu montar uma equipe depois?", a: "A Frankkia muda a sua conta para um plano de equipe e mantém todos os seus dados." },
-      { q: "Posso testar antes?", a: "Sim: 7 dias grátis, sem cartão. Ao fim do teste, nada é cobrado automaticamente." },
+      { q: "Posso testar antes?", a: "Sim: 15 dias grátis, sem cartão. Ao fim do teste, nada é cobrado automaticamente." },
     ],
   },
 };

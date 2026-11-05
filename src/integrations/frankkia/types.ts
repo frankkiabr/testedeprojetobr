@@ -662,6 +662,7 @@ export type Database = {
           checklist_captacao: boolean[]
           checklist_marketing: boolean[]
           codigo: string
+          comissao_pct: number | null
           corretor_id: string
           finalidade: string
           id: string
@@ -678,6 +679,7 @@ export type Database = {
           checklist_captacao?: boolean[]
           checklist_marketing?: boolean[]
           codigo?: string
+          comissao_pct?: number | null
           corretor_id: string
           finalidade: string
           id?: string
@@ -694,6 +696,7 @@ export type Database = {
           checklist_captacao?: boolean[]
           checklist_marketing?: boolean[]
           codigo?: string
+          comissao_pct?: number | null
           corretor_id?: string
           finalidade?: string
           id?: string
@@ -1408,9 +1411,11 @@ export type Database = {
         Row: {
           atribuido_em: string | null
           checklist: boolean[]
+          codigo: string
           corretor_id: string
           criado_em: string
           criado_por: string | null
+          dados_contrato: Json
           etapa: string
           id: string
           imobiliaria_id: string
@@ -1424,6 +1429,7 @@ export type Database = {
           passou_por: string[]
           rodizio: boolean
           telefone: string
+          tipos: string[]
           ultimo_contato: string | null
           visita_em: string | null
           voltou_ao_admin: boolean
@@ -1431,9 +1437,11 @@ export type Database = {
         Insert: {
           atribuido_em?: string | null
           checklist?: boolean[]
+          codigo?: string
           corretor_id: string
           criado_em?: string
           criado_por?: string | null
+          dados_contrato?: Json
           etapa?: string
           id?: string
           imobiliaria_id: string
@@ -1447,6 +1455,7 @@ export type Database = {
           passou_por?: string[]
           rodizio?: boolean
           telefone: string
+          tipos?: string[]
           ultimo_contato?: string | null
           visita_em?: string | null
           voltou_ao_admin?: boolean
@@ -1454,9 +1463,11 @@ export type Database = {
         Update: {
           atribuido_em?: string | null
           checklist?: boolean[]
+          codigo?: string
           corretor_id?: string
           criado_em?: string
           criado_por?: string | null
+          dados_contrato?: Json
           etapa?: string
           id?: string
           imobiliaria_id?: string
@@ -1470,6 +1481,7 @@ export type Database = {
           passou_por?: string[]
           rodizio?: boolean
           telefone?: string
+          tipos?: string[]
           ultimo_contato?: string | null
           visita_em?: string | null
           voltou_ao_admin?: boolean
@@ -1819,30 +1831,39 @@ export type Database = {
       }
       proprietarios: {
         Row: {
+          codigo: string
           corretor_id: string
           criado_em: string
+          dados_contrato: Json
           id: string
           imobiliaria_id: string
           imoveis_ligados: Json
           nome: string
+          tipos: string[]
           whatsapp: string
         }
         Insert: {
+          codigo?: string
           corretor_id: string
           criado_em?: string
+          dados_contrato?: Json
           id?: string
           imobiliaria_id: string
           imoveis_ligados?: Json
           nome: string
+          tipos?: string[]
           whatsapp: string
         }
         Update: {
+          codigo?: string
           corretor_id?: string
           criado_em?: string
+          dados_contrato?: Json
           id?: string
           imobiliaria_id?: string
           imoveis_ligados?: Json
           nome?: string
+          tipos?: string[]
           whatsapp?: string
         }
         Relationships: [
@@ -2232,6 +2253,7 @@ export type Database = {
       excluir_transacao: { Args: { p_id: string }; Returns: undefined }
       feed_portais: { Args: { p_token: string }; Returns: Json }
       fila_rodizio: { Args: { p_imob: string }; Returns: string[] }
+      gerar_codigo_cliente: { Args: never; Returns: string }
       gerar_codigo_imovel: { Args: never; Returns: string }
       google_enfileirar_futuros: {
         Args: { p_usuario: string }

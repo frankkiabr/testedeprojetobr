@@ -11,6 +11,7 @@ import { useScope } from "../../session";
 import { Avatar, AvatarNome, Badge, Card, ProgressBar, Segmented, Select } from "../../kit";
 import { BotaoSalvar, btn, CheckItem, DateInput, Drawer, EmptyState, Field, formatPhone, inputCls, SearchInput, TimeInput, toLocalInput, waLink } from "../../forms";
 import { ETAPA_DOT, ETAPA_STYLE, LeadFormModal, BotaoExcluir, EnderecoPicker } from "./shared";
+import { DadosContratoCampos, TiposCliente } from "./DadosContrato";
 import { ImportarLeadsModal } from "./ImportarLeads";
 import { Documentos } from "../../Documentos";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
@@ -207,6 +208,8 @@ function LeadDrawer({ id, onClose }: { id: string | null; onClose: () => void })
     interesseCaptacaoId: lead?.interesseCaptacaoId,
     interesseImovelId: lead?.interesseImovelId,
     interesseUnidade: lead?.interesseUnidade,
+    tipos: [...(lead?.tipos ?? [])],
+    contrato: { ...(lead?.contrato ?? {}) },
   });
   const [d, setD] = useState(doLead);
   useEffect(() => setD(doLead()), [id]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -241,7 +244,8 @@ function LeadDrawer({ id, onClose }: { id: string | null; onClose: () => void })
       }
       subtitle={
         lead && (
-          <span className="flex items-center gap-2">
+          <span className="flex flex-wrap items-center gap-2">
+            {lead.codigo && <span className="font-mono text-xs font-semibold text-subtle">{lead.codigo}</span>}
             {lead.interesse}
             {atendido(lead) ? <Badge tone="verified">Atendido</Badge> : <Badge tone="warn">Aguardando atendimento</Badge>}
           </span>
@@ -272,6 +276,13 @@ function LeadDrawer({ id, onClose }: { id: string | null; onClose: () => void })
               onChange={(v) => setD({ ...d, interesseCaptacaoId: v.captacaoId, interesseImovelId: v.imovelId, interesseUnidade: v.unidade })}
             />
           </div>
+          <TiposCliente valor={d.tipos} onChange={(tipos) => setD({ ...d, tipos })} />
+          <DadosContratoCampos
+            key={lead.id}
+            valor={d.contrato}
+            onChange={(contrato) => setD({ ...d, contrato })}
+            abrirDeInicio={d.etapa === "proposta" || d.etapa === "fechado"}
+          />
           {/* Rodízio: prazo para o primeiro contato e por quem o lead já passou */}
           {(prazoRodizio(lead) || (isAdmin && lead.rodizio && ((lead.passouPor?.length ?? 0) > 0 || lead.voltouAoAdmin))) && (
             <div className="flex gap-3 rounded-2xl bg-amber-50 p-3.5 text-sm text-amber-900">
@@ -443,7 +454,7 @@ export default function Leads() {
       (l) =>
         new Date(l.criadoEm).getTime() >= limite &&
         (!soAtrasados || atrasado(l)) &&
-        (!q || `${l.nome} ${l.interesse} ${l.origem}`.toLowerCase().includes(q)),
+        (!q || `${l.codigo ?? ""} ${l.nome} ${l.interesse} ${l.origem}`.toLowerCase().includes(q)),
     );
   }, [all, periodo, busca, soAtrasados]);
 

@@ -120,8 +120,8 @@ export default function ParaPublico({ publico }: { publico: "imobiliarias" | "co
             className="mt-4 text-sm text-muted"
           >
             {solo
-              ? "Plano Solo · 7 dias grátis, sem cartão. A conta fica pronta na hora."
-              : `Teste imediato nos planos ${pricing.plans.filter((x) => !pricing.conversa.includes(x.name)).map((x) => x.name).join(" e ")} · 7 dias grátis, sem cartão.`}
+              ? "Plano Solo · 15 dias grátis, sem cartão. A conta fica pronta na hora."
+              : "Teste imediato em qualquer plano de equipe · 15 dias grátis, sem cartão."}
           </motion.p>
         </div>
         <Painel corretor={solo} />
@@ -210,7 +210,7 @@ export default function ParaPublico({ publico }: { publico: "imobiliarias" | "co
                         pl.highlight ? "bg-accent text-white hover:bg-accent-deep" : "border border-line-strong hover:bg-canvas"
                       }`}
                     >
-                      Testar grátis por 7 dias
+                      Testar grátis por 15 dias
                     </Link>
                     <p className={`mt-3 text-center text-xs ${pl.highlight ? "text-bg/60" : "text-muted"}`}>Começa na hora, sem cartão</p>
                   </>
@@ -220,7 +220,7 @@ export default function ParaPublico({ publico }: { publico: "imobiliarias" | "co
           </div>
           <p className="mt-4 text-sm text-muted">
             {solo
-              ? "7 dias grátis, sem cartão: a conta fica pronta na hora."
+              ? "15 dias grátis, sem cartão: a conta fica pronta na hora."
               : `Teste grátis imediato de 7 dias, sem cartão, nos planos ${pricing.plans.filter((x) => !pricing.conversa.includes(x.name)).map((x) => x.name).join(" e ")}. Para ${pricing.conversa.join(" e ")}, a gente conversa antes para preparar a sua equipe.`}{" "}
             No plano anual, 12 meses pelo preço de 10.{" "}
             <a href="/#planos" className="font-semibold text-accent">
@@ -236,7 +236,7 @@ export default function ParaPublico({ publico }: { publico: "imobiliarias" | "co
         <motion.section {...aparecer()} className="flex flex-col items-start justify-between gap-6 rounded-[2rem] bg-ink p-8 text-bg sm:flex-row sm:items-center sm:p-10">
           <div>
             <p className="font-display text-2xl font-semibold tracking-tight">Quer ver por dentro?</p>
-            <p className="mt-1.5 text-bg/70">Crie a conta e teste por 7 dias, ou fale com a Frankkia pelo WhatsApp.</p>
+            <p className="mt-1.5 text-bg/70">Crie a conta e teste por 15 dias, ou fale com a Frankkia pelo WhatsApp.</p>
           </div>
           <div className="flex shrink-0 flex-wrap gap-2">
             <a href={zap} target="_blank" rel="noopener noreferrer" className="inline-flex h-12 items-center gap-2 rounded-full border border-white/20 px-5 font-semibold transition hover:bg-white/10">

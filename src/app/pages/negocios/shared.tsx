@@ -1,7 +1,7 @@
 /** Peças compartilhadas pelas abas de Negócios: capas, etiquetas e formulários de cadastro. */
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Briefcase, Building2, Home, Info, MapPin, Plus, Store, TreePine, Trash2, Warehouse } from "lucide-react";
+import { ArrowLeft, ArrowRight, Briefcase, Building2, Check, Home, Info, MapPin, Plus, Store, TreePine, Trash2, Warehouse } from "lucide-react";
 import {
   CATEGORIAS_COM_UNIDADE,
   CHECKLIST_MARKETING,
@@ -559,17 +559,20 @@ export function CaptacaoFormModal({ open, onClose }: { open: boolean; onClose: (
     vagas: "",
     /** Prédio do apartamento/sala: "" = não escolhido, "novo" = cadastrar agora, ou o id do prédio. */
     predioId: "",
+    comissao: "",
     modo: "novo" as "existente" | "novo",
     proprietarioId: "",
     propNome: "",
     propWhats: "",
   });
   const [f, setF] = useState(empty);
+  const [passo, setPasso] = useState(0);
   const [ponto, setPonto] = useState<Ponto | null>(null);
   const [buscando, setBuscando] = useState<"" | "cep" | "mapa">("");
   const [avisoMapa, setAvisoMapa] = useState("");
   useEffect(() => {
     if (open) {
+      setPasso(0);
       // Vindo de um estudo de mercado com exclusividade assinada: já abre com os dados do imóvel
       const doEstudo = lerCaptacaoDoEstudo();
       if (doEstudo) {
@@ -605,8 +608,11 @@ export function CaptacaoFormModal({ open, onClose }: { open: boolean; onClose: (
   // Endereço novo sempre com o ponto exato no mapa (nunca só pelo nome)
   const mapaOk = !!ponto || existente?.lat !== undefined;
   const perto = ponto && !existente ? enderecoPerto(ponto) : undefined;
-  const ok =
-    corretorId && enderecoOk && valor > 0 && area > 0 && propOk && (!comUnidade || f.unidade.trim()) && predioOk && tituloOk && mapaOk;
+  // Cadastro em 3 etapas: 1) imóvel e endereço, 2) valores, 3) proprietário
+  const passo1Ok = !!corretorId && !!enderecoOk && (!comUnidade || !!f.unidade.trim()) && predioOk && tituloOk && mapaOk;
+  const comissao = num(f.comissao);
+  const passo2Ok = valor > 0 && area > 0 && (!f.comissao.trim() || (comissao > 0 && comissao <= 100));
+  const ok = passo1Ok && passo2Ok && propOk;
   const usarEndereco = (p: Imovel) => {
     setF((x) => ({ ...x, ...camposDoPredio(p), categoria: x.categoria, predioId: ehPredio(p) && pedePredio(x.categoria) ? p.id : "" }));
     setPonto(p.lat !== undefined && p.lng !== undefined ? { lat: p.lat, lng: p.lng } : null);
@@ -666,7 +672,16 @@ export function CaptacaoFormModal({ open, onClose }: { open: boolean; onClose: (
     const proprietarioId =
       f.modo === "existente" ? f.proprietarioId : addProprietario({ corretorId, nome: f.propNome.trim(), whatsapp: normalizePhone(f.propWhats) }).id;
     // 3) captação + cômodos (ficam no anúncio, prontos para quando for publicar)
-    const c = addCaptacao({ corretorId, proprietarioId, imovelId: imovelId!, unidade: f.unidade.trim() || undefined, finalidade: f.finalidade, valor, areaM2: area });
+    const c = addCaptacao({
+      corretorId,
+      proprietarioId,
+      imovelId: imovelId!,
+      unidade: f.unidade.trim() || undefined,
+      finalidade: f.finalidade,
+      valor,
+      areaM2: area,
+      comissaoPct: comissao > 0 ? comissao : undefined,
+    });
     const comodos = { quartos: inteiro(f.quartos), suites: inteiro(f.suites), banheiros: inteiro(f.banheiros), vagas: inteiro(f.vagas) };
     // Ficha do prédio: o condomínio e o lazer/segurança já vão para o anúncio
     const doPredio = existente
@@ -690,16 +705,30 @@ export function CaptacaoFormModal({ open, onClose }: { open: boolean; onClose: (
       subtitle="Endereço, dados e proprietário em um só cadastro."
       footer={
         <>
+          {passo > 0 && (
+            <button onClick={() => setPasso(passo - 1)} className="mr-auto inline-flex h-11 items-center gap-1.5 rounded-full px-3 text-sm font-semibold text-muted transition hover:bg-canvas hover:text-ink">
+              <ArrowLeft className="size-4" /> Voltar
+            </button>
+          )}
           <button onClick={onClose} className={btn.outline}>
             Cancelar
           </button>
-          <BotaoSalvar disabled={!ok} onSalvar={save} depois={onClose}>
-            Cadastrar imóvel
-          </BotaoSalvar>
+          {passo < 2 ? (
+            <button disabled={passo === 0 ? !passo1Ok : !passo2Ok} onClick={() => setPasso(passo + 1)} className={btn.primary}>
+              Próximo <ArrowRight className="size-4" />
+            </button>
+          ) : (
+            <BotaoSalvar disabled={!ok} onSalvar={save} depois={onClose}>
+              Cadastrar imóvel
+            </BotaoSalvar>
+          )}
         </>
       }
     >
+      <Etapas passos={["Imóvel e endereço", "Valores", "Proprietário"]} atual={passo} onIr={(i) => i < passo && setPasso(i)} />
       <div className="grid gap-4 sm:grid-cols-6">
+        {passo === 0 && (
+          <>
         <div className="flex flex-wrap items-center justify-between gap-2 sm:col-span-6">
           <span className="text-xs font-semibold text-muted">Finalidade</span>
           <Segmented
@@ -849,8 +878,13 @@ export function CaptacaoFormModal({ open, onClose }: { open: boolean; onClose: (
           {avisoMapa && <p className="text-xs font-medium text-amber-700">{avisoMapa}</p>}
         </div>
 
+          </>
+        )}
+
         {/* Dados do imóvel */}
-        <p className="-mb-1 text-sm font-semibold sm:col-span-6">Dados do imóvel</p>
+        {passo === 1 && (
+          <>
+        <p className="-mb-1 text-sm font-semibold sm:col-span-6">Valores e cômodos</p>
         <Field label="Área (m²)" className="sm:col-span-2">
           <input className={inputCls} inputMode="decimal" value={f.area} onChange={(e) => setF({ ...f, area: e.target.value })} placeholder="Ex.: 92" />
         </Field>
@@ -861,14 +895,31 @@ export function CaptacaoFormModal({ open, onClose }: { open: boolean; onClose: (
         >
           <input className={inputCls} inputMode="numeric" value={f.valor} onChange={(e) => setF({ ...f, valor: mascaraMoeda(e.target.value) })} placeholder={f.finalidade === "venda" ? "Ex.: 850.000,00" : "Ex.: 4.200,00"} />
         </Field>
+        <Field label="Comissão combinada (%)" className="sm:col-span-2" hint="Opcional. Preenche os honorários ao registrar o negócio.">
+          <input
+            className={inputCls}
+            inputMode="decimal"
+            value={f.comissao}
+            onChange={(e) => setF({ ...f, comissao: e.target.value.replace(/[^\d,]/g, "").slice(0, 5) })}
+            placeholder={f.finalidade === "venda" ? "Ex.: 6" : "Ex.: 100 (1º aluguel)"}
+          />
+        </Field>
+        {valor > 0 && comissao > 0 && (
+          <p className="self-end pb-3 text-sm text-muted sm:col-span-4">
+            Comissão prevista: <span className="font-semibold text-ink">{brl((valor * comissao) / 100)}</span>
+          </p>
+        )}
         <div className="grid grid-cols-4 gap-3 sm:col-span-6">
           {campoNum("quartos", "Quartos")}
           {campoNum("suites", "Suítes")}
           {campoNum("banheiros", "Banheiros")}
           {campoNum("vagas", "Vagas")}
         </div>
+          </>
+        )}
 
         {/* Proprietário */}
+        {passo === 2 && (
         <div className="sm:col-span-6">
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
             <span className="text-sm font-semibold">Proprietário</span>
@@ -897,6 +948,7 @@ export function CaptacaoFormModal({ open, onClose }: { open: boolean; onClose: (
             </div>
           )}
         </div>
+        )}
       </div>
     </Modal>
   );
@@ -988,7 +1040,7 @@ export function TransacaoFormModal({
   const iniciar = (cid: string, t: Finalidade, valor?: number, data?: string) => {
     const c = captacaoById(cid);
     setTipo(t);
-    setF({ captacaoId: cid, valor: moeda(valor ?? c?.valor), honorarios: String(HONORARIOS_PADRAO[t]), cliente: "", data: data ?? today() });
+    setF({ captacaoId: cid, valor: moeda(valor ?? c?.valor), honorarios: String(c?.comissaoPct ?? HONORARIOS_PADRAO[t]).replace(".", ","), cliente: "", data: data ?? today() });
     setParts(c ? [{ tipo: "corretor", refId: c.corretorId, pct: 50 }] : []);
   };
 
@@ -1395,6 +1447,30 @@ export function BotaoExcluir({ tipo, id, nome, onExcluido, icone }: { tipo: Tipo
         </p>
       </Modal>
     </>
+  );
+}
+
+// ---------- Etapas de um cadastro (barra com bolinhas) ----------
+
+export function Etapas({ passos, atual, onIr }: { passos: string[]; atual: number; onIr?: (i: number) => void }) {
+  return (
+    <ol className="mb-6 flex items-start">
+      {passos.map((p, i) => (
+        <li key={p} className="relative flex flex-1 flex-col items-center gap-1.5 text-center">
+          {i > 0 && <span className={`absolute right-1/2 top-4 h-0.5 w-full -translate-y-1/2 ${i <= atual ? "bg-accent" : "bg-line"}`} />}
+          <button
+            type="button"
+            onClick={() => onIr?.(i)}
+            className={`relative grid size-8 place-items-center rounded-full text-xs font-bold transition-colors ${
+              i < atual ? "bg-accent-soft text-accent" : i === atual ? "bg-accent text-white ring-4 ring-accent/15" : "bg-canvas text-subtle"
+            }`}
+          >
+            {i < atual ? <Check className="size-4" /> : i + 1}
+          </button>
+          <span className={`text-xs ${i === atual ? "font-semibold text-ink" : "text-muted"}`}>{p}</span>
+        </li>
+      ))}
+    </ol>
   );
 }
 

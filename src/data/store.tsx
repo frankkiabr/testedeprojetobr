@@ -30,6 +30,7 @@ import {
 import { captacaoTitulo, captacaoById, corretoresAtivos, vagasLivres } from "./queries";
 import { aplicarReducaoNaStripe, enviarConvitePorEmail, excluirImobiliariaNaStripe, mensagemErro } from "@/integrations/frankkia/client";
 import { comprimirFoto } from "@/lib/files";
+import type { Json } from "@/integrations/frankkia/types";
 import { soLeitura, useSession } from "@/app/session";
 import { excluirDocumento, listarDocumentos } from "./documentos";
 import { aoMudar, paraBancoLigados, compromissoParaBanco, configurarGravacao, contexto as ctxDados, ehReal, enfileirar, falhou, gravar, leadParaBanco, novoId, supabase } from "./sync";
@@ -168,6 +169,13 @@ function removerAvatarAntigo(url?: string) {
 }
 
 /** Código do imóvel (FK- + 6 letras/números sem os que confundem). O banco garante que é único. */
+/** Código do cliente (lead ou proprietário), ex.: CL-4H8K2P. O banco também gera se faltar. */
+export function gerarCodigoCliente() {
+  const alfabeto = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
+  const n = crypto.getRandomValues(new Uint8Array(6));
+  return "CL-" + [...n].map((x) => alfabeto[x % alfabeto.length]).join("");
+}
+
 function gerarCodigoImovel() {
   const alfabeto = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
   const n = crypto.getRandomValues(new Uint8Array(6));
@@ -191,7 +199,7 @@ const BLOQUEADAS_SO_LEITURA = [
   "updateCaptacao", "toggleCaptacao", "toggleMarketing", "salvarAnuncio", "salvarPortais", "linkPortais", "publicarAnuncio",
   "adicionarFotos", "removerFoto", "definirCapa", "addTransacao", "excluir", "addParceiro", "informarFechamento", "descartarFechamento",
   "addTrilha", "updateTrilha", "removeTrilha", "addAula", "removeAula", "toggleAula", "setLogo", "invite", "cancelInvite", "resendInvite",
-  "setCorretorAtivo", "updateImobiliaria", "salvarPredio", "setImoveisProprietario", "updateImovel", "setLocalImovel", "setFotoParceiro",
+  "setCorretorAtivo", "updateImobiliaria", "salvarPredio", "setImoveisProprietario", "updateProprietario", "updateImovel", "setLocalImovel", "setFotoParceiro",
 ];
 
 function createActions(bump: () => void, toast: (text: string) => void) {
@@ -205,6 +213,7 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       const novos: Lead[] = lista.map((x, i) => ({
         ...x,
         id: uid("l"),
+        codigo: gerarCodigoCliente(),
         criadoEm: new Date(agora - i).toISOString(),
         checklist: CHECKLIST_LEAD.map(() => false),
       }));
@@ -220,12 +229,12 @@ function createActions(bump: () => void, toast: (text: string) => void) {
     /** Importação de planilha de proprietários (sem aviso por linha). Devolve os criados. */
     importarProprietarios(lista: Pick<Proprietario, "corretorId" | "nome" | "whatsapp">[], aviso = true) {
       const agora = Date.now();
-      const novos: Proprietario[] = lista.map((x, i) => ({ ...x, id: uid("p"), criadoEm: new Date(agora - i).toISOString() }));
+      const novos: Proprietario[] = lista.map((x, i) => ({ ...x, id: uid("p"), codigo: gerarCodigoCliente(), criadoEm: new Date(agora - i).toISOString() }));
       proprietarios.unshift(...novos);
       for (let i = 0; i < novos.length; i += 200) {
         const lote = novos.slice(i, i + 200);
         gravar(() =>
-          supabase.from("proprietarios").insert(lote.map((p) => ({ id: p.id, imobiliaria_id: ctxDados.imobId, corretor_id: p.corretorId, nome: p.nome, whatsapp: p.whatsapp }))),
+          supabase.from("proprietarios").insert(lote.map((p) => ({ id: p.id, codigo: p.codigo, imobiliaria_id: ctxDados.imobId, corretor_id: p.corretorId, nome: p.nome, whatsapp: p.whatsapp }))),
         );
       }
       bump();
@@ -368,6 +377,7 @@ function createActions(bump: () => void, toast: (text: string) => void) {
       const lead: Lead = {
         ...input,
         id: uid("l"),
+        codigo: gerarCodigoCliente(),
         etapa: "novo",
         criadoEm: new Date().toISOString(),
         checklist: CHECKLIST_LEAD.map(() => false),
@@ -477,7 +487,7 @@ function createActions(bump: () => void, toast: (text: string) => void) {
     },
 
     addProprietario(input: Omit<Proprietario, "id">) {
-      const p: Proprietario = { ...input, id: uid("p"), criadoEm: new Date().toISOString() };
+      const p: Proprietario = { ...input, id: uid("p"), codigo: gerarCodigoCliente(), criadoEm: new Date().toISOString() };
       proprietarios.unshift(p);
       gravar(() =>
         supabase.from("proprietarios").insert({
@@ -487,6 +497,9 @@ function createActions(bump: () => void, toast: (text: string) => void) {
           nome: p.nome,
           whatsapp: p.whatsapp,
           imoveis_ligados: paraBancoLigados(p.imoveis),
+          codigo: p.codigo,
+          tipos: p.tipos ?? [],
+          dados_contrato: (p.contrato ?? {}) as Json,
         }),
       );
       bump();
@@ -496,10 +509,24 @@ function createActions(bump: () => void, toast: (text: string) => void) {
 
     /** Endereços que o proprietário possui (lista completa). */
     setImoveisProprietario(id: string, lista: EnderecoLigado[]) {
+      acoes.updateProprietario(id, { imoveis: lista });
+    },
+
+    /** Edita o proprietário: imóveis ligados, tipo do cliente e dados para contrato. */
+    updateProprietario(id: string, patch: Partial<Pick<Proprietario, "imoveis" | "tipos" | "contrato">>) {
       const p = proprietarios.find((x) => x.id === id);
       if (!p) return;
-      p.imoveis = lista;
-      gravar(() => supabase.from("proprietarios").update({ imoveis_ligados: paraBancoLigados(lista) }).eq("id", id));
+      Object.assign(p, patch);
+      gravar(() =>
+        supabase
+          .from("proprietarios")
+          .update({
+            ...("imoveis" in patch ? { imoveis_ligados: paraBancoLigados(p.imoveis) } : {}),
+            ...("tipos" in patch ? { tipos: p.tipos ?? [] } : {}),
+            ...("contrato" in patch ? { dados_contrato: (p.contrato ?? {}) as Json } : {}),
+          })
+          .eq("id", id),
+      );
       bump();
     },
 
@@ -531,7 +558,7 @@ function createActions(bump: () => void, toast: (text: string) => void) {
     },
 
     /** Captação = oferta de um imóvel para venda ou locação. */
-    addCaptacao(input: Pick<Captacao, "corretorId" | "proprietarioId" | "imovelId" | "unidade" | "finalidade" | "valor" | "areaM2">) {
+    addCaptacao(input: Pick<Captacao, "corretorId" | "proprietarioId" | "imovelId" | "unidade" | "finalidade" | "valor" | "areaM2" | "comissaoPct">) {
       const c: Captacao = {
         ...input,
         id: uid("cp"),
@@ -554,6 +581,7 @@ function createActions(bump: () => void, toast: (text: string) => void) {
           finalidade: c.finalidade,
           valor: c.valor,
           area_m2: c.areaM2,
+          comissao_pct: c.comissaoPct ?? null,
           status: c.status,
           captado_em: c.captadoEm,
           checklist_captacao: c.checklistCaptacao,

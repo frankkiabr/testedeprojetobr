@@ -18,10 +18,10 @@ import { mensagemErro, supabase } from "@/integrations/frankkia/client";
 import { BotaoGoogle } from "@/app/Google";
 
 /**
- * Planos com teste grátis pelo site. Equipe 30 e 60 começam por uma conversa com a Frankkia (o banco também recusa).
+ * Planos com teste grátis pelo site: todos (Solo e Equipe 5/10/30/60), 15 dias.
  * Quem vem da página do corretor autônomo (?plano=Solo) vê só o Solo; quem vem de um plano de equipe vê só os de equipe.
  */
-const EQUIPES: PlanoNome[] = ["Equipe 5", "Equipe 10"];
+const EQUIPES: PlanoNome[] = ["Equipe 5", "Equipe 10", "Equipe 30", "Equipe 60"];
 const opcoesDoCadastro = (plano: string | null): PlanoNome[] =>
   plano === "Solo" ? ["Solo"] : plano?.startsWith("Equipe") ? EQUIPES : ["Solo", ...EQUIPES];
 
@@ -221,19 +221,6 @@ export default function Cadastro() {
                   <p className="mt-2 text-xs text-muted">
                     {solo ? pricing.solo.seats : pricing.plans.find((x) => x.name === f.plano)?.seats}. Dá para trocar de plano depois.
                   </p>
-                  {opcoes.includes("Equipe 10") && (
-                    <p className="mt-1 text-xs text-muted">
-                      Equipe com 30 ou 60 corretores?{" "}
-                      <a
-                        href={linkWhatsApp(`Olá, ${contato.primeiroNome}! Quero conhecer os planos Equipe 30/60 da Frankkia.`)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-semibold text-ink underline-offset-4 hover:underline"
-                      >
-                        Fale com a Frankkia no WhatsApp
-                      </a>
-                    </p>
-                  )}
                 </div>
 
                 <Field label="Seu nome completo">

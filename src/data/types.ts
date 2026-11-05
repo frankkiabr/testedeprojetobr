@@ -242,6 +242,10 @@ export type EtapaLead = "novo" | "contato" | "visita" | "proposta" | "fechado" |
 
 export type Lead = {
   id: string;
+  /** Código do cliente (ex.: CL-4H8K2P). */
+  codigo?: string;
+  tipos?: TipoCliente[];
+  contrato?: DadosContrato;
   corretorId: string;
   nome: string;
   telefone: string;
@@ -270,11 +274,44 @@ export type Lead = {
 };
 
 /** Proprietário pertence ao corretor que o cadastrou (o administrador vê todos). */
+/** Papéis do cliente (mais de um ao mesmo tempo). */
+export type TipoCliente = "comprador" | "locatario" | "proprietario" | "investidor" | "fiador";
+
+/** Dados para contrato (qualificação). Tudo opcional; preenchido quando o negócio avança. */
+export type DadosContrato = {
+  pessoa?: "fisica" | "juridica";
+  // Pessoa física
+  cpf?: string;
+  rg?: string;
+  rgOrgao?: string;
+  nascimento?: string; // AAAA-MM-DD
+  nacionalidade?: string;
+  profissao?: string;
+  estadoCivil?: "solteiro" | "casado" | "uniao_estavel" | "divorciado" | "viuvo" | "separado";
+  regimeBens?: "comunhao_parcial" | "comunhao_universal" | "separacao_total" | "participacao_final";
+  conjugeNome?: string;
+  conjugeCpf?: string;
+  conjugeRg?: string;
+  renda?: number;
+  // Pessoa jurídica
+  cnpj?: string;
+  razaoSocial?: string;
+  representanteNome?: string;
+  representanteCpf?: string;
+  // Endereço de residência / sede
+  endereco?: string;
+  email?: string;
+};
+
 /** Endereço ligado a um lead ou proprietário (unidade só quando é prédio: "Apto 302", "Sala 1204"). */
 export type EnderecoLigado = { imovelId: string; unidade?: string };
 
 export type Proprietario = {
   id: string;
+  /** Código do cliente (ex.: CL-4H8K2P). */
+  codigo?: string;
+  tipos?: TipoCliente[];
+  contrato?: DadosContrato;
   corretorId: string;
   nome: string;
   whatsapp: string; // só números, com DDI + DDD (ex.: 5511999998888)
@@ -367,6 +404,8 @@ export type Captacao = {
   finalidade: Finalidade;
   valor: number;
   areaM2: number;
+  /** Comissão (%) combinada com o proprietário; preenche os honorários ao registrar a venda/locação. */
+  comissaoPct?: number;
   status: "ativa" | "vendida" | "alugada";
   captadoEm: string;
   /** Um item por etapa de CHECKLIST_CAPTACAO (documentação e preparo do imóvel). */
