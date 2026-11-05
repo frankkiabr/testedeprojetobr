@@ -51,10 +51,14 @@ export function AnuncioEditor({
   const [publicando, setPublicando] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
   const [autorizado, setAutorizado] = useState(a.publicado);
+  // Grupos extras de características: abertos se já houver algum marcado neles
+  const extras = new Set(GRUPOS_CARACTERISTICAS.filter((g) => !g.principal).flatMap((g) => g.itens));
+  const [maisCarac, setMaisCarac] = useState(() => a.caracteristicas.some((c) => extras.has(c)));
   useEffect(() => {
     setF(inicial());
     setAutorizado(a.publicado);
     setAviso(null);
+    setMaisCarac(a.caracteristicas.some((c) => extras.has(c)));
   }, [captacao.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const limite = PLANOS[imobiliaria.plano]?.anuncios ?? 0;
@@ -246,7 +250,7 @@ export function AnuncioEditor({
         <p className="mt-1.5 text-xs text-subtle">No portal, imóveis novos aparecem na aba "Imóvel novo" da busca.</p>
       </div>
 
-      {GRUPOS_CARACTERISTICAS.map((g) => (
+      {GRUPOS_CARACTERISTICAS.filter((g) => g.principal || maisCarac).map((g) => (
         <div key={g.titulo}>
           <p className="mb-2 text-sm font-semibold">{g.titulo}</p>
           <div className="flex flex-wrap gap-2">
@@ -265,6 +269,10 @@ export function AnuncioEditor({
           </div>
         </div>
       ))}
+
+      <button type="button" onClick={() => setMaisCarac(!maisCarac)} className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:text-accent-deep">
+        {maisCarac ? "Mostrar menos características" : `Mais características (${GRUPOS_CARACTERISTICAS.filter((g) => !g.principal).map((g) => g.titulo.toLowerCase()).join(", ")})`}
+      </button>
 
       <p className="flex items-start gap-2 rounded-2xl bg-canvas p-4 text-xs text-muted">
         <Info className="mt-0.5 size-4 shrink-0 text-accent" />

@@ -620,7 +620,7 @@ export function ImoveisComFiltro({
             ))}
           </Secao>
 
-          {GRUPOS_CARACTERISTICAS.map((g) => (
+          {GRUPOS_CARACTERISTICAS.filter((g) => g.principal).map((g) => (
             <Secao key={g.titulo} titulo={g.titulo}>
               {g.itens.map((c) => (
                 <Caixa key={c} marcada={r.caracteristicas.includes(c)} onClick={() => setR({ caracteristicas: alterna(r.caracteristicas, c) })}>

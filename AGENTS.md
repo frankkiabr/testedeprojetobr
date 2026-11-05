@@ -85,7 +85,8 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
   do WhatsApp; nelas o `<App />` não é montado. Dados só pelas funções `portal_anuncio`, `portal_corretor`,
   `portal_imobiliaria`; o formulário usa `portal_contato`, que cria o lead (origem "Portal") do corretor do imóvel.
 - Tipos de imóvel e características: lista única em `src/lib/imovel.ts` (18 tipos Residencial/Comercial com o nome dos portais,
-  características em grupos, `anuncios.lancamento` = imóvel novo na planta/em construção/pronto). Ao mudar, atualize o check de
+  características em 10 grupos (referência iList/REMAX; `principal` = aparece direto e nos filtros do portal, os outros em
+  "Mais características"), `anuncios.lancamento` = imóvel novo na planta/em construção/pronto). Ao mudar, atualize o check de
   `imoveis.categoria` e `TIPOS`/`FEATURES` em `_shared/vrsync.ts` (e publique de novo a função `feed-portais`).
 - Filtros do portal (`src/portal/Filtros.tsx`, estilo VivaReal): cidade/bairro com sugestão, Comprar/Alugar/Imóvel novo, Tipo de
   imóvel, janela "Filtros" com "Buscar N imóveis" ao vivo e "Ordenar por" (relevantes, recentes, preço, área). Dados de `portal_cartoes`.
