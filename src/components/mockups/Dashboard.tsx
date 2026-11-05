@@ -86,12 +86,26 @@ export function Dashboard({ active }: { active: boolean }) {
             {menu.map(({ label, icon: Icon, active: on }) => (
               <li
                 key={label}
-                className={`flex items-center gap-2.5 rounded-xl px-2.5 py-[9px] text-[12.5px] ${on ? "bg-accent-soft font-semibold text-accent-deep" : "text-muted"}`}
+                className={`flex items-center gap-2.5 rounded-xl px-2.5 py-[6px] text-[12.5px] ${on ? "bg-accent-soft font-semibold text-accent-deep" : "text-muted"}`}
               >
                 <Icon className="size-[16px]" />
-                {label}
+                <span className="flex-1">{label}</span>
+                {label === "Negócios" && <ChevronDown className="size-3.5 rotate-180" />}
               </li>
-            ))}
+            )).flatMap((li, i) =>
+              menu[i].label === "Negócios"
+                ? [
+                    li,
+                    <li key="sub" className="ml-[17px] space-y-px border-l border-line pl-2">
+                      {["Leads", "Imóveis", "Proprietários", "Endereços", "Vendas e Locações"].map((t) => (
+                        <span key={t} className="block rounded-lg px-2 py-[4px] text-[11.5px] text-muted">
+                          {t}
+                        </span>
+                      ))}
+                    </li>,
+                  ]
+                : [li],
+            )}
           </ul>
           <div className="mt-auto space-y-2">
             <div className="rounded-2xl bg-canvas p-3">
@@ -102,7 +116,6 @@ export function Dashboard({ active }: { active: boolean }) {
               <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-canvas-deep">
                 <motion.div className="h-full rounded-full bg-accent" initial={{ width: 0 }} animate={active ? { width: "90%" } : {}} transition={{ duration: 1.2, delay: 0.5 }} />
               </div>
-              <span className="mt-2.5 flex h-7 items-center justify-center rounded-full bg-accent text-[10.5px] font-semibold text-white">Fazer upgrade</span>
             </div>
             {[
               { label: "Configurações", icon: Settings2, cor: "" },
@@ -134,11 +147,8 @@ export function Dashboard({ active }: { active: boolean }) {
 
         {/* Conteúdo */}
         <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 bg-canvas/40 p-6">
-          <div className="flex items-end justify-between">
-            <div>
-              <h4 className="font-display text-[24px] font-semibold tracking-tight">Performance</h4>
-              <p className="mt-0.5 text-[12px] text-muted">Resultados de toda a equipe em outubro.</p>
-            </div>
+          {/* Como no painel: sem título, só os filtros */}
+          <div className="flex items-center justify-end">
             <div className="flex gap-2">
               {[
                 { icon: Users, label: "Toda a equipe" },
