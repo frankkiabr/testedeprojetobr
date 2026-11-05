@@ -12,6 +12,7 @@ import { Avatar, AvatarNome, Badge, Card, ProgressBar, Segmented, Select } from 
 import { BotaoSalvar, btn, CheckItem, DateInput, Drawer, EmptyState, Field, formatPhone, inputCls, SearchInput, TimeInput, toLocalInput, waLink } from "../../forms";
 import { ETAPA_DOT, ETAPA_STYLE, LeadFormModal, BotaoExcluir, EnderecoPicker } from "./shared";
 import { DadosContratoCampos, TiposCliente } from "./DadosContrato";
+import { ImoveisQueCombinam, PropostasLead } from "./Negociacao";
 import { ImportarLeadsModal } from "./ImportarLeads";
 import { Documentos } from "../../Documentos";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
@@ -283,6 +284,8 @@ function LeadDrawer({ id, onClose }: { id: string | null; onClose: () => void })
             onChange={(contrato) => setD({ ...d, contrato })}
             abrirDeInicio={d.etapa === "proposta" || d.etapa === "fechado"}
           />
+          <PropostasLead lead={lead} />
+          <ImoveisQueCombinam lead={lead} />
           {/* Rodízio: prazo para o primeiro contato e por quem o lead já passou */}
           {(prazoRodizio(lead) || (isAdmin && lead.rodizio && ((lead.passouPor?.length ?? 0) > 0 || lead.voltouAoAdmin))) && (
             <div className="flex gap-3 rounded-2xl bg-amber-50 p-3.5 text-sm text-amber-900">

@@ -655,6 +655,41 @@ export type Database = {
           },
         ]
       }
+      captacao_precos: {
+        Row: {
+          alterado_em: string
+          alterado_por: string | null
+          captacao_id: string
+          id: string
+          valor_antes: number
+          valor_depois: number
+        }
+        Insert: {
+          alterado_em?: string
+          alterado_por?: string | null
+          captacao_id: string
+          id?: string
+          valor_antes: number
+          valor_depois: number
+        }
+        Update: {
+          alterado_em?: string
+          alterado_por?: string | null
+          captacao_id?: string
+          id?: string
+          valor_antes?: number
+          valor_depois?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "captacao_precos_captacao_id_fkey"
+            columns: ["captacao_id"]
+            isOneToOne: false
+            referencedRelation: "captacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       captacoes: {
         Row: {
           area_m2: number
@@ -771,6 +806,57 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "chamados_imobiliaria_id_fkey"
+            columns: ["imobiliaria_id"]
+            isOneToOne: false
+            referencedRelation: "imobiliarias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chaves: {
+        Row: {
+          captacao_id: string
+          com_quem: string
+          devolver_ate: string | null
+          devolvida_em: string | null
+          id: string
+          imobiliaria_id: string
+          motivo: string | null
+          registrado_por: string | null
+          retirada_em: string
+        }
+        Insert: {
+          captacao_id: string
+          com_quem: string
+          devolver_ate?: string | null
+          devolvida_em?: string | null
+          id?: string
+          imobiliaria_id: string
+          motivo?: string | null
+          registrado_por?: string | null
+          retirada_em?: string
+        }
+        Update: {
+          captacao_id?: string
+          com_quem?: string
+          devolver_ate?: string | null
+          devolvida_em?: string | null
+          id?: string
+          imobiliaria_id?: string
+          motivo?: string | null
+          registrado_por?: string | null
+          retirada_em?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chaves_captacao_id_fkey"
+            columns: ["captacao_id"]
+            isOneToOne: false
+            referencedRelation: "captacoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chaves_imobiliaria_id_fkey"
             columns: ["imobiliaria_id"]
             isOneToOne: false
             referencedRelation: "imobiliarias"
@@ -1825,6 +1911,64 @@ export type Database = {
             columns: ["imobiliaria_id"]
             isOneToOne: false
             referencedRelation: "imobiliarias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      propostas: {
+        Row: {
+          captacao_id: string | null
+          condicoes: string | null
+          criado_em: string
+          criado_por: string | null
+          id: string
+          imobiliaria_id: string
+          lead_id: string
+          tipo: string
+          valor: number | null
+        }
+        Insert: {
+          captacao_id?: string | null
+          condicoes?: string | null
+          criado_em?: string
+          criado_por?: string | null
+          id?: string
+          imobiliaria_id: string
+          lead_id: string
+          tipo: string
+          valor?: number | null
+        }
+        Update: {
+          captacao_id?: string | null
+          condicoes?: string | null
+          criado_em?: string
+          criado_por?: string | null
+          id?: string
+          imobiliaria_id?: string
+          lead_id?: string
+          tipo?: string
+          valor?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "propostas_captacao_id_fkey"
+            columns: ["captacao_id"]
+            isOneToOne: false
+            referencedRelation: "captacoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "propostas_imobiliaria_id_fkey"
+            columns: ["imobiliaria_id"]
+            isOneToOne: false
+            referencedRelation: "imobiliarias"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "propostas_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
             referencedColumns: ["id"]
           },
         ]

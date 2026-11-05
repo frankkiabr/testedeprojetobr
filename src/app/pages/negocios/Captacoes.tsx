@@ -3,6 +3,7 @@ import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 import { AnuncioEditor } from "./Anuncio";
 import { ImportarCarteiraModal } from "./ImportarCarteira";
 import { AutorizacaoModal } from "./Autorizacao";
+import { ChavesImovel, HistoricoPreco, LeadsQueCombinam } from "./Negociacao";
 import { Carrossel } from "@/components/Carrossel";
 import { LocalImovel } from "./LocalImovel";
 import { anuncios } from "@/data/demo";
@@ -473,6 +474,10 @@ export function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: ()
                   </div>
                   <LocalImovel im={im} className="h-48" />
                 </div>
+
+                <HistoricoPreco captacao={c} />
+                {!fechada && <ChavesImovel captacao={c} />}
+                {!fechada && <LeadsQueCombinam captacao={c} />}
 
                 {/* Mesmo endereço: outras unidades e o histórico de negócios (o que antes ficava na aba Imóveis) */}
                 <NesteEndereco imovelId={im.id} atualId={c.id} onAbrir={(id) => navigate(`/app/negocios/captacoes?captacao=${id}`)} />

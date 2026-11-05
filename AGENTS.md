@@ -147,6 +147,8 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
 - Clientes (leads e proprietários): `codigo` CL-XXXXXX, `tipos` (comprador/locatario/proprietario/investidor/fiador) e `dados_contrato`
   (jsonb: CPF, RG, estado civil, cônjuge, renda, PJ...) em `negocios/DadosContrato.tsx` (só valem ao Salvar; no lead abre na etapa Proposta).
   Novo imóvel em 3 etapas (`Etapas` em `negocios/shared.tsx`) com `captacoes.comissao_pct` (preenche os honorários ao registrar).
+  Negociação (`src/data/negociacao.ts` + `negocios/Negociacao.tsx`): propostas/contrapropostas no lead (tabela `propostas`), chaves do imóvel
+  (`chaves`), histórico de preço gravado por gatilho (`captacao_precos`) e combinações lead × imóvel (mesmo tipo + bairro ou valor ±20%).
   Autorização de venda/locação: `negocios/Autorizacao.tsx` (aba Captação → "Gerar autorização"; página para imprimir/PDF, modelo de referência).
 - Datas: cadastros mostram data e hora (`dataHora` em `src/lib/format.ts`). Agenda: tipo "Outro" com etiqueta livre (`compromissos.etiqueta`).
 - Excluir em Negócios: `BotaoExcluir` (`negocios/shared.tsx`) + `excluir()` do store (confere o que depende antes; venda/locação
