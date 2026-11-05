@@ -470,6 +470,55 @@ export function formatPhone(n: string) {
   return n;
 }
 
+/** Telefone digitado → só números, no formato (91) 98095-9265 (aceita colar com +55). */
+export function mascaraTelefone(s: string) {
+  let d = s.replace(/\D/g, "");
+  if ((d.length === 12 || d.length === 13) && d.startsWith("55")) d = d.slice(2);
+  d = d.slice(0, 11);
+  if (d.length <= 2) return d ? `(${d}` : "";
+  if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+  if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+  return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+}
+/** Aviso do campo de telefone (vazio = sem aviso). Exige o DDD. */
+export function avisoTelefone(s: string) {
+  const d = s.replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, "");
+  if (!d || d.length === 10 || d.length === 11) return "";
+  if (d.length <= 9) return "Formato incorreto: inclua o DDD. Ex.: (91) 98888-7777";
+  return "Número incompleto ou com dígitos a mais.";
+}
+
+/**
+ * Campo de telefone/WhatsApp: só aceita números, formata enquanto digita e avisa quando falta o DDD.
+ * Recebe as mesmas props de um <input>; o onChange recebe o valor já formatado.
+ */
+export function TelefoneInput({ onChange, value, className = inputCls, ...rest }: React.InputHTMLAttributes<HTMLInputElement>) {
+  const [tocado, setTocado] = useState(false);
+  const texto = typeof value === "string" ? mascaraTelefone(value) : value;
+  const aviso = typeof value === "string" ? avisoTelefone(value) : "";
+  return (
+    <>
+      <input
+        {...rest}
+        type="tel"
+        inputMode="numeric"
+        autoComplete={rest.autoComplete ?? "tel-national"}
+        value={texto}
+        className={`${className} ${tocado && aviso ? "!border-rose-300" : ""}`}
+        onBlur={(e) => {
+          setTocado(true);
+          rest.onBlur?.(e);
+        }}
+        onChange={(e) => {
+          e.target.value = mascaraTelefone(e.target.value);
+          onChange?.(e);
+        }}
+      />
+      {tocado && aviso && <span className="mt-1 block text-xs font-medium text-rose-600">{aviso}</span>}
+    </>
+  );
+}
+
 export const waLink = (n: string, text?: string) => `https://wa.me/${n}${text ? `?text=${encodeURIComponent(text)}` : ""}`;
 
 /** Data ISO → valor do campo datetime-local (horário local). */

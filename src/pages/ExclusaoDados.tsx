@@ -7,6 +7,7 @@ import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { enviarInteressado } from "@/integrations/frankkia/client";
 import { PaginaSimples } from "@/components/PaginaSimples";
 import { ListaSuspensa } from "@/app/kit";
+import { TelefoneInput } from "@/app/forms";
 
 const campo =
   "h-11 w-full rounded-xl border border-line-strong bg-bg px-3.5 text-sm outline-hidden transition placeholder:text-subtle focus:border-accent focus:ring-4 focus:ring-accent/10";
@@ -93,7 +94,7 @@ export default function ExclusaoDados() {
             </label>
             <label className="block">
               <span className="mb-1.5 block text-xs font-semibold text-muted">WhatsApp com DDD</span>
-              <input className={campo} inputMode="tel" value={f.telefone} onChange={(e) => setF({ ...f, telefone: e.target.value })} placeholder="(91) 98765-4321" />
+              <TelefoneInput className={campo} value={f.telefone} onChange={(e) => setF({ ...f, telefone: e.target.value })} placeholder="(91) 98765-4321" />
             </label>
             <label className="block sm:col-span-2">
               <span className="mb-1.5 block text-xs font-semibold text-muted">Detalhes (opcional)</span>

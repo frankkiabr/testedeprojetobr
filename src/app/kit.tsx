@@ -1,6 +1,7 @@
 /** Peças visuais reutilizadas em todas as telas internas. */
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { useLocation } from "react-router-dom";
 import { animate, AnimatePresence, motion } from "framer-motion";
 import { ArrowDownRight, ArrowUpRight, Check, ChevronDown } from "lucide-react";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
@@ -23,6 +24,10 @@ export function CardHeader({ title, subtitle, action }: { title: ReactNode; subt
 }
 
 export function PageHeader({ title, subtitle, actions, foto }: { title: ReactNode; subtitle?: ReactNode; actions?: ReactNode; foto?: ReactNode }) {
+  // No painel da imobiliária (/app) as páginas não repetem título e subtítulo (o menu já diz onde você está);
+  // ficam só os botões e filtros. A saudação do Início (com foto) continua. O painel Frankkia (/admin) mantém os títulos.
+  const { pathname } = useLocation();
+  if (pathname.startsWith("/app") && !foto) return actions ? <div className="flex flex-wrap items-center justify-end gap-2">{actions}</div> : null;
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div className="flex items-center gap-4">

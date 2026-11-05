@@ -134,6 +134,10 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
   Salvar). O `Modal` percebe sozinho mudanças nos campos; janelas com rascunho próprio passam `alterado` + `onSalvarAlteracoes`
   (lead, proprietário, imóvel, endereço). `banner` = topo escuro com degradê (janelas de cadastro). Listas de escolha: nunca `<select>` do navegador; use `Select`
   (filtro em pílula) ou `SelectField` (campo de formulário), que usam `ListaSuspensa` de `kit.tsx` (abre por cima das janelas, teclado, grupos). Sem foto, use `AvatarNome` (iniciais, `kit.tsx`).
+- Menu lateral: "Negócios" é um grupo que abre e fecha (`GrupoNegocios` em `AppLayout.tsx`) com Leads, Imóveis (= captações),
+  Proprietários, Endereços, Vendas e Locações e Parceiros (equipe); cada um é uma página própria (sem barra de abas; rotas `/app/negocios/*`).
+  Páginas do `/app` não mostram título/subtítulo (`PageHeader` só mostra os botões; a saudação do Início fica). Telefone: sempre
+  `TelefoneInput` (`forms.tsx`: só números, formata e exige DDD).
 - **Endereços** (Negócios → aba `enderecos`, antiga `edificios`, que redireciona): TODOS os `imoveis` (prédios, casas, galpões, terrenos),
   filtro por tipo e selo "Sem localização". É a base que cruza tudo. Endereço novo exige o ponto no mapa e avisa se já existe outro a até
   30 m (`enderecoPerto` em `queries.ts`). "Novo imóvel" começa pelo tipo: `pedePredio()` → escolher/cadastrar o prédio; senão título + endereço + mapa.

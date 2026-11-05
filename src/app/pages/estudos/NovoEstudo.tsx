@@ -11,7 +11,7 @@ import { mensagemErro } from "@/integrations/frankkia/client";
 import { brl } from "@/lib/format";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { PageHeader, Segmented } from "../../kit";
-import { btn, Field, formatPhone, inputCls, Modal, normalizePhone, SelectField } from "../../forms";
+import { btn, Field, formatPhone, inputCls, Modal, normalizePhone, SelectField, TelefoneInput } from "../../forms";
 import { useScope, useSession } from "../../session";
 import { CamposEndereco, CamposImovel } from "./partes";
 
@@ -389,7 +389,7 @@ function ProprietarioModal({
               <input className={inputCls} value={nome} onChange={(e) => setNome(e.target.value)} />
             </Field>
             <Field label="WhatsApp">
-              <input className={inputCls} inputMode="tel" value={whats} onChange={(e) => setWhats(e.target.value)} placeholder="(91) 98765-4321" />
+              <TelefoneInput className={inputCls} value={whats} onChange={(e) => setWhats(e.target.value)} placeholder="(91) 98765-4321" />
             </Field>
             <button
               className={`${btn.accent} w-full`}

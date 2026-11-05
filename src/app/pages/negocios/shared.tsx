@@ -43,7 +43,7 @@ import { useStore } from "@/data/store";
 import type { Captacao, CategoriaImovel, EnderecoLigado, EtapaLead, FechamentoInformado, Finalidade, Participante, Imovel } from "@/data/types";
 import { brl } from "@/lib/format";
 import { useScope } from "../../session";
-import { BotaoSalvar, btn, DateInput, Field, inputCls, mascaraMoeda, Modal, moeda, normalizePhone, SelectField, waLink } from "../../forms";
+import { BotaoSalvar, btn, DateInput, Field, inputCls, mascaraMoeda, Modal, moeda, normalizePhone, SelectField, waLink, TelefoneInput } from "../../forms";
 import { Avatar, Segmented } from "../../kit";
 
 // ---------- Visual ----------
@@ -253,7 +253,7 @@ export function LeadFormModal({ open, onClose }: { open: boolean; onClose: () =>
           <input autoFocus className={inputCls} value={f.nome} onChange={(e) => setF({ ...f, nome: e.target.value })} placeholder="Nome do cliente" />
         </Field>
         <Field label="WhatsApp" hint="Com DDD. Ex.: (11) 98765-4321">
-          <input className={inputCls} inputMode="tel" value={f.telefone} onChange={(e) => setF({ ...f, telefone: e.target.value })} placeholder="(11) 98765-4321" />
+          <TelefoneInput className={inputCls} value={f.telefone} onChange={(e) => setF({ ...f, telefone: e.target.value })} placeholder="(11) 98765-4321" />
         </Field>
         <Field label="Origem">
           <SelectField value={f.origem} onChange={(v) => setF({ ...f, origem: v })} options={ORIGENS.map((o) => ({ value: o, label: o }))} />
@@ -316,7 +316,7 @@ export function ProprietarioFormModal({ open, onClose }: { open: boolean; onClos
           <input autoFocus className={inputCls} value={f.nome} onChange={(e) => setF({ ...f, nome: e.target.value })} placeholder="Nome do proprietário" />
         </Field>
         <Field label="WhatsApp" hint="Com DDD. Ex.: (11) 98765-4321">
-          <input className={inputCls} inputMode="tel" value={f.whatsapp} onChange={(e) => setF({ ...f, whatsapp: e.target.value })} placeholder="(11) 98765-4321" />
+          <TelefoneInput className={inputCls} value={f.whatsapp} onChange={(e) => setF({ ...f, whatsapp: e.target.value })} placeholder="(11) 98765-4321" />
         </Field>
         {isAdmin && <CorretorField value={corretorId} onChange={setCorretorId} />}
         <div>
@@ -944,7 +944,7 @@ export function CaptacaoFormModal({ open, onClose }: { open: boolean; onClose: (
           ) : (
             <div className="grid gap-3 sm:grid-cols-2">
               <input className={inputCls} value={f.propNome} onChange={(e) => setF({ ...f, propNome: e.target.value })} placeholder="Nome do proprietário" />
-              <input className={inputCls} inputMode="tel" value={f.propWhats} onChange={(e) => setF({ ...f, propWhats: e.target.value })} placeholder="WhatsApp com DDD" />
+              <TelefoneInput className={inputCls} value={f.propWhats} onChange={(e) => setF({ ...f, propWhats: e.target.value })} placeholder="WhatsApp com DDD" />
             </div>
           )}
         </div>
@@ -1009,7 +1009,7 @@ export function ParceiroFormModal({ open, onClose, onCreated }: { open: boolean;
           <input className={inputCls} value={f.empresa} onChange={(e) => setF({ ...f, empresa: e.target.value })} placeholder="Ex.: Autônomo" />
         </Field>
         <Field label="WhatsApp" className="sm:col-span-2">
-          <input className={inputCls} inputMode="tel" value={f.telefone} onChange={(e) => setF({ ...f, telefone: e.target.value })} placeholder="(11) 98765-4321" />
+          <TelefoneInput className={inputCls} value={f.telefone} onChange={(e) => setF({ ...f, telefone: e.target.value })} placeholder="(11) 98765-4321" />
         </Field>
       </div>
     </Modal>
@@ -1457,7 +1457,8 @@ export function Etapas({ passos, atual, onIr }: { passos: string[]; atual: numbe
     <ol className="mb-6 flex items-start">
       {passos.map((p, i) => (
         <li key={p} className="relative flex flex-1 flex-col items-center gap-1.5 text-center">
-          {i > 0 && <span className={`absolute right-1/2 top-4 h-0.5 w-full -translate-y-1/2 ${i <= atual ? "bg-accent" : "bg-line"}`} />}
+          {/* Linha entre as bolinhas (de borda a borda, sem passar por cima delas) */}
+          {i > 0 && <span className={`absolute top-4 h-0.5 -translate-y-1/2 ${i <= atual ? "bg-accent" : "bg-line"}`} style={{ left: "calc(-50% + 1.25rem)", right: "calc(50% + 1.25rem)" }} />}
           <button
             type="button"
             onClick={() => onIr?.(i)}

@@ -3,12 +3,17 @@ import { motion } from "framer-motion";
 import { Link, NavLink, useLocation, useNavigate, useOutlet } from "react-router-dom";
 import {
   AlertTriangle,
+  BadgeDollarSign,
   BarChart3,
   BookOpen,
   Briefcase,
+  Building2,
   CalendarDays,
+  ChevronDown,
+  ClipboardList,
   CreditCard,
   ExternalLink,
+  Handshake,
   HelpCircle,
   LayoutGrid,
   LineChart,
@@ -17,18 +22,19 @@ import {
   Menu,
   Settings2,
   Sparkles,
+  UserRound,
   Users,
   X,
 } from "lucide-react";
-import { imobiliaria } from "@/data/demo";
-import { vagasUsadas } from "@/data/queries";
+import { imobiliaria, imoveis, parceiros } from "@/data/demo";
+import { captacoesOf, fechamentosPendentes, leadsOf, proprietariosOf, transacoesOf, vagasUsadas } from "@/data/queries";
 import { clienteById, ehSolo } from "@/data/platform";
 import { useStore } from "@/data/store";
 import type { Role } from "@/data/types";
 import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { IconeMarca, Logo } from "@/components/ui";
 import { BotaoRecolher, useMenuRecolhido } from "./menuLateral";
-import { excluirEm, soLeitura as estaSoLeitura, useSession } from "./session";
+import { excluirEm, soLeitura as estaSoLeitura, useScope, useSession } from "./session";
 import { ProgressBar } from "./kit";
 import { Toaster } from "./forms";
 import { UpgradeModal, UpgradeNudge } from "./upgrade";
@@ -79,6 +85,69 @@ function NavItem({ to, label, icon: Icon, onClick, recolhido }: { to: string; la
   );
 }
 
+/** Itens de Negócios (cada um é uma página própria). */
+function useItensNegocios() {
+  const { scope, isAdmin, solo } = useScope();
+  const pendentes = fechamentosPendentes(isAdmin ? {} : scope).length;
+  return [
+    { to: "negocios/leads", label: "Leads", icon: Users, count: leadsOf(scope).length },
+    { to: "negocios/captacoes", label: "Imóveis", icon: ClipboardList, count: captacoesOf(scope).filter((c) => c.status === "ativa").length },
+    { to: "negocios/proprietarios", label: "Proprietários", icon: UserRound, count: proprietariosOf(scope).length },
+    { to: "negocios/enderecos", label: "Endereços", icon: Building2, count: imoveis.length },
+    { to: "negocios/transacoes", label: "Vendas e Locações", icon: BadgeDollarSign, count: transacoesOf(scope).length, alerta: pendentes },
+    ...(isAdmin && !solo ? [{ to: "negocios/parceiros", label: "Parceiros", icon: Handshake, count: parceiros.length }] : []),
+  ];
+}
+
+/** "Negócios" no menu: um grupo que abre e fecha, com Leads, Imóveis, Proprietários... (abre sozinho quando você está numa dessas páginas). */
+function GrupoNegocios({ onNavigate, recolhido }: { onNavigate?: () => void; recolhido?: boolean }) {
+  const { pathname } = useLocation();
+  const dentro = pathname.startsWith("/app/negocios");
+  const [aberto, setAberto] = useState(dentro);
+  useEffect(() => {
+    if (dentro) setAberto(true);
+  }, [dentro]);
+  const itens = useItensNegocios();
+  // Menu recolhido: só o ícone, que leva para Leads
+  if (recolhido) return <NavItem to="negocios/leads" label="Negócios" icon={Briefcase} onClick={onNavigate} recolhido />;
+  return (
+    <div>
+      <button
+        onClick={() => setAberto(!aberto)}
+        aria-expanded={aberto}
+        className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${dentro ? "font-semibold text-accent-deep" : "text-muted hover:bg-canvas hover:text-ink"}`}
+      >
+        <Briefcase className="size-[18px] shrink-0" />
+        <span className="flex-1 text-left">Negócios</span>
+        <ChevronDown className={`size-4 transition-transform duration-300 ${aberto ? "rotate-180" : ""}`} />
+      </button>
+      {aberto && (
+        <div className="relative mb-1 ml-[1.15rem] mt-0.5 space-y-0.5 border-l border-line pl-2.5">
+          {itens.map(({ to, label, icon: Icon, count, ...rest }) => (
+            <NavLink
+              key={to}
+              to={`/app/${to}`}
+              onClick={onNavigate}
+              className={({ isActive }) =>
+                `relative flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[0.8125rem] transition-colors ${isActive ? "bg-accent-soft font-semibold text-accent-deep" : "text-muted hover:bg-canvas hover:text-ink"}`
+              }
+            >
+              <Icon className="size-4 shrink-0" />
+              <span className="min-w-0 flex-1 truncate">{label}</span>
+              {"alerta" in rest && !!rest.alerta && (
+                <span className="grid size-5 place-items-center rounded-full bg-amber-400 text-[0.625rem] font-bold text-amber-950" title="Fechamentos aguardando registro">
+                  {rest.alerta}
+                </span>
+              )}
+              <span className="text-[0.6875rem] tabular-nums text-subtle">{count}</span>
+            </NavLink>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Sidebar({ onNavigate, recolhido }: { onNavigate?: () => void; recolhido?: boolean }) {
   const { role, sair } = useSession();
   const navigate = useNavigate();
@@ -92,9 +161,13 @@ function Sidebar({ onNavigate, recolhido }: { onNavigate?: () => void; recolhido
       </Link>
       {!recolhido && <p className="mt-4 px-3 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-subtle">Seu universo</p>}
       <nav className="mt-3 min-h-0 flex-1 space-y-1 overflow-y-auto [scrollbar-width:none]">
-        {MENU.filter((m) => (!m.adminOnly || role === "admin") && !(solo && (m.to === "equipe" || m.to === "academy"))).map((m) => (
-          <NavItem key={m.to} {...m} onClick={onNavigate} recolhido={recolhido} />
-        ))}
+        {MENU.filter((m) => (!m.adminOnly || role === "admin") && !(solo && (m.to === "equipe" || m.to === "academy"))).map((m) =>
+          m.to === "negocios" ? (
+            <GrupoNegocios key={m.to} onNavigate={onNavigate} recolhido={recolhido} />
+          ) : (
+            <NavItem key={m.to} {...m} onClick={onNavigate} recolhido={recolhido} />
+          ),
+        )}
       </nav>
 
       <div className="mt-auto shrink-0 space-y-4 pt-3">

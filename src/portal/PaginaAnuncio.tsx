@@ -8,6 +8,7 @@ import { enviarContato, type AnuncioPublico } from "./api";
 import { Galeria } from "./Galeria";
 import { BotaoCompartilhar } from "./Filtros";
 import { Surge } from "./anim";
+import { TelefoneInput } from "@/app/forms";
 import {
   area,
   brl,
@@ -433,10 +434,10 @@ function FormContato({ slug, codigo }: { slug: string; codigo: string }) {
         minLength={2}
         maxLength={120}
       />
-      <input
+      <TelefoneInput
         className={campo}
         placeholder="WhatsApp com DDD"
-        inputMode="tel"
+       
         value={f.telefone}
         onChange={(e) =>
           setF({ ...f, telefone: e.target.value.replace(/[^\d()\s-]/g, "").slice(0, 16) })

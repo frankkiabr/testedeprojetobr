@@ -12,7 +12,7 @@ import { linkWhatsApp } from "@/lib/whatsapp";
 import { Logo, Scaled } from "@/components/ui";
 import { Dashboard, DASHBOARD_SIZE } from "@/components/mockups/Dashboard";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
-import { Field, inputCls, normalizePhone, SelectField } from "@/app/forms";
+import { Field, inputCls, normalizePhone, SelectField, TelefoneInput } from "@/app/forms";
 import { useSession } from "@/app/session";
 import { mensagemErro, supabase } from "@/integrations/frankkia/client";
 import { BotaoGoogle } from "@/app/Google";
@@ -233,9 +233,9 @@ export default function Cadastro() {
                 )}
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field label="WhatsApp">
-                    <input
+                    <TelefoneInput
                       className={inputCls}
-                      inputMode="tel"
+                     
                       value={f.telefone}
                       onChange={(e) => setF({ ...f, telefone: e.target.value })}
                       placeholder="(91) 98765-4321"

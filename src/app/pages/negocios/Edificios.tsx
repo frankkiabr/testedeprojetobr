@@ -12,7 +12,7 @@ import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { GRUPOS_CARACTERISTICAS, rotuloTipo, TIPOS_IMOVEL } from "@/lib/imovel";
 import { useSession } from "../../session";
 import { AvatarNome, Card, Select } from "../../kit";
-import { BotaoSalvar, btn, Drawer, EmptyState, Field, formatPhone, inputCls, mascaraMoeda, moeda, SearchInput, waLink } from "../../forms";
+import { BotaoSalvar, btn, Drawer, EmptyState, Field, formatPhone, inputCls, mascaraMoeda, moeda, SearchInput, waLink, TelefoneInput } from "../../forms";
 import { chaveEndereco, ImovelCover, ImovelFormModal, StatusBadge, valorLabel } from "./shared";
 
 
@@ -177,7 +177,7 @@ function Ficha({ im, onClose, estudos }: { im: Imovel; onClose: () => void; estu
               </Field>
               <Field label="Telefone" className="sm:col-span-2">
                 <span className="flex gap-2">
-                  <input className={inputCls} inputMode="tel" value={f.tel} onChange={(e) => setF({ ...f, tel: e.target.value })} placeholder="(91) 99999-9999" />
+                  <TelefoneInput className={inputCls} value={f.tel} onChange={(e) => setF({ ...f, tel: e.target.value })} placeholder="(91) 99999-9999" />
                   {f.tel.replace(/\D/g, "").length >= 10 && (
                     <a href={waLink(`55${f.tel.replace(/\D/g, "").replace(/^55/, "")}`)} target="_blank" rel="noreferrer" title="Abrir no WhatsApp" className={`${btn.outline} shrink-0 px-3`}>
                       <Phone className="size-4" />
