@@ -132,7 +132,8 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
   Botões de salvar usam `BotaoSalvar` com `depois={onClose}` (mostra "Salvo" e fecha).
   Alterações só valem ao salvar: fechar (X ou Cancelar) com algo mexido pergunta "Salvar as alterações?" (Continuar editando · Descartar ·
   Salvar). O `Modal` percebe sozinho mudanças nos campos; janelas com rascunho próprio passam `alterado` + `onSalvarAlteracoes`
-  (lead, proprietário, imóvel, endereço). `banner` = topo escuro com degradê (janelas de cadastro). Listas de escolha: nunca `<select>` do navegador; use `Select`
+  (lead, proprietário, imóvel, endereço). `banner` = topo escuro com degradê (janelas de cadastro e todas as `Drawer centro`: lead, imóvel, proprietário, endereço). O plano da conta
+  fica no topo do painel (`PlanoNoTopo`, só administrador, à esquerda de "Minha página"), não no menu lateral. Listas de escolha: nunca `<select>` do navegador; use `Select`
   (filtro em pílula) ou `SelectField` (campo de formulário), que usam `ListaSuspensa` de `kit.tsx` (abre por cima das janelas, teclado, grupos). Sem foto, use `AvatarNome` (iniciais, `kit.tsx`).
 - Menu lateral: "Negócios" é um grupo que abre e fecha (`GrupoNegocios` em `AppLayout.tsx`) com Leads, Imóveis (= captações),
   Proprietários, Endereços, Vendas e Locações e Parceiros (equipe); cada um é uma página própria (sem barra de abas; rotas `/app/negocios/*`).
@@ -150,6 +151,9 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
   ao salvar, o condomínio e as características do prédio vão para o anúncio. A ficha cruza captações, vendas e estudos do endereço.
 - Clientes (leads e proprietários): `codigo` CL-XXXXXX, `tipos` (comprador/locatario/proprietario/investidor/fiador) e `dados_contrato`
   (jsonb: CPF, RG, estado civil, cônjuge, renda, PJ...) em `negocios/DadosContrato.tsx` (só valem ao Salvar; no lead abre na etapa Proposta).
+  Etapas também ao ABRIR um item (navegáveis com `livre`, ✓ = completo de verdade via `concluidas`, `NavEtapas` no fim): Imóvel
+  (Imóvel · Captação · Marketing · Anúncio), Lead (Atendimento · Interesse · Negociação · Contrato), Proprietário (Dados e imóveis ·
+  Contrato e documentos), Endereço (Ficha · Imóveis e pessoas · Estudos). Cadastros curtos (Novo lead/proprietário) ficam numa tela só.
   Novo imóvel em 3 etapas (`Etapas` em `negocios/shared.tsx`) com `captacoes.comissao_pct` (preenche os honorários ao registrar).
   Negociação (`src/data/negociacao.ts` + `negocios/Negociacao.tsx`): propostas/contrapropostas no lead (tabela `propostas`), chaves do imóvel
   (`chaves`), histórico de preço gravado por gatilho (`captacao_precos`) e combinações lead × imóvel (mesmo tipo + bairro ou valor ±20%).

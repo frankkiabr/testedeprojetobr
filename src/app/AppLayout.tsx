@@ -35,9 +35,8 @@ import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { IconeMarca, Logo } from "@/components/ui";
 import { BotaoRecolher, useMenuRecolhido } from "./menuLateral";
 import { excluirEm, soLeitura as estaSoLeitura, useScope, useSession } from "./session";
-import { ProgressBar } from "./kit";
 import { Toaster } from "./forms";
-import { UpgradeModal, UpgradeNudge } from "./upgrade";
+import { UpgradeModal } from "./upgrade";
 import { Notificacoes } from "./Notificacoes";
 import { acaoAssinatura, mensagemErro } from "@/integrations/frankkia/client";
 
@@ -152,7 +151,6 @@ function Sidebar({ onNavigate, recolhido }: { onNavigate?: () => void; recolhido
   const { role, sair } = useSession();
   const navigate = useNavigate();
   useStore();
-  const used = vagasUsadas();
   const solo = ehSolo(imobiliaria.plano);
   return (
     <div className={`flex h-full flex-col pb-5 ${recolhido ? "px-3" : "px-4"}`}>
@@ -171,27 +169,6 @@ function Sidebar({ onNavigate, recolhido }: { onNavigate?: () => void; recolhido
       </nav>
 
       <div className="mt-auto shrink-0 space-y-4 pt-3">
-        {!recolhido && role === "admin" && solo && (
-          <div className="rounded-2xl bg-canvas p-4 text-xs">
-            <span className="font-semibold">Plano Solo</span>
-            <p className="mt-1 text-[0.6875rem] text-muted">Corretor autônomo · sem equipe</p>
-          </div>
-        )}
-        {!recolhido && role === "admin" && !solo && (
-          <div className="rounded-2xl bg-canvas p-4">
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold">Plano {imobiliaria.plano}</span>
-              <span className="text-muted">
-                {used} de {imobiliaria.limiteCorretores}
-              </span>
-            </div>
-            <ProgressBar value={used / imobiliaria.limiteCorretores} className="mt-2.5 h-1.5" />
-            <p className="mt-2 text-[0.6875rem] text-muted">vagas em uso (ativos + convites)</p>
-            <div className="mt-3">
-              <UpgradeNudge aPartirDe={0.5} compact />
-            </div>
-          </div>
-        )}
         <nav className="space-y-1">
           {BOTTOM.map((m) => (
             <NavItem key={m.to} {...m} onClick={onNavigate} recolhido={recolhido} />
@@ -248,6 +225,34 @@ export function RoleSwitcher() {
         ))}
       </div>
     </div>
+  );
+}
+
+/**
+ * Plano da conta no topo (só para o administrador), à esquerda de "Minha página". Leva para Configurações → Plano.
+ * Celular: só o nome do plano; telas maiores: também as vagas em uso.
+ */
+function PlanoNoTopo() {
+  const { role } = useSession();
+  useStore();
+  if (role !== "admin") return null;
+  const solo = ehSolo(imobiliaria.plano);
+  const usadas = vagasUsadas();
+  const cheio = !solo && usadas >= imobiliaria.limiteCorretores;
+  return (
+    <Link
+      to="/app/configuracoes?aba=plano"
+      title="Ver o plano"
+      className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-line px-3 text-sm font-semibold text-muted transition hover:border-line-strong hover:text-ink sm:px-4"
+    >
+      <CreditCard className="size-4" />
+      <span className="whitespace-nowrap">{solo ? "Solo" : imobiliaria.plano}</span>
+      {!solo && (
+        <span className={`hidden whitespace-nowrap rounded-full px-2 py-0.5 text-[0.6875rem] md:inline ${cheio ? "bg-amber-100 text-amber-800" : "bg-canvas text-muted"}`}>
+          {usadas}/{imobiliaria.limiteCorretores} vagas
+        </span>
+      )}
+    </Link>
   );
 }
 
@@ -360,6 +365,7 @@ export function AppLayout() {
             <div className="hidden md:block">
               <RoleSwitcher />
             </div>
+            <PlanoNoTopo />
             <MinhaPagina />
             <Notificacoes />
           </div>

@@ -10,8 +10,8 @@ import { dateTime, relTime, dataHora } from "@/lib/format";
 import { useScope } from "../../session";
 import { Avatar, AvatarNome, Badge, Card, ProgressBar, Segmented, Select } from "../../kit";
 import { BotaoSalvar, btn, CheckItem, DateInput, Drawer, EmptyState, Field, formatPhone, inputCls, SearchInput, TimeInput, toLocalInput, waLink } from "../../forms";
-import { ETAPA_DOT, ETAPA_STYLE, LeadFormModal, BotaoExcluir, EnderecoPicker } from "./shared";
-import { DadosContratoCampos, TiposCliente } from "./DadosContrato";
+import { ETAPA_DOT, ETAPA_STYLE, LeadFormModal, BotaoExcluir, EnderecoPicker, Etapas, NavEtapas } from "./shared";
+import { DadosContratoCampos, progressoContrato, TiposCliente } from "./DadosContrato";
 import { ImoveisQueCombinam, PropostasLead } from "./Negociacao";
 import { ImportarLeadsModal } from "./ImportarLeads";
 import { Documentos } from "../../Documentos";
@@ -194,6 +194,8 @@ function ListView({ leads, showCorretor, onOpen }: { leads: Lead[]; showCorretor
   );
 }
 
+const ETAPAS_LEAD = ["Atendimento", "Interesse", "Negociação", "Contrato"];
+
 function LeadDrawer({ id, onClose }: { id: string | null; onClose: () => void }) {
   const { updateLead, registrarContato } = useStore();
   const { isAdmin, solo } = useScope();
@@ -213,7 +215,15 @@ function LeadDrawer({ id, onClose }: { id: string | null; onClose: () => void })
     contrato: { ...(lead?.contrato ?? {}) },
   });
   const [d, setD] = useState(doLead);
-  useEffect(() => setD(doLead()), [id]); // eslint-disable-line react-hooks/exhaustive-deps
+  const [secao, setSecao] = useState(0);
+  useEffect(() => {
+    setD(doLead());
+    setSecao(0);
+  }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
+  const contratoOk = (() => {
+    const { feitos, total } = progressoContrato(d.contrato);
+    return total > 0 && feitos === total;
+  })();
   const alterado = !!lead && JSON.stringify(d) !== JSON.stringify(doLead());
   const passos = d.checklist.filter(Boolean).length;
   const salvar = () => {
@@ -268,24 +278,16 @@ function LeadDrawer({ id, onClose }: { id: string | null; onClose: () => void })
     >
       {lead && (
         <div className="space-y-7">
-          {/* Interessado em: imóvel captado ou endereço (cruza com Captações e Endereços) */}
-          <div className="rounded-2xl border border-line p-4">
-            <EnderecoPicker
-              captacoes
-              rotulo="Interessado em"
-              valor={{ captacaoId: d.interesseCaptacaoId, imovelId: d.interesseImovelId, unidade: d.interesseUnidade }}
-              onChange={(v) => setD({ ...d, interesseCaptacaoId: v.captacaoId, interesseImovelId: v.imovelId, interesseUnidade: v.unidade })}
-            />
-          </div>
-          <TiposCliente valor={d.tipos} onChange={(tipos) => setD({ ...d, tipos })} />
-          <DadosContratoCampos
-            key={lead.id}
-            valor={d.contrato}
-            onChange={(contrato) => setD({ ...d, contrato })}
-            abrirDeInicio={d.etapa === "proposta" || d.etapa === "fechado"}
+          <Etapas
+            className=""
+            livre
+            passos={ETAPAS_LEAD}
+            atual={secao}
+            concluidas={[atendido(lead), !!(d.interesseCaptacaoId || d.interesseImovelId), d.etapa === "fechado", contratoOk]}
+            onIr={setSecao}
           />
-          <PropostasLead lead={lead} />
-          <ImoveisQueCombinam lead={lead} />
+          {secao === 0 && (
+            <>
           {/* Rodízio: prazo para o primeiro contato e por quem o lead já passou */}
           {(prazoRodizio(lead) || (isAdmin && lead.rodizio && ((lead.passouPor?.length ?? 0) > 0 || lead.voltouAoAdmin))) && (
             <div className="flex gap-3 rounded-2xl bg-amber-50 p-3.5 text-sm text-amber-900">
@@ -419,8 +421,36 @@ function LeadDrawer({ id, onClose }: { id: string | null; onClose: () => void })
               className={`${inputCls} h-auto resize-none py-3`}
             />
           </Field>
+            </>
+          )}
 
-          <Documentos tipo="lead" refId={lead.id} corretorId={lead.corretorId} />
+          {/* Interesse: o que ele procura e o que combina */}
+          {secao === 1 && (
+            <>
+              <div className="rounded-2xl border border-line p-4">
+                <EnderecoPicker
+                  captacoes
+                  rotulo="Interessado em"
+                  valor={{ captacaoId: d.interesseCaptacaoId, imovelId: d.interesseImovelId, unidade: d.interesseUnidade }}
+                  onChange={(v) => setD({ ...d, interesseCaptacaoId: v.captacaoId, interesseImovelId: v.imovelId, interesseUnidade: v.unidade })}
+                />
+              </div>
+              <ImoveisQueCombinam lead={lead} />
+            </>
+          )}
+
+          {/* Negociação: propostas e contrapropostas */}
+          {secao === 2 && <PropostasLead lead={lead} />}
+
+          {/* Contrato: tipo do cliente, dados para contrato e documentos */}
+          {secao === 3 && (
+            <>
+              <TiposCliente valor={d.tipos} onChange={(tipos) => setD({ ...d, tipos })} />
+              <DadosContratoCampos key={lead.id} valor={d.contrato} onChange={(contrato) => setD({ ...d, contrato })} abrirDeInicio />
+              <Documentos tipo="lead" refId={lead.id} corretorId={lead.corretorId} />
+            </>
+          )}
+          <NavEtapas atual={secao} total={4} nomes={ETAPAS_LEAD} onIr={setSecao} />
         </div>
       )}
     </Drawer>

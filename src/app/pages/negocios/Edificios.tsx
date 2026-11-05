@@ -13,7 +13,7 @@ import { GRUPOS_CARACTERISTICAS, rotuloTipo, TIPOS_IMOVEL } from "@/lib/imovel";
 import { useSession } from "../../session";
 import { AvatarNome, Card, Select } from "../../kit";
 import { BotaoSalvar, btn, Drawer, EmptyState, Field, formatPhone, inputCls, mascaraMoeda, moeda, SearchInput, waLink, TelefoneInput } from "../../forms";
-import { chaveEndereco, ImovelCover, ImovelFormModal, StatusBadge, valorLabel } from "./shared";
+import { chaveEndereco, Etapas, ImovelCover, NavEtapas, ImovelFormModal, StatusBadge, valorLabel } from "./shared";
 
 
 /** Filtro da aba Endereços: grupos de tipos. */
@@ -26,6 +26,8 @@ const FILTROS: { value: string; label: string; ok: (im: Imovel) => boolean }[] =
   { value: "comerciais", label: "Comerciais (galpões, lojas...)", ok: (im) => !ehPredio(im) && !RURAIS.includes(im.categoria) && TIPOS_IMOVEL.find((t) => t.valor === im.categoria)?.grupo === "Comercial" },
   { value: "terrenos", label: "Terrenos e rurais", ok: (im) => RURAIS.includes(im.categoria) },
 ];
+
+const ETAPAS_END = ["Ficha", "Imóveis e pessoas", "Estudos"];
 
 /** Lazer, áreas comuns e segurança: o que vale para o prédio todo. */
 const GRUPOS_DO_PREDIO = GRUPOS_CARACTERISTICAS.filter((g) => ["Lazer e esporte", "Condomínio", "Segurança"].includes(g.titulo));
@@ -47,6 +49,8 @@ function Ficha({ im, onClose, estudos }: { im: Imovel; onClose: () => void; estu
   const { salvarPredio } = useStore();
   const navigate = useNavigate();
   const [editarEndereco, setEditarEndereco] = useState(false);
+  const [secao, setSecao] = useState(0);
+  useEffect(() => setSecao(0), [im.id]);
   const inicial = () => ({
     construtora: im.construtora ?? "",
     ano: im.anoConstrucao?.toString() ?? "",
@@ -128,6 +132,16 @@ function Ficha({ im, onClose, estudos }: { im: Imovel; onClose: () => void; estu
         }
       >
         <div className="space-y-7">
+          <Etapas
+            className=""
+            livre
+            passos={ETAPAS_END}
+            atual={secao}
+            concluidas={[!predio || !!(im.construtora || im.andares || im.condominioMedio || (im.caracteristicas?.length ?? 0) > 0), caps.length > 0, estudos.length > 0]}
+            onIr={setSecao}
+          />
+          {secao === 0 && (
+            <>
           {/* Números do prédio */}
           <div className="grid gap-3 sm:grid-cols-4">
             {[
@@ -220,6 +234,11 @@ function Ficha({ im, onClose, estudos }: { im: Imovel; onClose: () => void; estu
           <p className="-mt-3 text-xs text-subtle">Ao cadastrar um imóvel neste prédio, o condomínio e estas características já entram no anúncio.</p>
           </>)}
 
+            </>
+          )}
+
+          {secao === 1 && (
+            <>
           {/* Cruzamento: captações, vendas e estudos do mesmo endereço */}
           <div>
             <p className="mb-3 font-display text-lg font-semibold">{predio ? "Imóveis neste prédio" : "Captações neste endereço"} ({caps.length})</p>
@@ -290,7 +309,12 @@ function Ficha({ im, onClose, estudos }: { im: Imovel; onClose: () => void; estu
             </div>
           </div>
 
-          {estudos.length > 0 && (
+            </>
+          )}
+
+          {secao === 2 && (estudos.length === 0 ? (
+            <p className="rounded-2xl bg-canvas p-4 text-sm text-muted">Nenhum estudo de mercado neste endereço ainda.</p>
+          ) : (
             <div>
               <p className="mb-3 font-display text-lg font-semibold">Estudos de mercado neste endereço ({estudos.length})</p>
               <ul className="divide-y divide-line rounded-2xl border border-line">
@@ -310,7 +334,8 @@ function Ficha({ im, onClose, estudos }: { im: Imovel; onClose: () => void; estu
                 ))}
               </ul>
             </div>
-          )}
+          ))}
+          <NavEtapas atual={secao} total={3} nomes={ETAPAS_END} onIr={setSecao} />
         </div>
       </Drawer>
       <ImovelFormModal open={editarEndereco} onClose={() => setEditarEndereco(false)} imovel={im} />

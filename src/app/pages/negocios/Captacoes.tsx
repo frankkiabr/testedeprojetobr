@@ -41,6 +41,8 @@ import { useScope } from "../../session";
 import { Avatar, AvatarNome, Card, ProgressBar, Segmented, Select } from "../../kit";
 import { BotaoSalvar, btn, CheckItem, Drawer, EmptyState, Field, formatPhone, inputCls, mascaraMoeda, Modal, moeda, SearchInput, waLink } from "../../forms";
 import {
+  Etapas,
+  NavEtapas,
   CaptacaoFormModal,
   FinalidadeBadge,
   ImovelCover,
@@ -115,6 +117,7 @@ function comodos(captacaoId: string) {
 }
 
 type AbaCaptacao = "imovel" | "captacao" | "marketing" | "anuncio";
+const ABAS_CAPTACAO: AbaCaptacao[] = ["imovel", "captacao", "marketing", "anuncio"];
 
 /** Outras captações no mesmo endereço (ex.: outros apartamentos do prédio) e os negócios já fechados ali. */
 function NesteEndereco({ imovelId, atualId, onAbrir }: { imovelId: string; atualId: string; onAbrir: (id: string) => void }) {
@@ -319,18 +322,20 @@ export function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: ()
       >
         {c && im && (
           <div>
-            {/* Abas fixas no topo enquanto a janela rola */}
-            <div className="sticky -top-5 z-10 -mx-6 -mt-5 mb-6 border-b border-line bg-bg/95 px-6 py-3 backdrop-blur">
-              <Segmented
-                id="cap-abas"
-                value={aba}
-                onChange={setAba}
-                options={[
-                  { value: "imovel", label: "Imóvel" },
-                  { value: "captacao", label: `Captação · ${captD}/${CHECKLIST_CAPTACAO.length}` },
-                  { value: "marketing", label: `Marketing · ${feitosD}/${CHECKLIST_MARKETING.length}` },
-                  { value: "anuncio", label: an?.publicado && !fechada ? "Anúncio · no ar" : "Anúncio" },
+            {/* Etapas fixas no topo enquanto a janela rola (dá para pular para qualquer uma; ✓ = completa) */}
+            <div className="sticky -top-5 z-10 -mx-6 -mt-5 mb-6 border-b border-line bg-bg/95 px-6 pb-2 pt-4 backdrop-blur">
+              <Etapas
+                className=""
+                livre
+                passos={[
+                  "Imóvel",
+                  `Captação ${captD}/${CHECKLIST_CAPTACAO.length}`,
+                  `Marketing ${feitosD}/${CHECKLIST_MARKETING.length}`,
+                  an?.publicado && !fechada ? "Anúncio · no ar" : "Anúncio",
                 ]}
+                atual={ABAS_CAPTACAO.indexOf(aba)}
+                concluidas={[true, captD === CHECKLIST_CAPTACAO.length, feitosD === CHECKLIST_MARKETING.length, !!an?.publicado && !fechada]}
+                onIr={(i) => setAba(ABAS_CAPTACAO[i])}
               />
             </div>
 
@@ -530,6 +535,7 @@ export function CaptacaoDrawer({ id, onClose }: { id: string | null; onClose: ()
             <div className={aba === "anuncio" ? "" : "hidden"}>
               <AnuncioEditor captacao={c} onPublicado={onClose} rodape={aba === "anuncio" ? rodape : null} onEstado={setAnuncio} />
             </div>
+            <NavEtapas atual={ABAS_CAPTACAO.indexOf(aba)} total={4} nomes={["Imóvel", "Captação", "Marketing", "Anúncio"]} onIr={(i) => setAba(ABAS_CAPTACAO[i])} />
           </div>
         )}
       </Drawer>

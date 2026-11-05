@@ -17,6 +17,7 @@ import {
   LayoutGrid,
   LineChart,
   Megaphone,
+  CreditCard,
   ExternalLink,
   LogOut,
   PanelLeftClose,
@@ -86,7 +87,7 @@ export function Dashboard({ active }: { active: boolean }) {
             {menu.map(({ label, icon: Icon, active: on }) => (
               <li
                 key={label}
-                className={`flex items-center gap-2.5 rounded-xl px-2.5 py-[6px] text-[12.5px] ${on ? "bg-accent-soft font-semibold text-accent-deep" : "text-muted"}`}
+                className={`flex items-center gap-2.5 rounded-xl px-2.5 py-[8px] text-[12.5px] ${on ? "bg-accent-soft font-semibold text-accent-deep" : "text-muted"}`}
               >
                 <Icon className="size-[16px]" />
                 <span className="flex-1">{label}</span>
@@ -108,15 +109,6 @@ export function Dashboard({ active }: { active: boolean }) {
             )}
           </ul>
           <div className="mt-auto space-y-2">
-            <div className="rounded-2xl bg-canvas p-3">
-              <div className="flex justify-between text-[10.5px]">
-                <span className="font-semibold">Plano Equipe 10</span>
-                <span className="text-muted">9 de 10</span>
-              </div>
-              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-canvas-deep">
-                <motion.div className="h-full rounded-full bg-accent" initial={{ width: 0 }} animate={active ? { width: "90%" } : {}} transition={{ duration: 1.2, delay: 0.5 }} />
-              </div>
-            </div>
             {[
               { label: "Configurações", icon: Settings2, cor: "" },
               { label: "Ajuda", icon: HelpCircle, cor: "" },
@@ -135,6 +127,10 @@ export function Dashboard({ active }: { active: boolean }) {
         <div className="flex h-[60px] shrink-0 items-center justify-between border-b border-line px-6">
           <PanelLeftClose className="size-[18px] text-muted" />
           <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-[11.5px] font-semibold text-muted">
+              <CreditCard className="size-3.5" /> Equipe 10
+              <span className="rounded-full bg-canvas px-1.5 py-px text-[10px]">9/10 vagas</span>
+            </span>
             <span className="flex items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-[11.5px] font-semibold text-muted">
               <ExternalLink className="size-3.5" /> Página da imobiliária
             </span>

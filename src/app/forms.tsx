@@ -172,7 +172,7 @@ export function Modal({
             className={`relative flex max-h-[92vh] w-full ${largo === "extra" ? "max-w-5xl" : largo ? "max-w-3xl" : "max-w-lg"} flex-col overflow-hidden rounded-t-3xl bg-bg shadow-float sm:rounded-3xl`}
           >
             {banner ? (
-              <div className="relative overflow-hidden bg-ink px-6 pb-9 pt-7 text-bg">
+              <div className="relative shrink-0 overflow-hidden bg-ink px-6 pb-9 pt-7 text-bg">
                 <div className="absolute inset-0 bg-[radial-gradient(70%_80%_at_100%_0%,rgb(47_91_234/0.5),transparent_70%)]" />
                 <div className="relative flex items-start justify-between gap-4">
                   <div className="min-w-0">
@@ -189,7 +189,7 @@ export function Modal({
                 </div>
               </div>
             ) : (
-              <div className="flex items-start justify-between gap-4 border-b border-line px-6 py-5">
+              <div className="flex shrink-0 items-start justify-between gap-4 border-b border-line px-6 py-5">
                 <div className="min-w-0">
                   <h2 className="font-display text-xl font-semibold tracking-tight">{title}</h2>
                   {subtitle && <div className="mt-0.5 text-sm text-muted">{subtitle}</div>}
@@ -224,7 +224,7 @@ export function Modal({
                     setPerguntar(true);
                   }
                 }}
-                className="flex flex-wrap justify-end gap-2 border-t border-line bg-canvas/50 px-6 py-4"
+                className="flex shrink-0 flex-wrap justify-end gap-2 border-t border-line bg-canvas/50 px-6 py-4"
               >
                 {footer}
               </div>
@@ -287,14 +287,14 @@ export function Drawer({
   subtitle?: ReactNode;
   children: ReactNode;
   footer?: ReactNode;
-  /** Janela larga no meio da tela (como os itens de Negócios), em vez da gaveta lateral. */
+  /** Janela larga no meio da tela (como os itens de Negócios), com o topo em faixa escura, em vez da gaveta lateral. */
   centro?: boolean;
   alterado?: boolean;
   onSalvarAlteracoes?: () => unknown;
 }) {
   if (centro)
     return (
-      <Modal open={open} onClose={onClose} title={title} subtitle={subtitle} footer={footer} largo="extra" alterado={alterado} onSalvarAlteracoes={onSalvarAlteracoes}>
+      <Modal banner open={open} onClose={onClose} title={title} subtitle={subtitle} footer={footer} largo="extra" alterado={alterado} onSalvarAlteracoes={onSalvarAlteracoes}>
         {children}
       </Modal>
     );

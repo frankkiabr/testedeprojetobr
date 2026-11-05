@@ -1452,26 +1452,77 @@ export function BotaoExcluir({ tipo, id, nome, onExcluido, icone }: { tipo: Tipo
 
 // ---------- Etapas de um cadastro (barra com bolinhas) ----------
 
-export function Etapas({ passos, atual, onIr }: { passos: string[]; atual: number; onIr?: (i: number) => void }) {
+/**
+ * Etapas (bolinhas numeradas ligadas por uma linha).
+ * Cadastro novo: `atual` avança em ordem e o ✓ marca as que já passaram.
+ * Ver/editar algo que existe: passe `concluidas` (✓ = completo de verdade) e `livre` para poder pular para qualquer etapa.
+ */
+export function Etapas({
+  passos,
+  atual,
+  onIr,
+  concluidas,
+  livre = false,
+  className = "mb-6",
+}: {
+  passos: string[];
+  atual: number;
+  onIr?: (i: number) => void;
+  concluidas?: boolean[];
+  livre?: boolean;
+  className?: string;
+}) {
+  const feita = (i: number) => (concluidas ? !!concluidas[i] : i < atual);
   return (
-    <ol className="mb-6 flex items-start">
+    <ol className={`flex items-start ${className}`}>
       {passos.map((p, i) => (
         <li key={p} className="relative flex flex-1 flex-col items-center gap-1.5 text-center">
           {/* Linha entre as bolinhas (de borda a borda, sem passar por cima delas) */}
-          {i > 0 && <span className={`absolute top-4 h-0.5 -translate-y-1/2 ${i <= atual ? "bg-accent" : "bg-line"}`} style={{ left: "calc(-50% + 1.25rem)", right: "calc(50% + 1.25rem)" }} />}
+          {i > 0 && (
+            <span
+              className={`absolute top-4 h-0.5 -translate-y-1/2 ${(concluidas ? feita(i - 1) : i <= atual) ? "bg-accent" : "bg-line"}`}
+              style={{ left: "calc(-50% + 1.25rem)", right: "calc(50% + 1.25rem)" }}
+            />
+          )}
           <button
             type="button"
-            onClick={() => onIr?.(i)}
+            onClick={() => (livre || i < atual) && onIr?.(i)}
             className={`relative grid size-8 place-items-center rounded-full text-xs font-bold transition-colors ${
-              i < atual ? "bg-accent-soft text-accent" : i === atual ? "bg-accent text-white ring-4 ring-accent/15" : "bg-canvas text-subtle"
-            }`}
+              i === atual ? "bg-accent text-white ring-4 ring-accent/15" : feita(i) ? "bg-accent-soft text-accent" : "bg-canvas text-subtle"
+            } ${livre && i !== atual ? "hover:ring-4 hover:ring-accent/10" : ""}`}
           >
-            {i < atual ? <Check className="size-4" /> : i + 1}
+            {feita(i) && i !== atual ? <Check className="size-4" /> : i + 1}
           </button>
-          <span className={`text-xs ${i === atual ? "font-semibold text-ink" : "text-muted"}`}>{p}</span>
+          <button
+            type="button"
+            onClick={() => (livre || i < atual) && onIr?.(i)}
+            className={`text-xs ${i === atual ? "font-semibold text-ink" : "text-muted"} ${livre ? "hover:text-ink" : "cursor-default"}`}
+          >
+            {p}
+          </button>
         </li>
       ))}
     </ol>
+  );
+}
+
+/** "Etapa anterior / Próxima etapa" no fim de cada etapa (ao ver ou editar algo que já existe). */
+export function NavEtapas({ atual, total, nomes, onIr }: { atual: number; total: number; nomes: string[]; onIr: (i: number) => void }) {
+  return (
+    <div className="mt-8 flex items-center justify-between gap-3 border-t border-line pt-4">
+      {atual > 0 ? (
+        <button type="button" onClick={() => onIr(atual - 1)} className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted hover:text-ink">
+          <ArrowLeft className="size-4" /> {nomes[atual - 1]}
+        </button>
+      ) : (
+        <span />
+      )}
+      {atual < total - 1 && (
+        <button type="button" onClick={() => onIr(atual + 1)} className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:text-accent-deep">
+          {nomes[atual + 1]} <ArrowRight className="size-4" />
+        </button>
+      )}
+    </div>
   );
 }
 

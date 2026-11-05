@@ -1,6 +1,8 @@
 import { dataHora } from "@/lib/format";
 import { ImportarCarteiraModal } from "./ImportarCarteira";
-import { DadosContratoCampos, TiposCliente } from "./DadosContrato";
+import { DadosContratoCampos, progressoContrato, TiposCliente } from "./DadosContrato";
+
+const ETAPAS_PROP = ["Dados e imóveis", "Contrato e documentos"];
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -12,7 +14,7 @@ import { EASE_OUT_EXPO } from "@/lib/scroll";
 import { useScope } from "../../session";
 import { Avatar, AvatarNome, Card, ProgressBar, Select } from "../../kit";
 import { BotaoSalvar, btn, Drawer, EmptyState, formatPhone, SearchInput, waLink } from "../../forms";
-import { BotaoExcluir, ImovelCover, ListaEnderecos, ProprietarioFormModal, StatusBadge, valorLabel } from "./shared";
+import { BotaoExcluir, Etapas, ImovelCover, ListaEnderecos, NavEtapas, ProprietarioFormModal, StatusBadge, valorLabel } from "./shared";
 import { CaptacaoDrawer } from "./Captacoes";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 import { Documentos } from "../../Documentos";
@@ -26,7 +28,15 @@ function ProprietarioDrawer({ id, onClose }: { id: string | null; onClose: () =>
   // Imóveis, tipo do cliente e dados para contrato: só valem ao apertar "Salvar"
   const doProp = () => ({ imoveis: [...(p?.imoveis ?? [])], tipos: [...(p?.tipos ?? [])], contrato: { ...(p?.contrato ?? {}) } });
   const [rasc, setRasc] = useState(doProp);
-  useEffect(() => setRasc(doProp()), [id]); // eslint-disable-line react-hooks/exhaustive-deps
+  const [secao, setSecao] = useState(0);
+  useEffect(() => {
+    setRasc(doProp());
+    setSecao(0);
+  }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
+  const contratoOk = (() => {
+    const { feitos, total } = progressoContrato(rasc.contrato);
+    return total > 0 && feitos === total;
+  })();
   const alterado = !!p && JSON.stringify(rasc) !== JSON.stringify(doProp());
   const salvar = () => {
     if (p && alterado) updateProprietario(p.id, rasc);
@@ -62,6 +72,9 @@ function ProprietarioDrawer({ id, onClose }: { id: string | null; onClose: () =>
     >
       {p && (
         <div className="space-y-6">
+          <Etapas className="" livre passos={ETAPAS_PROP} atual={secao} concluidas={[true, contratoOk]} onIr={setSecao} />
+          {secao === 0 && (
+            <>
           <div className="flex flex-wrap gap-2">
             <a href={waLink(p.whatsapp)} target="_blank" rel="noreferrer" className={btn.whatsapp}>
               <WhatsAppIcon className="size-4" /> Conversar no WhatsApp
@@ -76,8 +89,6 @@ function ProprietarioDrawer({ id, onClose }: { id: string | null; onClose: () =>
               </div>
             </div>
           )}
-          <TiposCliente valor={rasc.tipos} onChange={(tipos) => setRasc({ ...rasc, tipos })} />
-          <DadosContratoCampos key={p.id} valor={rasc.contrato} onChange={(contrato) => setRasc({ ...rasc, contrato })} />
           <div>
             <p className="mb-1 font-display text-lg font-semibold">Imóveis deste proprietário</p>
             <p className="mb-3 text-xs text-muted">Endereços que ele possui, mesmo sem captação. Aparecem também na ficha do endereço.</p>
@@ -109,7 +120,16 @@ function ProprietarioDrawer({ id, onClose }: { id: string | null; onClose: () =>
               <p className="rounded-2xl bg-canvas p-4 text-sm text-muted">Nenhuma captação vinculada ainda. Cadastre uma “Nova captação” e escolha este proprietário.</p>
             )}
           </div>
-          <Documentos tipo="proprietario" refId={p.id} corretorId={p.corretorId} />
+            </>
+          )}
+          {secao === 1 && (
+            <>
+              <TiposCliente valor={rasc.tipos} onChange={(tipos) => setRasc({ ...rasc, tipos })} />
+              <DadosContratoCampos key={p.id} valor={rasc.contrato} onChange={(contrato) => setRasc({ ...rasc, contrato })} abrirDeInicio />
+              <Documentos tipo="proprietario" refId={p.id} corretorId={p.corretorId} />
+            </>
+          )}
+          <NavEtapas atual={secao} total={2} nomes={ETAPAS_PROP} onIr={setSecao} />
         </div>
       )}
     </Drawer>
