@@ -1795,6 +1795,7 @@ export type Database = {
       perfis: {
         Row: {
           aniversario: string | null
+          avisos_whatsapp: string[]
           bio: string | null
           creci: string | null
           creci_conferido_em: string | null
@@ -1814,6 +1815,7 @@ export type Database = {
         }
         Insert: {
           aniversario?: string | null
+          avisos_whatsapp?: string[]
           bio?: string | null
           creci?: string | null
           creci_conferido_em?: string | null
@@ -1833,6 +1835,7 @@ export type Database = {
         }
         Update: {
           aniversario?: string | null
+          avisos_whatsapp?: string[]
           bio?: string | null
           creci?: string | null
           creci_conferido_em?: string | null
@@ -2280,12 +2283,146 @@ export type Database = {
           },
         ]
       }
+      whatsapp_avisos: {
+        Row: {
+          chave: string
+          criado_em: string
+          enviado_em: string | null
+          erro: string | null
+          id: string
+          imobiliaria_id: string | null
+          para: string
+          parametros: Json
+          situacao: string | null
+          tentativas: number
+          tipo: string
+          usuario_id: string
+          wamid: string | null
+        }
+        Insert: {
+          chave: string
+          criado_em?: string
+          enviado_em?: string | null
+          erro?: string | null
+          id?: string
+          imobiliaria_id?: string | null
+          para: string
+          parametros?: Json
+          situacao?: string | null
+          tentativas?: number
+          tipo: string
+          usuario_id: string
+          wamid?: string | null
+        }
+        Update: {
+          chave?: string
+          criado_em?: string
+          enviado_em?: string | null
+          erro?: string | null
+          id?: string
+          imobiliaria_id?: string | null
+          para?: string
+          parametros?: Json
+          situacao?: string | null
+          tentativas?: number
+          tipo?: string
+          usuario_id?: string
+          wamid?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_avisos_imobiliaria_id_fkey"
+            columns: ["imobiliaria_id"]
+            isOneToOne: false
+            referencedRelation: "imobiliarias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      whatsapp_conversas: {
+        Row: {
+          criado_em: string
+          entrada_em: string | null
+          ia_pausada: boolean
+          id: string
+          nao_lidas: number
+          nome: string | null
+          telefone: string
+          ultima_em: string
+        }
+        Insert: {
+          criado_em?: string
+          entrada_em?: string | null
+          ia_pausada?: boolean
+          id?: string
+          nao_lidas?: number
+          nome?: string | null
+          telefone: string
+          ultima_em?: string
+        }
+        Update: {
+          criado_em?: string
+          entrada_em?: string | null
+          ia_pausada?: boolean
+          id?: string
+          nao_lidas?: number
+          nome?: string | null
+          telefone?: string
+          ultima_em?: string
+        }
+        Relationships: []
+      }
+      whatsapp_mensagens: {
+        Row: {
+          conversa_id: string
+          criado_em: string
+          direcao: string
+          enviado_por: string | null
+          id: string
+          situacao: string | null
+          texto: string | null
+          tipo: string
+          wamid: string | null
+        }
+        Insert: {
+          conversa_id: string
+          criado_em?: string
+          direcao: string
+          enviado_por?: string | null
+          id?: string
+          situacao?: string | null
+          texto?: string | null
+          tipo?: string
+          wamid?: string | null
+        }
+        Update: {
+          conversa_id?: string
+          criado_em?: string
+          direcao?: string
+          enviado_por?: string | null
+          id?: string
+          situacao?: string | null
+          texto?: string | null
+          tipo?: string
+          wamid?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_mensagens_conversa_id_fkey"
+            columns: ["conversa_id"]
+            isOneToOne: false
+            referencedRelation: "whatsapp_conversas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
       _fila_rodizio: { Args: { p_imob: string }; Returns: string[] }
+      _primeiro_nome: { Args: { p_usuario: string }; Returns: string }
       aceitar_convite: {
         Args: {
           p_aniversario: string
@@ -2299,6 +2436,7 @@ export type Database = {
         Returns: string
       }
       agendar_avisos_teste: { Args: never; Returns: undefined }
+      agendar_whatsapp: { Args: never; Returns: undefined }
       aplicar_mudanca_google: {
         Args: {
           p_atualizado: string
@@ -2317,6 +2455,10 @@ export type Database = {
       conferir_creci: {
         Args: { p_obs?: string; p_status: string; p_usuario: string }
         Returns: undefined
+      }
+      configurar_avisos_whatsapp: {
+        Args: { p_tipos: string[] }
+        Returns: string[]
       }
       configurar_rodizio: {
         Args: {
@@ -2369,6 +2511,16 @@ export type Database = {
           p_dados?: Json
           p_imob: string
           p_tipo: string
+        }
+        Returns: undefined
+      }
+      enfileirar_whatsapp: {
+        Args: {
+          p_chave: string
+          p_imob: string
+          p_params: Json
+          p_tipo: string
+          p_usuario: string
         }
         Returns: undefined
       }
@@ -2662,6 +2814,8 @@ export type Database = {
           solo: boolean
         }[]
       }
+      whatsapp_e164: { Args: { p_tel: string }; Returns: string }
+      whatsapp_parar: { Args: { p_wa_id: string }; Returns: number }
     }
     Enums: {
       [_ in never]: never

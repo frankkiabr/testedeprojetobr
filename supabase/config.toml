@@ -36,3 +36,9 @@ verify_jwt = false
 
 [functions.feed-portais]
 verify_jwt = false
+
+[functions.enviar-whatsapp]
+verify_jwt = false
+
+[functions.whatsapp-webhook]
+verify_jwt = false

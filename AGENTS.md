@@ -214,6 +214,14 @@ sem pedido explícito. Mudanças devem ser pontuais e seguir os padrões já exi
   cartão "Quer conhecer a Frankkia?" no login.
 - Demonstração: NÃO é pública. Só abre por `/demo/<código>` liberado pela Frankkia (`acessos_demo`, com validade;
   `validar_demo`). Não recoloque botões de demonstração na tela de login.
+- WhatsApp oficial (Cloud API da Meta; número da Frankkia +55 91 8059-5640, conta de mensagens 1822366342243593): avisos ao corretor
+  (lead novo/rodízio, lembrete de visita 1 h antes, chave atrasada) por modelos de utilidade `frankkia_*` (nomes em
+  `supabase/functions/enviar-whatsapp`). Cada usuário liga os seus em Configurações → Notificações (`perfis.avisos_whatsapp`,
+  `configurar_avisos_whatsapp`, precisa do WhatsApp no perfil); responder PARAR desliga (`whatsapp_parar`). Fila `whatsapp_avisos`
+  (gatilho em `leads` + `agendar_whatsapp()` pelo pg_cron a cada minuto; no máximo 3 avisos de lead a cada 15 min por pessoa).
+  Mensagens que chegam: função `whatsapp-webhook` (assinatura conferida) grava em `whatsapp_conversas`/`whatsapp_mensagens` (só a
+  Frankkia lê). Segredos WHATSAPP_TOKEN, WHATSAPP_PHONE_ID, WHATSAPP_APP_SECRET, WHATSAPP_VERIFY_TOKEN. Nada de robô não oficial;
+  IA só para venda/suporte da Frankkia, nunca atendendo clientes das imobiliárias (decisão do dono).
 - Tokens de serviços externos guardados no banco (ex.: `google_conexoes.refresh_token`) vão criptografados com AES-256-GCM
   por `supabase/functions/_shared/cofre.ts` (`cifrar`/`decifrar`, chave no segredo `TOKENS_CHAVE`). Nunca grave token sem cifrar.
 - Nunca coloque a chave secreta (service_role) no app ou no repositório; só a chave publicável vai no `.env`.

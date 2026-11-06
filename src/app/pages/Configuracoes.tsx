@@ -606,18 +606,78 @@ function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {
   );
 }
 
+// Avisos no WhatsApp pelo número da Frankkia (só no login real; cada um liga os que quer)
+const AVISOS_WHATSAPP = [
+  { id: "lead", label: "Novo lead atribuído a mim", desc: "Assim que um lead chegar para você (cadastro, portal ou rodízio)." },
+  { id: "visita", label: "Lembrete de visita", desc: "Uma hora antes de cada visita ou captação da sua agenda." },
+  { id: "chave", label: "Chave não devolvida", desc: "Quando uma chave que você registrou passar do prazo de devolução." },
+];
+
+function AvisosWhatsApp() {
+  const { modo } = useSession();
+  const { user } = useScope();
+  const { toast } = useStore();
+  const [ligados, setLigados] = useState<string[] | null>(null);
+  const [salvando, setSalvando] = useState(false);
+  useEffect(() => {
+    if (modo !== "real") return;
+    supabase
+      .from("perfis")
+      .select("avisos_whatsapp")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then(({ data }) => setLigados(data?.avisos_whatsapp ?? []));
+  }, [modo, user.id]);
+  if (modo !== "real" || ligados === null) return null;
+  const temWhatsApp = (user.telefone ?? "").replace(/D/g, "").length >= 10;
+
+  const alternar = async (id: string) => {
+    if (salvando) return;
+    const novo = ligados.includes(id) ? ligados.filter((x) => x !== id) : [...ligados, id];
+    setSalvando(true);
+    const { data, error } = await supabase.rpc("configurar_avisos_whatsapp", { p_tipos: novo });
+    setSalvando(false);
+    if (error) return toast(error.message.includes("SEM_WHATSAPP") ? "Cadastre seu WhatsApp em Perfil primeiro." : mensagemErro(error));
+    setLigados(data ?? novo);
+    toast(novo.includes(id) ? "Aviso no WhatsApp ligado." : "Aviso no WhatsApp desligado.");
+  };
+
+  return (
+    <Section
+      title="Avisos no WhatsApp"
+      subtitle={
+        temWhatsApp
+          ? `A Frankkia manda no seu WhatsApp ${formatPhone(user.telefone ?? "")}. Para parar, responda PARAR ou desligue aqui.`
+          : "Cadastre seu WhatsApp na aba Perfil para receber avisos."
+      }
+    >
+      <ul className="divide-y divide-line">
+        {AVISOS_WHATSAPP.map((it) => (
+          <li key={it.id} className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0">
+            <div>
+              <p className="text-sm font-semibold">{it.label}</p>
+              <p className="text-xs text-muted">{it.desc}</p>
+            </div>
+            <Toggle on={ligados.includes(it.id)} onChange={() => (temWhatsApp ? alternar(it.id) : toast("Cadastre seu WhatsApp em Perfil primeiro."))} />
+          </li>
+        ))}
+      </ul>
+    </Section>
+  );
+}
+
 function Notificacoes() {
   const { isAdmin, solo } = useScope();
   const { toast } = useStore();
   const itens = [
-    { id: "lead", label: "Novo lead atribuído a mim", desc: "Aviso assim que um lead chegar." },
-    { id: "visita", label: "Lembrete de visita", desc: "Uma hora antes de cada visita agendada." },
     { id: "semanal", label: "Resumo semanal de performance", desc: "Toda segunda-feira, por e-mail." },
     ...(solo ? [] : [{ id: "academy", label: "Novas trilhas na Academy", desc: "Quando uma trilha nova for publicada." }]),
     ...(isAdmin && !solo ? [{ id: "venda", label: "Vendas da equipe", desc: "Sempre que um corretor registrar uma venda." }] : []),
   ];
-  const [on, setOn] = useState<Record<string, boolean>>({ lead: true, visita: true, semanal: true, academy: false, venda: true });
+  const [on, setOn] = useState<Record<string, boolean>>({ semanal: true, academy: false, venda: true });
   return (
+    <div className="space-y-6">
+    <AvisosWhatsApp />
     <Section title="Notificações" subtitle="Escolha o que você quer receber.">
       <ul className="divide-y divide-line">
         {itens.map((it) => (
@@ -637,6 +697,7 @@ function Notificacoes() {
         ))}
       </ul>
     </Section>
+    </div>
   );
 }
 
